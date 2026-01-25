@@ -4,8 +4,6 @@
 int main() {
     GameEngine game;
     game.gameLoop();
-    std::cout<<"\n";
-    
     return 0;
     
 }

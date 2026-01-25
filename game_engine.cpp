@@ -222,7 +222,7 @@ public:
 
     void renderFrame(bool isInitialRender = false) {// render main
         if (isInitialRender){
-            std::cout<<initial_render;
+            std::cout<<initial_render<<"\n";
         } else {
             mapRender();
         }
