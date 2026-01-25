@@ -54,7 +54,7 @@ public:
 
     void initializeGame() {
         // Initialize game state, load map, actors, etc.
-        std::cout<<game_start_message<<"\n";
+        std::cout<<game_start_message;
         renderFrame(true);
     }
 
@@ -216,7 +216,7 @@ public:
 
     void generalRender(){
         render_ss<<"health : "<<health<<", score : "<<score<<"\n";
-        render_ss<<"Please make a decision...";
+        render_ss<<"Please make a decision...\n";
         render_ss<<input_query_message;
     }
 
