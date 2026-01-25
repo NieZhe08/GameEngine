@@ -227,6 +227,11 @@ public:
         render_ss<<input_query_message;
     }
 
+    void inquiryRender(){        
+        render_ss<<"Please make a decision...\n";
+        render_ss<<input_query_message;
+    }
+
     void renderFrame(bool isInitialRender = false) {// render main
         if (isInitialRender){
             std::cout<<initial_render<<"\n";
@@ -238,6 +243,9 @@ public:
         std::cout<<render_ss.str();
         render_ss.str(std::string());   
         render_ss.clear();
+        if (states == GameState::Ongoing){
+            inquiryRender();
+        }
     }
 
     void mapRender(){
