@@ -67,8 +67,7 @@ public:
             PlayerAction action = getPlayerAction();
             updateGameState(action);
             if (action == PlayerAction::Quit){
-                states = GameState::Lost;
-                break;
+                            states = GameState::Lost;
             }
             renderFrame(false);
         };
@@ -225,7 +224,7 @@ public:
         render_ss<<"health : "<<health<<", score : "<<score<<"\n";
     }
 
-    void inquiryRender(){        
+    void inquiryRender(){
         render_ss<<"Please make a decision...\n";
         render_ss<<input_query_message;
     }
@@ -238,12 +237,12 @@ public:
         }
         renderDialogue();
         generalRender();
-        std::cout<<render_ss.str();
-        render_ss.str(std::string());   
-        render_ss.clear();
         if (states == GameState::Ongoing){
             inquiryRender();
         }
+        std::cout<<render_ss.str();
+        render_ss.str(std::string());   
+        render_ss.clear();
     }
 
     void mapRender(){
