@@ -105,7 +105,12 @@ public:
         if (action == PlayerAction::Quit){
             health = 0; // End game
         } else if (action == PlayerAction::Invalid){
-            return;
+            std::vector<GameIncident> incidents;
+            updateDialogues(incidents);
+            updateGameIncidents(incidents);
+            if (health <= 0){
+                states = GameState::Lost;
+            }
         } else {
             updatePlayerPosition(action);
             std::vector<GameIncident> incidents;
