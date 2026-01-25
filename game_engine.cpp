@@ -39,7 +39,7 @@ public:
     //std::string _game_start_message;
     int health;
     int score;
-    std::string input_query_message = std::string("Your options are \"n\", \"e\", \"s\", \"w\", \"quit\"\n");
+    std::string input_query_message = std::string("Your options are \"n\", \"e\", \"s\", \"w\", \"quit\"");
     std::stringstream render_ss;
     std::stringstream dialogue_ss;
     GameState states;

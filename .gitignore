@@ -1,6 +1,7 @@
 game_engine_linux
 game_engine_osx
 *.o
+*.txt
 
 build
 **/resources

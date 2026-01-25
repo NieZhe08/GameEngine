@@ -1,0 +1,40 @@
+January 2024- East Lansing, MI.
+The nation's #1 game development program grows anxious.
+
+Despite their exceptional performance and rankings (seriously, you should consider their graduate school), the Spartans of Michigan State University can't help but feel a storm brewing in Ann Arbor. "The Wolverines are putting together quite a program, aren't they?" "Those UMich students - their programming abilities are exceptional, and they're stealing all the gamedev internships!", "if their scene continues this momentum, we may be in trouble..."
+
+Having stormed the University of Michigan campus twice before - and having been repelled twice before (check out the Crisis Wolverine games)--the Spartans were eager to make their third try a lucky one...
+
+The struggle began one Sunday night at 3am. With most students and faculty sleeping, the Spartans struck, taking over the Duderstadt Center with Spartan speed - their goal? To destroy the EECS 404 autograder and ruin the new game engine course!
+
+Fortunately, you (p) were working on homework late into the night in the VisStudio. When the spartans (s) burst through the lab door, you quickly grabbed the autograder (a raspberry pie 4) from the front desk and hid beneath a table as the lights went out. Despite your late-night fatigue, you begin feeling your way past the walls (b) and through the halls. Can you escape, or will the Michigan gamedev program crash and burn?
+
+G A M E - S T A R T
+       s     
+bbbb    s    
+f  bbbbb s   
+         b   
+      p  b   
+         b   
+bbbbbbbbb    
+             
+          b  
+health : 3, score : 0
+Please make a decision...
+Your options are "n", "e", "s", "w", "quit"
+Exhausted by the chase, darkness begins to swirl around you.
+
+Suddenly the floor greets you, followed by pure silence. You've fallen asleep. It is 3am after all, and your physiology has made an executive decision.
+
+You wake up to bright lights- the Duderstadt Center is now lively and back-to-business. People keep looking at you funny however, as if the Spartans from last night have written something on your forehead. You're too afraid to ask or even check for yourself. What's worse, you notice the autograder is no longer in your possession.
+
+Upon arriving home, you find an email from the Professor sitting ominously in your inbox.
+
+"Hi Class,
+
+I want to apologize- I messed up and left my only raspberry pi in the VisStudio last night. You know- the one with the autograder on it. Unfortunately, I made an even greater error in forgetting to use proper version control, so I'm afraid the autograder software is toast. I know this is all devastating to you, but I'll have to give extensions to everyone, and make the homework much easier."
+
+What a bitter-sweet win for the spartans. While you end up enjoying your extension, you aren't able to learn as much given the tight class schedule and cut course content. You feel a bit cheated, and live in the most mild state of terror, contemplating how the spartans could disrupt your other courses, EECS 494, EECS 440, and EECS 298.
+
+Y O U L O S E
+G A M E O V E R
