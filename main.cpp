@@ -1,7 +1,7 @@
 #include "game_engine.cpp"
 #include "MapHelper.h"
 
-int main(int argc, char** argv) {
+int main() {
     GameEngine game;
     game.gameLoop();
     std::cout<<"\n";

@@ -172,7 +172,6 @@ public:
 
     void updateGameIncidents(std::vector<GameIncident>& incidents) {
         bool hasScoreUp = false;
-        GameIncident result = GameIncident::None;
         for (GameIncident& incident : incidents){
             switch (incident){
                 case GameIncident::HealthDown:
