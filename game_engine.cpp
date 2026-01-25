@@ -54,7 +54,7 @@ public:
 
     void initializeGame() {
         // Initialize game state, load map, actors, etc.
-        std::cout<<game_start_message;
+        std::cout<<game_start_message<<"\n";
         renderFrame(true);
     }
 
@@ -228,7 +228,12 @@ public:
         }
         renderDialogue();
         generalRender();
-        std::cout<<render_ss.str();
+        //std::cout<<render_ss.str();
+        std::string output = render_ss.str();
+        if (!output.empty() && output.back() == '\n') {
+            output.pop_back();  
+        }
+        std::cout<<output;
         render_ss.str(std::string());   
         render_ss.clear();
     }
