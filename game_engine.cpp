@@ -223,8 +223,6 @@ public:
 
     void generalRender(){
         render_ss<<"health : "<<health<<", score : "<<score<<"\n";
-        render_ss<<"Please make a decision...\n";
-        render_ss<<input_query_message;
     }
 
     void inquiryRender(){        
