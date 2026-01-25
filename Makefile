@@ -1,5 +1,5 @@
 CXX = clang++
-CXXFLAGS = -O2 -std=c++17 -Wall -Wextra
+CXXFLAGS = -O3 -std=c++17 -Wall -Wextra
 
 INCLUDES = -I./glm
 
