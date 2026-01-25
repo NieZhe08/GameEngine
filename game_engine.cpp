@@ -5,6 +5,7 @@
 #include <sstream>
 #include <string.h>
 #include <vector>
+#include <algorithm>
 
 enum class PlayerAction {
     MoveUp,
@@ -43,6 +44,7 @@ public:
     std::stringstream render_ss;
     std::stringstream dialogue_ss;
     GameState states;
+    std::vector<std::string> scored_actors;
 
     GameEngine() {
         mapSize = glm::ivec2(HARDCODED_MAP_WIDTH, HARDCODED_MAP_HEIGHT);
@@ -50,6 +52,7 @@ public:
         health = 3;
         score = 0;
         states = GameState::Ongoing;
+        scored_actors = std::vector<std::string>();
     }
 
     void initializeGame() {
@@ -159,11 +162,11 @@ public:
             if (actor.position.x == mainActor.position.x && actor.position.y == mainActor.position.y){
                 if (actor.actor_name == "player") continue;
                 if (actor.contact_dialogue.empty()) continue;
-                checkGameIncidents(actor.contact_dialogue, allIncidents);
+                checkGameIncidents(actor.contact_dialogue, allIncidents, actor.actor_name);
                 dialogue_ss<<actor.contact_dialogue<<"\n";
             } else if (abs(actor.position.x - mainActor.position.x) <=1 && abs(actor.position.y - mainActor.position.y) <=1){
                 if (actor.nearby_dialogue.empty()) continue;
-                checkGameIncidents(actor.nearby_dialogue, allIncidents);
+                checkGameIncidents(actor.nearby_dialogue, allIncidents, actor.actor_name);
                 dialogue_ss<<actor.nearby_dialogue<<"\n";
             }
         }
@@ -195,11 +198,15 @@ public:
         }
     }
 
-    void checkGameIncidents(std::string dialogue, std::vector<GameIncident>& allIncidents){
+    void checkGameIncidents(std::string dialogue, std::vector<GameIncident>& allIncidents,
+                           std::string actor_name){
         if (dialogue.find("[health down]") != std::string::npos){
             allIncidents.push_back(GameIncident::HealthDown);
         } else if (dialogue.find("[score up]") != std::string::npos){
-            allIncidents.push_back(GameIncident::ScoreUp);
+            if (std::find(scored_actors.begin(), scored_actors.end(), actor_name) == scored_actors.end()){
+                scored_actors.push_back(actor_name);
+                allIncidents.push_back(GameIncident::ScoreUp);
+            } 
         } else if (dialogue.find("[you win]") != std::string::npos){
             allIncidents.push_back(GameIncident::YouWin);
         } else if (dialogue.find("[game over]") != std::string::npos){

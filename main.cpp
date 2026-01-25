@@ -5,9 +5,7 @@ int main() {
     GameEngine game;
     game.gameLoop();
     return 0;
-    
 }
-
 
 /*
 for (int i=0; i<9; i++){
