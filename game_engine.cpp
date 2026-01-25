@@ -222,18 +222,13 @@ public:
 
     void renderFrame(bool isInitialRender = false) {// render main
         if (isInitialRender){
-            std::cout<<initial_render<<"\n";
+            std::cout<<initial_render;
         } else {
             mapRender();
         }
         renderDialogue();
         generalRender();
-        //std::cout<<render_ss.str();
-        std::string output = render_ss.str();
-        if (!output.empty() && output.back() == '\n') {
-            output.pop_back();  
-        }
-        std::cout<<output;
+        std::cout<<render_ss.str();
         render_ss.str(std::string());   
         render_ss.clear();
     }
