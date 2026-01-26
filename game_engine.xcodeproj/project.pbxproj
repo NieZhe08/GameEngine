@@ -7,26 +7,14 @@
 	objects = {
 
 /* Begin PBXAggregateTarget section */
-		04B9FF1796BC1E6AE832A322 /* ZERO_CHECK */ = {
-			isa = PBXAggregateTarget;
-			buildConfigurationList = 65600F54DB784E6B806893CD /* Build configuration list for PBXAggregateTarget "ZERO_CHECK" */;
-			buildPhases = (
-				C2171C02FA7DA3CCE21E7AC9 /* Generate CMakeFiles/ZERO_CHECK */,
-			);
-			dependencies = (
-			);
-			name = ZERO_CHECK;
-			productName = ZERO_CHECK;
-		};
 		24DE67C669D06314908FD264 /* ALL_BUILD */ = {
 			isa = PBXAggregateTarget;
-			buildConfigurationList = 295CB773BDD747EF9DC56814 /* Build configuration list for PBXAggregateTarget "ALL_BUILD" */;
+			buildConfigurationList = 6E70BD9B544B4315B4608C0A /* Build configuration list for PBXAggregateTarget "ALL_BUILD" */;
 			buildPhases = (
 				D79140951FB0AD79D551CA4D /* Generate CMakeFiles/ALL_BUILD */,
 			);
 			dependencies = (
-				30EFD0E940B5450993D1ED2E /* PBXTargetDependency */,
-				C7734729AE774A9FA0E93562 /* PBXTargetDependency */,
+				C3388687468146BF9F662120 /* PBXTargetDependency */,
 			);
 			name = ALL_BUILD;
 			productName = ALL_BUILD;
@@ -34,44 +22,30 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
-		6DB5B555D748421898C7FFE0 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9AA292EE69724C2698F90B22 /* main.cpp */; };
-		805C1C8576154F818F94C04B /* game_engine.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 846E1F66CD9741A4B4DE6726 /* game_engine.cpp */; };
+		585B077684494BD293FE1A00 /* game_engine.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A8CFAB4791664EBEA193D637 /* game_engine.cpp */; };
+		D95AFD2200F54B97B9B76E85 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3EFF04267E744BDBA4E8BEA8 /* main.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		4AF42E6FDEDF4120846AA4C9 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = F03D6AECF0A54176BE4161D9 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 04B9FF1796BC1E6AE832A322;
-			remoteInfo = ZERO_CHECK;
-		};
-		534541E4B7124ABCA42CB9E5 /* PBXContainerItemProxy */ = {
+		CB08894E6FD3441F840A1D7F /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = F03D6AECF0A54176BE4161D9 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = ADF71AE3DE1EE1D0DD8F571F;
 			remoteInfo = game_engine_osx;
 		};
-		D474CE051EE64CE7AE67EC81 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = F03D6AECF0A54176BE4161D9 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 04B9FF1796BC1E6AE832A322;
-			remoteInfo = ZERO_CHECK;
-		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		6585902F43414F33B3D6E776 /* game_engine_osx */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; path = game_engine_osx; sourceTree = BUILT_PRODUCTS_DIR; };
-		846E1F66CD9741A4B4DE6726 /* game_engine.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; path = game_engine.cpp; sourceTree = SOURCE_ROOT; };
-		97D22128FE3D42F58009D906 /* CMakeLists.txt */ = {isa = PBXFileReference; explicitFileType = sourcecode.text; fileEncoding = 4; lastKnownFileType = text; path = CMakeLists.txt; sourceTree = SOURCE_ROOT; };
-		9AA292EE69724C2698F90B22 /* main.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; path = main.cpp; sourceTree = SOURCE_ROOT; };
-		DBBC24760D7A4AA9B38FE8C6 /* CMakeLists.txt */ = {isa = PBXFileReference; explicitFileType = sourcecode.text; fileEncoding = 4; lastKnownFileType = text; path = CMakeLists.txt; sourceTree = SOURCE_ROOT; };
+		0CB486973116484C97806B72 /* CMakeLists.txt */ = {isa = PBXFileReference; explicitFileType = sourcecode.text; fileEncoding = 4; lastKnownFileType = text; path = CMakeLists.txt; sourceTree = SOURCE_ROOT; };
+		3EFF04267E744BDBA4E8BEA8 /* main.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; path = main.cpp; sourceTree = SOURCE_ROOT; };
+		527821C85B284E2A9A32794E /* game_engine_osx */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; path = game_engine_osx; sourceTree = BUILT_PRODUCTS_DIR; };
+		A8CFAB4791664EBEA193D637 /* game_engine.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; path = game_engine.cpp; sourceTree = SOURCE_ROOT; };
+		C4BA8BC926CA41DF929E7B4F /* CMakeLists.txt */ = {isa = PBXFileReference; explicitFileType = sourcecode.text; fileEncoding = 4; lastKnownFileType = text; path = CMakeLists.txt; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		FE6C7A370D2042E4B800C288 /* Frameworks */ = {
+		7281D8545C8E4F778A29B11E /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -81,67 +55,67 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		289FAEE15A344D9CAC0CA63B /* ALL_BUILD */ = {
+		0D46DFA04DC64DE8B8106B06 = {
 			isa = PBXGroup;
 			children = (
-				EF3A75AB90E348319E8CAD65 /* CMake Rules */,
-				97D22128FE3D42F58009D906 /* CMakeLists.txt */,
-			);
-			name = ALL_BUILD;
-			sourceTree = "<group>";
-		};
-		586C79E1554D466CBE8C77D3 = {
-			isa = PBXGroup;
-			children = (
-				289FAEE15A344D9CAC0CA63B /* ALL_BUILD */,
-				F909E4876A5C42C99358319A /* game_engine_osx */,
-				8ECD1562843D4BE2871A9FE1 /* Products */,
-				FA113DC0A17E4AFBB2303E8E /* Frameworks */,
-				F5DF481B2BDA465EA321500F /* Resources */,
+				61B097610E824325B9D8ED45 /* ALL_BUILD */,
+				ABB0F6B0A49745AAA24C3BA2 /* game_engine_osx */,
+				4836D236D0114096953B8357 /* Products */,
+				D9E3C5AB707C46A8AA930871 /* Frameworks */,
+				7C3F44F3A61D4C4CAD72ECCA /* Resources */,
 			);
 			sourceTree = "<group>";
 		};
-		8ECD1562843D4BE2871A9FE1 /* Products */ = {
+		1AA195DB5EFB479A8D2ECB7C /* Source Files */ = {
 			isa = PBXGroup;
 			children = (
-				6585902F43414F33B3D6E776 /* game_engine_osx */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
-		D9EBDE66253845C18EF7E9E8 /* Source Files */ = {
-			isa = PBXGroup;
-			children = (
-				846E1F66CD9741A4B4DE6726 /* game_engine.cpp */,
-				9AA292EE69724C2698F90B22 /* main.cpp */,
+				A8CFAB4791664EBEA193D637 /* game_engine.cpp */,
+				3EFF04267E744BDBA4E8BEA8 /* main.cpp */,
 			);
 			name = "Source Files";
 			sourceTree = "<group>";
 		};
-		EF3A75AB90E348319E8CAD65 /* CMake Rules */ = {
+		4836D236D0114096953B8357 /* Products */ = {
 			isa = PBXGroup;
 			children = (
+				527821C85B284E2A9A32794E /* game_engine_osx */,
 			);
-			name = "CMake Rules";
+			name = Products;
 			sourceTree = "<group>";
 		};
-		F5DF481B2BDA465EA321500F /* Resources */ = {
+		61B097610E824325B9D8ED45 /* ALL_BUILD */ = {
+			isa = PBXGroup;
+			children = (
+				C0E49CC699BE4A1CA5731756 /* CMake Rules */,
+				C4BA8BC926CA41DF929E7B4F /* CMakeLists.txt */,
+			);
+			name = ALL_BUILD;
+			sourceTree = "<group>";
+		};
+		7C3F44F3A61D4C4CAD72ECCA /* Resources */ = {
 			isa = PBXGroup;
 			children = (
 			);
 			name = Resources;
 			sourceTree = "<group>";
 		};
-		F909E4876A5C42C99358319A /* game_engine_osx */ = {
+		ABB0F6B0A49745AAA24C3BA2 /* game_engine_osx */ = {
 			isa = PBXGroup;
 			children = (
-				D9EBDE66253845C18EF7E9E8 /* Source Files */,
-				DBBC24760D7A4AA9B38FE8C6 /* CMakeLists.txt */,
+				1AA195DB5EFB479A8D2ECB7C /* Source Files */,
+				0CB486973116484C97806B72 /* CMakeLists.txt */,
 			);
 			name = game_engine_osx;
 			sourceTree = "<group>";
 		};
-		FA113DC0A17E4AFBB2303E8E /* Frameworks */ = {
+		C0E49CC699BE4A1CA5731756 /* CMake Rules */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = "CMake Rules";
+			sourceTree = "<group>";
+		};
+		D9E3C5AB707C46A8AA930871 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
 			);
@@ -153,19 +127,18 @@
 /* Begin PBXNativeTarget section */
 		ADF71AE3DE1EE1D0DD8F571F /* game_engine_osx */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 5DD478BC07A949F5ACCBE66C /* Build configuration list for PBXNativeTarget "game_engine_osx" */;
+			buildConfigurationList = 779DEB513C144385996D0172 /* Build configuration list for PBXNativeTarget "game_engine_osx" */;
 			buildPhases = (
-				DDCDAF7BBD6F47F586FFFB55 /* Sources */,
-				FE6C7A370D2042E4B800C288 /* Frameworks */,
+				1E7AA5EEF3A445089CC3C777 /* Sources */,
+				7281D8545C8E4F778A29B11E /* Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				3804E84C1067409793D90123 /* PBXTargetDependency */,
 			);
 			name = game_engine_osx;
 			productName = game_engine_osx;
-			productReference = 6585902F43414F33B3D6E776 /* game_engine_osx */;
+			productReference = 527821C85B284E2A9A32794E /* game_engine_osx */;
 			productType = "com.apple.product-type.tool";
 		};
 /* End PBXNativeTarget section */
@@ -177,7 +150,7 @@
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 2620;
 			};
-			buildConfigurationList = F9C71667EA204513B1198709 /* Build configuration list for PBXProject "GameEngine" */;
+			buildConfigurationList = 410BB95702B04F0B952960BD /* Build configuration list for PBXProject "GameEngine" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -185,35 +158,17 @@
 				en,
 				Base,
 			);
-			mainGroup = 586C79E1554D466CBE8C77D3;
+			mainGroup = 0D46DFA04DC64DE8B8106B06;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
 				24DE67C669D06314908FD264 /* ALL_BUILD */,
 				ADF71AE3DE1EE1D0DD8F571F /* game_engine_osx */,
-				04B9FF1796BC1E6AE832A322 /* ZERO_CHECK */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		C2171C02FA7DA3CCE21E7AC9 /* Generate CMakeFiles/ZERO_CHECK */ = {
-			isa = PBXShellScriptBuildPhase;
-			alwaysOutOfDate = 1;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "Generate CMakeFiles/ZERO_CHECK";
-			outputPaths = (
-				/Users/tuntun/Desktop/game_engine/game_engine_niezhe/CMakeFiles/ZERO_CHECK,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "set -e\nif test \"$CONFIGURATION\" = \"Release\"; then :\n  cd /Users/tuntun/Desktop/game_engine/game_engine_niezhe\n  make -f /Users/tuntun/Desktop/game_engine/game_engine_niezhe/CMakeScripts/ReRunCMake.make\nfi\nif test \"$CONFIGURATION\" = \"Debug\"; then :\n  cd /Users/tuntun/Desktop/game_engine/game_engine_niezhe\n  make -f /Users/tuntun/Desktop/game_engine/game_engine_niezhe/CMakeScripts/ReRunCMake.make\nfi\n";
-			showEnvVarsInLog = 0;
-		};
 		D79140951FB0AD79D551CA4D /* Generate CMakeFiles/ALL_BUILD */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
@@ -234,37 +189,39 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		DDCDAF7BBD6F47F586FFFB55 /* Sources */ = {
+		1E7AA5EEF3A445089CC3C777 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				805C1C8576154F818F94C04B /* game_engine.cpp in Sources */,
-				6DB5B555D748421898C7FFE0 /* main.cpp in Sources */,
+				585B077684494BD293FE1A00 /* game_engine.cpp in Sources */,
+				D95AFD2200F54B97B9B76E85 /* main.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		30EFD0E940B5450993D1ED2E /* PBXTargetDependency */ = {
+		C3388687468146BF9F662120 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = ADF71AE3DE1EE1D0DD8F571F /* game_engine_osx */;
-			targetProxy = 534541E4B7124ABCA42CB9E5 /* PBXContainerItemProxy */;
-		};
-		3804E84C1067409793D90123 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 04B9FF1796BC1E6AE832A322 /* ZERO_CHECK */;
-			targetProxy = 4AF42E6FDEDF4120846AA4C9 /* PBXContainerItemProxy */;
-		};
-		C7734729AE774A9FA0E93562 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 04B9FF1796BC1E6AE832A322 /* ZERO_CHECK */;
-			targetProxy = D474CE051EE64CE7AE67EC81 /* PBXContainerItemProxy */;
+			targetProxy = CB08894E6FD3441F840A1D7F /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
-		0094943721CB4326BE232D2B /* Release */ = {
+		3057FF3BA91740E582AB1DE9 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = arm64;
+				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGN_IDENTITY = "";
+				MACOSX_DEPLOYMENT_TARGET = 15.7;
+				SDKROOT = "";
+				SYMROOT = "$(PROJECT_DIR)/build";
+			};
+			name = Debug;
+		};
+		5E4AD7E04050488E9166CEBB /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -307,7 +264,7 @@
 			};
 			name = Release;
 		};
-		3FD11485750B4A1496DFF7B0 /* Release */ = {
+		812E3AB12A5540A3947DE4B9 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -325,14 +282,14 @@
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = " $(inherited)";
 				OTHER_REZFLAGS = "";
-				PRODUCT_NAME = ZERO_CHECK;
+				PRODUCT_NAME = ALL_BUILD;
 				SECTORDER_FLAGS = "";
 				USE_HEADERMAP = NO;
 				WARNING_CFLAGS = "$(inherited)";
 			};
-			name = Release;
+			name = Debug;
 		};
-		5EC2E232D2F3453282788F69 /* Debug */ = {
+		A182DF9BAACA43CE93AD7C91 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -372,7 +329,7 @@
 			};
 			name = Debug;
 		};
-		98EA884CB3E641EF9A429766 /* Release */ = {
+		A4217002699240BD8D99F4ED /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -397,57 +354,7 @@
 			};
 			name = Release;
 		};
-		9C58E4FF6F064C2493D86576 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = arm64;
-				COMBINE_HIDPI_IMAGES = YES;
-				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
-				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'",
-					"$(inherited)",
-				);
-				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
-				INSTALL_PATH = "";
-				ONLY_ACTIVE_ARCH = NO;
-				OTHER_LDFLAGS = " $(inherited)";
-				OTHER_REZFLAGS = "";
-				PRODUCT_NAME = ZERO_CHECK;
-				SECTORDER_FLAGS = "";
-				USE_HEADERMAP = NO;
-				WARNING_CFLAGS = "$(inherited)";
-			};
-			name = Debug;
-		};
-		AC1B5E0151E44150ADD93BBF /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = arm64;
-				COMBINE_HIDPI_IMAGES = YES;
-				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
-				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'",
-					"$(inherited)",
-				);
-				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
-				INSTALL_PATH = "";
-				ONLY_ACTIVE_ARCH = NO;
-				OTHER_LDFLAGS = " $(inherited)";
-				OTHER_REZFLAGS = "";
-				PRODUCT_NAME = ALL_BUILD;
-				SECTORDER_FLAGS = "";
-				USE_HEADERMAP = NO;
-				WARNING_CFLAGS = "$(inherited)";
-			};
-			name = Debug;
-		};
-		AE9F77B68992445892EB734A /* Release */ = {
+		C4E6CD3EE01D4E3A91F50285 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ARCHS = arm64;
@@ -456,57 +363,36 @@
 				MACOSX_DEPLOYMENT_TARGET = 15.7;
 				SDKROOT = "";
 				SWIFT_COMPILATION_MODE = wholemodule;
-				SYMROOT = /Users/tuntun/Desktop/game_engine/game_engine_niezhe/build;
+				SYMROOT = "$(PROJECT_DIR)/build";
 			};
 			name = Release;
-		};
-		C6EE38A435E84F36B2BFDD62 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ARCHS = arm64;
-				CODE_SIGNING_ALLOWED = NO;
-				CODE_SIGN_IDENTITY = "";
-				MACOSX_DEPLOYMENT_TARGET = 15.7;
-				SDKROOT = "";
-				SYMROOT = /Users/tuntun/Desktop/game_engine/game_engine_niezhe/build;
-			};
-			name = Debug;
 		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		295CB773BDD747EF9DC56814 /* Build configuration list for PBXAggregateTarget "ALL_BUILD" */ = {
+		410BB95702B04F0B952960BD /* Build configuration list for PBXProject "GameEngine" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				98EA884CB3E641EF9A429766 /* Release */,
-				AC1B5E0151E44150ADD93BBF /* Debug */,
+				C4E6CD3EE01D4E3A91F50285 /* Release */,
+				3057FF3BA91740E582AB1DE9 /* Debug */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		5DD478BC07A949F5ACCBE66C /* Build configuration list for PBXNativeTarget "game_engine_osx" */ = {
+		6E70BD9B544B4315B4608C0A /* Build configuration list for PBXAggregateTarget "ALL_BUILD" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				0094943721CB4326BE232D2B /* Release */,
-				5EC2E232D2F3453282788F69 /* Debug */,
+				A4217002699240BD8D99F4ED /* Release */,
+				812E3AB12A5540A3947DE4B9 /* Debug */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		65600F54DB784E6B806893CD /* Build configuration list for PBXAggregateTarget "ZERO_CHECK" */ = {
+		779DEB513C144385996D0172 /* Build configuration list for PBXNativeTarget "game_engine_osx" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				3FD11485750B4A1496DFF7B0 /* Release */,
-				9C58E4FF6F064C2493D86576 /* Debug */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		F9C71667EA204513B1198709 /* Build configuration list for PBXProject "GameEngine" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				AE9F77B68992445892EB734A /* Release */,
-				C6EE38A435E84F36B2BFDD62 /* Debug */,
+				5E4AD7E04050488E9166CEBB /* Release */,
+				A182DF9BAACA43CE93AD7C91 /* Debug */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
