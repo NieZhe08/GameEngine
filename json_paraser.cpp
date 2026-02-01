@@ -30,10 +30,8 @@ public:
         // rendering.config may or may not exists
         if (!std::filesystem::exists("resources/rendering.config")){
             EngineUtils::ReadJsonFile("resources/rendering.config", rendering);
-            if (!rendering.IsObject()){
-                exit(0);
-            }
         }
+
     }
 
     std::string getGameStartMessage() {
