@@ -199,6 +199,29 @@ public:
     std::vector<GameIncident> updateDialogues(std::vector<GameIncident>& allIncidents) {
         // Update dialogues based on proximity to other actors
         if (!actorList || !mainActor) return allIncidents;
+        for (int i = -1; i<2; i++){
+            for (int j = -1; j<2; j++){
+                glm::ivec2 check_position = mainActor->position + glm::ivec2(i, j);
+                if (mapHash.find(hashPosition(check_position)) != mapHash.end() ||
+                    !mapHash[hashPosition(check_position)].empty())
+                {
+                    for (Actor* actor_ptr : mapHash[hashPosition(check_position)]){
+                        Actor& actor = *actor_ptr;
+                        if (actor.position.x == mainActor->position.x && actor.position.y == mainActor->position.y){
+                            if (&actor == mainActor) continue;
+                            if (actor.contact_dialogue.empty()) continue;
+                            checkGameIncidents(&actor, allIncidents, ContactType::Overlap);
+                            dialogue_ss<<actor.contact_dialogue<<"\n";
+                        } else {
+                            if (actor.nearby_dialogue.empty()) continue;
+                            checkGameIncidents(&actor, allIncidents, ContactType::Nearby);
+                            dialogue_ss<<actor.nearby_dialogue<<"\n";
+                        }
+                    }
+                }
+            }
+        }
+        /*
         for (Actor& actor : *actorList){
             if (actor.position.x == mainActor->position.x && actor.position.y == mainActor->position.y){
                 if (&actor == mainActor) continue;
@@ -211,6 +234,7 @@ public:
                 dialogue_ss<<actor.nearby_dialogue<<"\n";
             }
         }
+        */
         return allIncidents;
     }
 
@@ -315,28 +339,23 @@ public:
                 }
                 */
                 
-                // TODO print to string stream according to the priority of actors id
-                //render_ss<<"-";
-                /*
-                auto it = mapHash.find(hashPosition(glm::ivec2(col, row)));
-                if (it!=mapHash.end() && !it->second.empty()){
-                    auto minIdActor = *std::max_element(it->second.begin(), it->second.end(), ActorSmallerId());
-                    char view_char = minIdActor->view;
-                    // Safety check: never output null character or non-printable
-                    if (view_char == '\0') view_char = '?';
-                    render_ss<<view_char;
-                    continue;
-                } else {
-                    render_ss<<" ";
-                }
-                */
                char render_char = ' ';
-               for (auto i=0; i<actorList->size(); i++){
+               /*for (int i=static_cast<int>(actorList->size())-1; i>=0; i--){
                     Actor& actor = (*actorList)[i];
                     if (actor.position.x == col && actor.position.y == row){
                         render_char = actor.view;
-
+                        break;
                     }
+                }
+               */
+                auto it = mapHash.find(hashPosition(glm::ivec2(col, row)));
+                if (it!=mapHash.end() && !it->second.empty()){
+                    auto maxIdActor = *std::max_element(it->second.begin(), it->second.end(), ActorSmallerId());
+                    char render_char = maxIdActor->view;
+                    // Safety check: never output null character or non-printable
+                    if (render_char == '\0') render_char = '?';
+                    render_ss<<render_char;
+                    continue;
                 }
                 render_ss<<render_char;
                 /*
