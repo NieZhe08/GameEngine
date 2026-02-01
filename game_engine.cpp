@@ -199,6 +199,7 @@ public:
         for (Actor& actor : *actorList){
             if (actor.position.x == mainActor->position.x && actor.position.y == mainActor->position.y){
                 if (&actor == mainActor) continue;
+                if (actor.contact_dialogue.empty()) continue;
                 checkGameIncidents(&actor, allIncidents, ContactType::Overlap);
                 dialogue_ss<<actor.contact_dialogue<<"\n";
             } else if (abs(actor.position.x - mainActor->position.x) <=1 && abs(actor.position.y - mainActor->position.y) <=1){
@@ -211,17 +212,13 @@ public:
     }
 
     void updateGameIncidents(std::vector<GameIncident>& incidents) {
-        bool hasScoreUp = false;
         for (GameIncident& incident : incidents){
             switch (incident){
                 case GameIncident::HealthDown:
                     health -= 1;
                     break;
                 case GameIncident::ScoreUp:
-                    if (!hasScoreUp) {
-                        hasScoreUp = true;
                         score += 1;
-                    }
                     break;
                 case GameIncident::YouWin:
                     states = GameState::Won;
