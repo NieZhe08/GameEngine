@@ -1,5 +1,4 @@
 #include "game_engine.cpp"
-#include "MapHelper.h"
 
 int main() {
     GameEngine game;

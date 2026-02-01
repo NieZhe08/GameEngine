@@ -1,54 +1,52 @@
-#include "MapHelper.h"
+// #include "MapHelper.h"
 #include "glm/glm.hpp"
+#include "json_paraser.cpp"
 #include "string.h"
 #include <iostream>
 #include <sstream>
 #include <string.h>
 #include <vector>
 #include <algorithm>
-
-enum class PlayerAction {
-    MoveUp,
-    MoveDown,
-    MoveLeft,
-    MoveRight,
-    Quit,
-    Invalid
-};
-
-enum class GameIncident {
-    HealthDown,
-    ScoreUp,
-    YouWin,
-    GameOver,
-    None
-};
-
-enum class GameState {
-    Ongoing,
-    Won,
-    Lost
-};
+#include <unordered_map>
+#include "game_utils.h"
+#include "scene_db.cpp"
 
 class GameEngine {
 public:
-    Actor& mainActor = hardcoded_actors.back();
+    Actor* mainActor;
+    std::unique_ptr<std::vector<Actor>> actorList;
     //Point camera; // Camera following the main actor
-    glm::ivec2 mapSize;
+    glm::ivec2 mapSize; 
     glm::ivec2 viewSize;
     // VIEWSIZE: here viewsize refers to viewSize (row, col)
     //std::string _game_start_message;
     int health;
     int score;
-    std::string input_query_message = std::string("Your options are \"n\", \"e\", \"s\", \"w\", \"quit\"\n");
+    std::string input_query_message = std::string("Your options are \"n\", \"e\", \"s\", \"w\", \"quit\"\n");// TODO
+    
+    std::unordered_map<std::uint64_t, std::vector<Actor*>> mapHash;
     std::stringstream render_ss;
     std::stringstream dialogue_ss;
     GameState states;
-    std::vector<std::string> scored_actors;
+    std::vector<std::string> scored_actors; //TODO
+
+    std::string game_start_message;
+    std::string game_over_good_message;
+    std::string game_over_bad_message;
 
     GameEngine() {
-        mapSize = glm::ivec2(HARDCODED_MAP_WIDTH, HARDCODED_MAP_HEIGHT);
-        viewSize = glm::ivec2(13, 9); 
+        JsonParser parser;
+        game_start_message = parser.getGameStartMessage();
+        game_over_good_message = parser.getGameOverGoodMessage();
+        game_over_bad_message = parser.getGameOverBadMessage();
+        viewSize = parser.getResolution(); 
+
+        // load scene module
+        SceneDB sceneDB(parser.getInitialScene(), mapHash);
+        actorList = sceneDB.getSceneActors();
+        mainActor = sceneDB.getMainActor();
+        mapSize = sceneDB.getMapSize();
+
         health = 3;
         score = 0;
         states = GameState::Ongoing;
@@ -58,7 +56,7 @@ public:
     void initializeGame() {
         // Initialize game state, load map, actors, etc.
         std::cout<<game_start_message<<"\n";
-        renderFrame(true);
+        frameRender(true);
     }
 
     void gameLoop() {
@@ -70,7 +68,7 @@ public:
                 states = GameState::Lost;
                 break;
             }
-            renderFrame(false);
+            frameRender(false);
         };
         finalRender();
     }
@@ -86,12 +84,29 @@ public:
         else return PlayerAction::Invalid;
     }
 
-    void updateNPCPositions() {
+    void updateActorPositions(PlayerAction playerAction) {
         // Update NPC positions based on their velocities
-        for (Actor& actor : hardcoded_actors){
-            if (actor.actor_name == "player") continue;
-            glm::ivec2 nextPosition = actor.position + actor.velocity;
-            if (!collisionDetected(nextPosition, actor.actor_name)){
+        if (!actorList) return;
+        for (Actor& actor : *actorList){
+            glm::ivec2 nextPosition;
+            bool hasMoved = false;
+            if (&actor == mainActor) {
+                auto result = updatePlayerPosition(playerAction);
+                nextPosition = result.first;
+                hasMoved = result.second;
+            } else {
+                if (actor.velocity != glm::ivec2(0,0)){
+                    hasMoved = true;
+                }
+                nextPosition = actor.position + actor.velocity;
+            }
+            if (!hasMoved) continue; // skip the following steps if the actor has not moved
+            // collision detection only worry about whether collision happens between actor itself and others
+            if (!collisionDetected(nextPosition, & actor)){// need to update mapHash
+                auto vectorIt = mapHash.find(hashPosition(actor.position));
+                auto removeIt = std::remove(vectorIt->second.begin(), vectorIt->second.end(), &actor);
+                vectorIt->second.erase(removeIt, vectorIt->second.end());
+                mapHash[hashPosition(nextPosition)].push_back(&actor);
                 actor.position = nextPosition;
             } else {
                 actor.velocity = -actor.velocity; // Reverse direction on collision
@@ -99,20 +114,14 @@ public:
         }
     }
 
+
     void updateGameState(PlayerAction action) { // update main
         // Update game state based on player action
-        updateNPCPositions();
+        updateActorPositions(action);
         if (action == PlayerAction::Quit){
             health = 0; // End game
-        } else if (action == PlayerAction::Invalid){
-            std::vector<GameIncident> incidents;
-            updateDialogues(incidents);
-            updateGameIncidents(incidents);
-            if (health <= 0){
-                states = GameState::Lost;
-            }
         } else {
-            updatePlayerPosition(action);
+            //updatePlayerPosition(action);
             std::vector<GameIncident> incidents;
             updateDialogues(incidents);
             updateGameIncidents(incidents);
@@ -122,23 +131,26 @@ public:
         }
     }
 
-    bool collisionDetected(glm::ivec2 position, std::string actor_name) {
+    // TO DO
+    bool collisionDetected(glm::ivec2 position, Actor* actor_ptr) {
         //assert (true);// do check of index
-        if (hardcoded_map[position.y][position.x]=='b'){
+        if (position.x<0 || position.x>=mapSize.x || position.y<0 || position.y>=mapSize.y){
             return true;
         }
-        for (const Actor& actor : hardcoded_actors){
-            if (actor.actor_name == actor_name) continue;
-            if (actor.blocking && actor.position == position){
-                return true;
+        if (mapHash.find(hashPosition(position))!=mapHash.end()){
+            for (const Actor* actor : mapHash[hashPosition(position)]){
+                if (actor->blocking && actor != actor_ptr){
+                    return true;
+                }
             }
         }
         return false;
     }
 
-    void updatePlayerPosition(PlayerAction action) {
+    std::pair<glm::ivec2, bool> updatePlayerPosition(PlayerAction action) {
         // Update player position based on action
-        glm::ivec2 nextPosition = mainActor.position;
+        glm::ivec2 nextPosition = mainActor->position;
+        bool hasMoved = true;
         switch (action) {
             case PlayerAction::MoveUp:
                 nextPosition.y -= 1;
@@ -153,25 +165,31 @@ public:
                 nextPosition.x += 1;
                 break;
             default:
+                hasMoved = false;
                 break;
         }
+        return std::make_pair(nextPosition, hasMoved);
+        /*
         //std::cout<<"collision"<<(collisionDetected(nextPosition) ? " detected\n" : " not detected\n");
-        if (!collisionDetected(nextPosition, mainActor.actor_name)){
-            mainActor.position = nextPosition;
+        if (!collisionDetected(nextPosition, mainActor->actor_name)){
+            mainActor->position = nextPosition;
+            return nextPosition;
         }
+        return mainActor->position;
+        */
+        
     }
 
     std::vector<GameIncident> updateDialogues(std::vector<GameIncident>& allIncidents) {
         // Update dialogues based on proximity to other actors
-        for (Actor& actor : hardcoded_actors){
-            if (actor.position.x == mainActor.position.x && actor.position.y == mainActor.position.y){
-                if (actor.actor_name == "player") continue;
-                if (actor.contact_dialogue.empty()) continue;
-                checkGameIncidents(actor.contact_dialogue, allIncidents, actor.actor_name);
+        for (Actor& actor : *actorList){
+            if (actor.position.x == mainActor->position.x && actor.position.y == mainActor->position.y){
+                if (&actor == mainActor) continue;
+                checkGameIncidents(actor, allIncidents, ContactType::Overlap);
                 dialogue_ss<<actor.contact_dialogue<<"\n";
-            } else if (abs(actor.position.x - mainActor.position.x) <=1 && abs(actor.position.y - mainActor.position.y) <=1){
+            } else if (abs(actor.position.x - mainActor->position.x) <=1 && abs(actor.position.y - mainActor->position.y) <=1){
                 if (actor.nearby_dialogue.empty()) continue;
-                checkGameIncidents(actor.nearby_dialogue, allIncidents, actor.actor_name);
+                checkGameIncidents(actor, allIncidents, ContactType::Nearby);
                 dialogue_ss<<actor.nearby_dialogue<<"\n";
             }
         }
@@ -203,30 +221,29 @@ public:
         }
     }
 
-    void checkGameIncidents(std::string dialogue, std::vector<GameIncident>& allIncidents,
-                           std::string actor_name){
-        if (dialogue.find("[health down]") != std::string::npos){
-            allIncidents.push_back(GameIncident::HealthDown);
-        } else if (dialogue.find("[score up]") != std::string::npos){
-            if (std::find(scored_actors.begin(), scored_actors.end(), actor_name) == scored_actors.end()){
-                scored_actors.push_back(actor_name);
-                allIncidents.push_back(GameIncident::ScoreUp);
-            } 
-        } else if (dialogue.find("[you win]") != std::string::npos){
-            allIncidents.push_back(GameIncident::YouWin);
-        } else if (dialogue.find("[game over]") != std::string::npos){
-            allIncidents.push_back(GameIncident::GameOver);
-        } 
+    //TO DO check when read in
+    void checkGameIncidents(Actor& actor, std::vector<GameIncident>& allIncidents, ContactType contactType) {
+        switch (contactType){
+            case ContactType::Nearby:
+                if (actor.nearby_incident != GameIncident::None
+                && (actor.nearby_incident != GameIncident::ScoreUp || !actor.triggered_scoreUp)){
+                    allIncidents.push_back(actor.nearby_incident);
+                }
+            case ContactType::Overlap:
+                if (actor.contact_incident != GameIncident::None
+                && (actor.nearby_incident != GameIncident::ScoreUp || !actor.triggered_scoreUp)){
+                    allIncidents.push_back(actor.contact_incident); 
+                }
+        }
         return;
     }
 
-    void renderDialogue(){
+    void generalRender(){
+        // Render Dialogue
         render_ss<<dialogue_ss.str();
         dialogue_ss.str(std::string());
         dialogue_ss.clear();
-    }
-
-    void generalRender(){
+        // Render General Printing Messages
         render_ss<<"health : "<<health<<", score : "<<score<<"\n";
     }
 
@@ -235,13 +252,14 @@ public:
         render_ss<<input_query_message;
     }
 
-    void renderFrame(bool isInitialRender = false) {// render main
+    void frameRender(bool isInitialRender = false) {// render main
         if (isInitialRender){
-            std::cout<<initial_render<<"\n";
+            //TODO 
+            //std::cout<<initial_render<<"\n";
         } else {
             mapRender();
         }
-        renderDialogue();
+        //renderDialogue();
         generalRender();
         if (states == GameState::Ongoing){
             inquiryRender();
@@ -254,13 +272,21 @@ public:
     void mapRender(){
         assert(true);// do check of index
         for (int i=0; i<viewSize.y; i++){
-            int row = mainActor.position.y - viewSize.y/2 + i;
+            int row = mainActor->position.y - viewSize.y/2 + i;
             for (int j=0; j<viewSize.x; j++){
-                int col = mainActor.position.x - viewSize.x/2 + j;
-                if (row<0 || row>=mapSize.y || col<0 || col>=mapSize.x){
+                int col = mainActor->position.x - viewSize.x/2 + j;
+                if (row<0 || row>=mapSize.y || col<0 || col>=mapSize.x){ 
                     render_ss<<" "; // out of bounds
                     continue;
                 }
+                // TODO print to string stream according to the priority of actors id
+                auto it = mapHash.find(hashPosition(glm::ivec2(col, row)));
+                if (it!=mapHash.end() && !it->second.empty()){
+                    auto minIdActor = *std::min_element(it->second.begin(), it->second.end(), ActorSmallerId());
+                    render_ss<<minIdActor->view;
+                    continue;
+                }
+                /*
                 bool has_actor = false;
                 char actorView = ' ';
                 if (hardcoded_map[row][col]==' '){
@@ -276,6 +302,8 @@ public:
                 } else if (!has_actor){
                     render_ss<<hardcoded_map[row][col];
                 }
+                */ // TODO 
+                
             }
             render_ss<<"\n";
         }
