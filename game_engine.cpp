@@ -144,9 +144,11 @@ public:
     // TO DO
     bool collisionDetected(glm::ivec2 position, Actor* actor_ptr) {
         //assert (true);// do check of index
+        /*
         if (position.x<0 || position.x>=mapSize.x || position.y<0 || position.y>=mapSize.y){
             return true;
         }
+        */
         if (mapHash.find(hashPosition(position))!=mapHash.end()){
             for (const Actor* actor : mapHash[hashPosition(position)]){
                 if (actor->blocking && actor != actor_ptr){
