@@ -287,13 +287,12 @@ public:
 
     void frameRender(bool isInitialRender = false) {// render main
         mapRender();
+        dialogueRender();
+        generalRender();
         //renderDialogue();
         if (states == GameState::NextScene){
             initializeGame(); // re-initialize game with next scene
-            return;
         }
-        dialogueRender();
-        generalRender();
         if (states == GameState::Ongoing){
             inquiryRender();
         }
