@@ -23,9 +23,11 @@ public:
             exit(0);
         }
         EngineUtils::ReadJsonFile("resources/game.config", game);
+        /*
         if (!game.IsObject()){
            exit(0);
         }
+        */
 
         // rendering.config may or may not exists
         if (std::filesystem::exists("resources/rendering.config")){

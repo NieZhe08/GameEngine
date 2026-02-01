@@ -21,9 +21,12 @@ public:
             exit(0);
         }
         EngineUtils::ReadJsonFile("resources/scenes/" + sceneName + ".scene", scenes);
+        /*
         if (!scenes.IsObject()){
             exit(0);
         }
+        */
+        
         mainActor = nullptr;
         sceneActors = std::make_unique<std::vector<Actor>>();
         processSceneActors(mapHash);
