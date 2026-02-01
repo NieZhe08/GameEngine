@@ -288,7 +288,10 @@ public:
                 auto it = mapHash.find(hashPosition(glm::ivec2(col, row)));
                 if (it!=mapHash.end() && !it->second.empty()){
                     auto minIdActor = *std::min_element(it->second.begin(), it->second.end(), ActorSmallerId());
-                    render_ss<<minIdActor->view;
+                    char view_char = minIdActor->view;
+                    // Safety check: never output null character
+                    if (view_char == '\0') view_char = '?';
+                    render_ss<<view_char;
                     continue;
                 } else {
                     render_ss<<" ";
