@@ -286,7 +286,7 @@ public:
                     render_ss<<minIdActor->view;
                     continue;
                 } else {
-                    render_ss<<' ';
+                    render_ss<<" ";
                 }
                 /*
                 bool has_actor = false;
