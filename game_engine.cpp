@@ -281,11 +281,11 @@ public:
             for (int j=0; j<viewSize.x; j++){
                 int col = mainActor->position.x - viewSize.x/2 + j;
                 if (row<0 || row>=mapSize.y || col<0 || col>=mapSize.x){ 
-                    render_ss<<" "; // out of bounds
+                    render_ss<<"-"; // out of bounds
                     continue;
                 }
                 // TODO print to string stream according to the priority of actors id
-                render_ss<<" ";
+                render_ss<<"-";
                 /*
                 auto it = mapHash.find(hashPosition(glm::ivec2(col, row)));
                 if (it!=mapHash.end() && !it->second.empty()){
