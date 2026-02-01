@@ -289,8 +289,8 @@ public:
                 if (it!=mapHash.end() && !it->second.empty()){
                     auto minIdActor = *std::min_element(it->second.begin(), it->second.end(), ActorSmallerId());
                     char view_char = minIdActor->view;
-                    // Safety check: never output null character
-                    if (view_char == '\0') view_char = '?';
+                    // Safety check: never output null character or non-printable
+                    if (view_char < 32 || view_char > 126) view_char = '?';
                     render_ss<<view_char;
                     continue;
                 } else {
