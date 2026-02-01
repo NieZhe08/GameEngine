@@ -16,8 +16,8 @@ public:
     glm::ivec2 mapSize;
     int mainActorIndex;
 
-        SceneDB (std::string sceneName, 
-            std::unordered_map<std::uint64_t, std::vector<Actor*>>& mapHash) : sceneName(sceneName) {
+            SceneDB (std::string sceneName, 
+                std::unordered_map<std::uint64_t, std::vector<int>>& mapHash) : sceneName(sceneName) {
         if (!std::filesystem::exists("resources/scenes/" + sceneName + ".scene")){
             std::cout<<"error: scene "<<sceneName<<" is missing";
             exit(0);
@@ -35,12 +35,14 @@ public:
         processSceneActors(mapHash);
     }
 
-    void processSceneActors(std::unordered_map<std::uint64_t, std::vector<Actor*>>& mapHash) {
+    void processSceneActors(std::unordered_map<std::uint64_t, std::vector<int>>& mapHash) {
         sceneActors->clear();
         int max_x = 0; int max_y = 0;
         int id_counter = 0;
         if (scenes.HasMember("actors") && scenes["actors"].IsArray()){
             const rapidjson::Value& actors = scenes["actors"];
+            // Reserve capacity to avoid reallocation while taking pointers to elements.
+            sceneActors->reserve(actors.Size());
             for (rapidjson::SizeType i = 0; i < actors.Size(); i++){
                 const rapidjson::Value& actor = actors[i];
                 // default values
@@ -97,11 +99,13 @@ public:
                 sceneActors->emplace_back(actor_name, id_counter++, view, glm::ivec2(x,y), glm::ivec2(vel_x, vel_y),
                  blocking, nearby_dialogue, contact_dialogue);
 
-                mapHash[hashPosition(glm::ivec2(x,y))].push_back(&sceneActors->back());
+                // store the index of the just-emplaced actor into mapHash
+                int actor_index = static_cast<int>(sceneActors->size()) - 1;
+                mapHash[hashPosition(glm::ivec2(x,y))].push_back(actor_index);
 
                 if (actor_name == "player"){
                     mainActor = &sceneActors->back(); 
-                    mainActorIndex = static_cast<int>(sceneActors->size()) - 1;
+                    mainActorIndex = actor_index;
                 }
             }
         }

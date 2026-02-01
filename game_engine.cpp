@@ -23,7 +23,7 @@ public:
     int score;
     std::string input_query_message = std::string("Your options are \"n\", \"e\", \"s\", \"w\", \"quit\"\n");// TODO
     
-    std::unordered_map<std::uint64_t, std::vector<Actor*>> mapHash;
+    std::unordered_map<std::uint64_t, std::vector<int>> mapHash;
     std::stringstream render_ss;
     std::stringstream dialogue_ss;
     GameState states;
@@ -114,12 +114,16 @@ public:
             if (!hasMoved) continue; // skip the following steps if the actor has not moved
             // collision detection only worry about whether collision happens between actor itself and others
             if (!collisionDetected(nextPosition, & actor)){// need to update mapHash
+                // remove the actor's index from its old cell
                 auto vectorIt = mapHash.find(hashPosition(actor.position));
                 if (vectorIt != mapHash.end()) {
-                    auto removeIt = std::remove(vectorIt->second.begin(), vectorIt->second.end(), &actor);
+                    int idx = static_cast<int>(&actor - &(*actorList)[0]);
+                    auto removeIt = std::remove(vectorIt->second.begin(), vectorIt->second.end(), idx);
                     vectorIt->second.erase(removeIt, vectorIt->second.end());
                 }
-                mapHash[hashPosition(nextPosition)].push_back(&actor);
+                // push actor index into new cell
+                int new_idx = static_cast<int>(&actor - &(*actorList)[0]);
+                mapHash[hashPosition(nextPosition)].push_back(new_idx);
                 actor.position = nextPosition;
             } else {
                 actor.velocity = -actor.velocity; // Reverse direction on collision
@@ -153,7 +157,8 @@ public:
         }
         */
         if (mapHash.find(hashPosition(position))!=mapHash.end()){
-            for (const Actor* actor : mapHash[hashPosition(position)]){
+            for (int idx : mapHash[hashPosition(position)]){
+                Actor* actor = &(*actorList)[idx];
                 if (actor->blocking && actor != actor_ptr){
                     return true;
                 }
@@ -202,11 +207,10 @@ public:
         for (int i = -1; i<2; i++){
             for (int j = -1; j<2; j++){
                 glm::ivec2 check_position = mainActor->position + glm::ivec2(i, j);
-                if (mapHash.find(hashPosition(check_position)) != mapHash.end() ||
-                    !mapHash[hashPosition(check_position)].empty())
-                {
-                    for (Actor* actor_ptr : mapHash[hashPosition(check_position)]){
-                        Actor& actor = *actor_ptr;
+                auto it = mapHash.find(hashPosition(check_position));
+                if (it != mapHash.end() && !it->second.empty()){
+                    for (int actor_idx : it->second){
+                        Actor& actor = (*actorList)[actor_idx];
                         if (actor.position.x == mainActor->position.x && actor.position.y == mainActor->position.y){
                             if (&actor == mainActor) continue;
                             if (actor.contact_dialogue.empty()) continue;
@@ -340,21 +344,16 @@ public:
                 */
                 
                char render_char = ' ';
-               /*for (int i=static_cast<int>(actorList->size())-1; i>=0; i--){
-                    Actor& actor = (*actorList)[i];
-                    if (actor.position.x == col && actor.position.y == row){
-                        render_char = actor.view;
-                        break;
-                    }
-                }
-               */
                 auto it = mapHash.find(hashPosition(glm::ivec2(col, row)));
                 if (it!=mapHash.end() && !it->second.empty()){
-                    auto maxIdActor = *std::max_element(it->second.begin(), it->second.end(), ActorSmallerId());
-                    char render_char = maxIdActor->view;
-                    // Safety check: never output null character or non-printable
-                    if (render_char == '\0') render_char = '?';
-                    render_ss<<render_char;
+                    // choose the actor with the largest id among those in this cell
+                    int best_idx = it->second[0];
+                    for (int idx : it->second){
+                        if ((*actorList)[idx].id > (*actorList)[best_idx].id) best_idx = idx;
+                    }
+                    char rc = (*actorList)[best_idx].view;
+                    if (rc == '\0') rc = '?';
+                    render_ss<<rc;
                     continue;
                 }
                 render_ss<<render_char;

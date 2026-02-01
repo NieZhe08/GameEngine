@@ -90,9 +90,10 @@ public:
                 nearby_scene = nearby_scene_opt.value();
             } else {
                 nearby_scene = "";
+            }
             auto contact_scene_opt = extractProceedTarget(contact_dialogue);
             if (contact_scene_opt.has_value()){
-                nearby_incident = GameIncident::NextScene;
+                contact_incident = GameIncident::NextScene;
                 contact_scene = contact_scene_opt.value();
             } else {
                 contact_scene = "";
