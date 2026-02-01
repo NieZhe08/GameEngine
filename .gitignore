@@ -2,6 +2,7 @@ game_engine_linux
 game_engine_osx
 *.o
 *.txt
+*Zone.Identifier
 
 build
 **/resources
