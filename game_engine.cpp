@@ -104,8 +104,10 @@ public:
             // collision detection only worry about whether collision happens between actor itself and others
             if (!collisionDetected(nextPosition, & actor)){// need to update mapHash
                 auto vectorIt = mapHash.find(hashPosition(actor.position));
-                auto removeIt = std::remove(vectorIt->second.begin(), vectorIt->second.end(), &actor);
-                vectorIt->second.erase(removeIt, vectorIt->second.end());
+                if (vectorIt != mapHash.end()) {
+                    auto removeIt = std::remove(vectorIt->second.begin(), vectorIt->second.end(), &actor);
+                    vectorIt->second.erase(removeIt, vectorIt->second.end());
+                }
                 mapHash[hashPosition(nextPosition)].push_back(&actor);
                 actor.position = nextPosition;
             } else {
@@ -149,6 +151,7 @@ public:
 
     std::pair<glm::ivec2, bool> updatePlayerPosition(PlayerAction action) {
         // Update player position based on action
+        if (!mainActor) return std::make_pair(glm::ivec2(0,0), false);
         glm::ivec2 nextPosition = mainActor->position;
         bool hasMoved = true;
         switch (action) {
@@ -182,6 +185,7 @@ public:
 
     std::vector<GameIncident> updateDialogues(std::vector<GameIncident>& allIncidents) {
         // Update dialogues based on proximity to other actors
+        if (!actorList || !mainActor) return allIncidents;
         for (Actor& actor : *actorList){
             if (actor.position.x == mainActor->position.x && actor.position.y == mainActor->position.y){
                 if (&actor == mainActor) continue;
@@ -271,6 +275,7 @@ public:
     }
 
     void mapRender(){
+        if (!mainActor) return;
         for (int i=0; i<viewSize.y; i++){
             int row = mainActor->position.y - viewSize.y/2 + i;
             for (int j=0; j<viewSize.x; j++){

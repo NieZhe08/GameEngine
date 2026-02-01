@@ -42,7 +42,8 @@ public:
                 const rapidjson::Value& actor = actors[i];
                 
                 std::string actor_name = (actor.HasMember("name"))? actor["name"].GetString() : "";
-                char view = (actor.HasMember("view"))?  actor["view"].GetString()[0]: '?';
+                std::string view_str = (actor.HasMember("view"))? actor["view"].GetString() : "?";
+                char view = (!view_str.empty()) ? view_str[0] : '?';
                 int x = (actor.HasMember("x"))? actor["x"].GetInt() : 0;
                 int y = (actor.HasMember("y"))? actor["y"].GetInt() : 0;
                 int vel_x = (actor.HasMember("vel_x"))? actor["vel_x"].GetInt() : 0;
