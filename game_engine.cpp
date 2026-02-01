@@ -1,15 +1,14 @@
 // #include "MapHelper.h"
 #include "glm/glm.hpp"
-#include "json_paraser.cpp"
-#include "string.h"
+#include "json_paraser.h"
 #include <iostream>
 #include <sstream>
-#include <string.h>
+#include <string>
 #include <vector>
 #include <algorithm>
 #include <unordered_map>
 #include "game_utils.h"
-#include "scene_db.cpp"
+#include "scene_db.h"
 
 class GameEngine {
 public:

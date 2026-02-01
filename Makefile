@@ -4,10 +4,10 @@ COMPILER_FLAGS = -O3 -std=c++17 -Wall -Wextra -Wno-deprecated-declarations
 INCLUDE_PATHS = -I./glm
 
 # Source files
-SOURCE_FILES = main.cpp game_engine.cpp json_paraser.cpp scene_db.cpp
+SOURCE_FILES = main.cpp game_engine.cpp 
 
 # Object files (automatically generated from source files)
-OBJECT_FILES = main.o game_engine.o json_parser.o scene_db.o
+OBJECT_FILES = main.o game_engine.o 
 
 # Executable name
 EXECUTABLE = game_engine_linux

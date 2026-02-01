@@ -5,7 +5,7 @@
 #include "engineUtils.h"
 #include "rapidjson/document.h"
 #include "game_utils.h"
-#include "template_db.cpp"
+#include "template_db.h"
 
 class SceneDB {
 public:

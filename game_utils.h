@@ -36,7 +36,7 @@ enum class ContactType {
 #include <regex>
 #include <optional>
 
-std::optional<std::string> extractProceedTarget(const std::string& input) {
+inline std::optional<std::string> extractProceedTarget(const std::string& input) {
     std::regex pattern(R"(proceed to (\w+))", std::regex::icase);
     std::smatch matches;
     
