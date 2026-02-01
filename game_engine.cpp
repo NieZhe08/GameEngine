@@ -280,25 +280,26 @@ public:
             int row = mainActor->position.y - viewSize.y/2 + i;
             for (int j=0; j<viewSize.x; j++){
                 int col = mainActor->position.x - viewSize.x/2 + j;
+                /*
                 if (row<0 || row>=mapSize.y || col<0 || col>=mapSize.x){ 
                     render_ss<<"-"; // out of bounds
                     continue;
                 }
+                */
+                
                 // TODO print to string stream according to the priority of actors id
-                render_ss<<"-";
-                /*
+                //render_ss<<"-";
                 auto it = mapHash.find(hashPosition(glm::ivec2(col, row)));
                 if (it!=mapHash.end() && !it->second.empty()){
-                    auto minIdActor = *std::min_element(it->second.begin(), it->second.end(), ActorSmallerId());
+                    auto minIdActor = *std::max_element(it->second.begin(), it->second.end(), ActorSmallerId());
                     char view_char = minIdActor->view;
                     // Safety check: never output null character or non-printable
-                    if (view_char < 32 || view_char > 126) view_char = '?';
+                    if (view_char == '\0') view_char = '?';
                     render_ss<<view_char;
                     continue;
                 } else {
                     render_ss<<" ";
                 }
-                */
                 
                 /*
                 bool has_actor = false;
