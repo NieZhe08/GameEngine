@@ -285,6 +285,8 @@ public:
                     continue;
                 }
                 // TODO print to string stream according to the priority of actors id
+                render_ss<<" ";
+                /*
                 auto it = mapHash.find(hashPosition(glm::ivec2(col, row)));
                 if (it!=mapHash.end() && !it->second.empty()){
                     auto minIdActor = *std::min_element(it->second.begin(), it->second.end(), ActorSmallerId());
@@ -296,6 +298,8 @@ public:
                 } else {
                     render_ss<<" ";
                 }
+                */
+                
                 /*
                 bool has_actor = false;
                 char actorView = ' ';
