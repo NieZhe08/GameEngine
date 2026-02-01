@@ -16,7 +16,7 @@ public:
 
     SceneDB (std::string sceneName, 
             std::unordered_map<std::uint64_t, std::vector<Actor*>> mapHash) : sceneName(sceneName) {
-        if (!std::filesystem::exists("resources/scenes" + sceneName + ".scene")){
+        if (!std::filesystem::exists("resources/scenes/" + sceneName + ".scene")){
             std::cout<<"error: scene "<<sceneName<<" is missing";
             exit(0);
         }
