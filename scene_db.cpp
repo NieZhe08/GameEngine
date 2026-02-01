@@ -20,7 +20,7 @@ public:
             std::cout<<"error: scene "<<sceneName<<" is missing";
             exit(0);
         }
-        EngineUtils::ReadJsonFile("resources/scenes" + sceneName + ".scene", scenes);
+        EngineUtils::ReadJsonFile("resources/scenes/" + sceneName + ".scene", scenes);
         if (!scenes.IsObject()){
             exit(0);
         }
