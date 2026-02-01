@@ -282,7 +282,7 @@ public:
 
     void mapRender(){
         if (!mainActor) return;
-        render_ss<<"name of main actor: "<<mainActor->actor_name<<", view"<<mainActor->view<<"\n";
+        //render_ss<<"name of main actor: "<<mainActor->actor_name<<", view"<<mainActor->view<<"\n";
         for (int i=0; i<viewSize.y; i++){
             int row = mainActor->position.y - viewSize.y/2 + i;
             for (int j=0; j<viewSize.x; j++){
