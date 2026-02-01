@@ -61,7 +61,9 @@ public:
 
     void initializeGame() {
         // Initialize game state, load map, actors, etc.
-        std::cout<<game_start_message<<"\n";
+        if (!game_start_message.empty()) {
+            std::cout<<game_start_message<<"\n";
+        }
         frameRender(true);
     }
 
@@ -195,11 +197,11 @@ public:
         for (Actor& actor : *actorList){
             if (actor.position.x == mainActor->position.x && actor.position.y == mainActor->position.y){
                 if (&actor == mainActor) continue;
-                checkGameIncidents(actor, allIncidents, ContactType::Overlap);
+                checkGameIncidents(&actor, allIncidents, ContactType::Overlap);
                 dialogue_ss<<actor.contact_dialogue<<"\n";
             } else if (abs(actor.position.x - mainActor->position.x) <=1 && abs(actor.position.y - mainActor->position.y) <=1){
                 if (actor.nearby_dialogue.empty()) continue;
-                checkGameIncidents(actor, allIncidents, ContactType::Nearby);
+                checkGameIncidents(&actor, allIncidents, ContactType::Nearby);
                 dialogue_ss<<actor.nearby_dialogue<<"\n";
             }
         }
@@ -232,17 +234,23 @@ public:
     }
 
     //TO DO check when read in
-    void checkGameIncidents(Actor& actor, std::vector<GameIncident>& allIncidents, ContactType contactType) {
+    void checkGameIncidents(Actor* actor, std::vector<GameIncident>& allIncidents, ContactType contactType) {
         switch (contactType){
             case ContactType::Nearby:
-                if (actor.nearby_incident != GameIncident::None
-                && (actor.nearby_incident != GameIncident::ScoreUp || !actor.triggered_scoreUp)){
-                    allIncidents.push_back(actor.nearby_incident);
+                if (actor->nearby_incident != GameIncident::None
+                && (actor->nearby_incident != GameIncident::ScoreUp || !actor->triggered_scoreUp)){
+                    allIncidents.push_back(actor->nearby_incident);
+                    if (actor->nearby_incident == GameIncident::ScoreUp){
+                        actor->triggered_scoreUp = true;
+                    }
                 }
             case ContactType::Overlap:
-                if (actor.contact_incident != GameIncident::None
-                && (actor.nearby_incident != GameIncident::ScoreUp || !actor.triggered_scoreUp)){
-                    allIncidents.push_back(actor.contact_incident); 
+                if (actor->contact_incident != GameIncident::None
+                && (actor->contact_incident != GameIncident::ScoreUp || !actor->triggered_scoreUp)){
+                    allIncidents.push_back(actor->contact_incident); 
+                    if (actor->contact_incident == GameIncident::ScoreUp){
+                        actor->triggered_scoreUp = true;
+                    }
                 }
         }
         return;
