@@ -39,7 +39,7 @@ public:
         initializeGame();
     }
 
-    void initializeGame() {
+    void initializeGame(bool isInitialLoad = true) {
         JsonParser parser;
         game_start_message = parser.getGameStartMessage();
         game_over_good_message = parser.getGameOverGoodMessage();
@@ -64,10 +64,7 @@ public:
         scored_actors = std::vector<std::string>();
         next_scene_name = "";
         // Initialize game state, load map, actors, etc.
-        if (!game_start_message.empty()) {
-            std::cout<<game_start_message<<"\n";
-        }
-        frameRender(true);
+        frameRender(isInitialLoad);
     }
 
     void gameLoop() {
@@ -314,12 +311,18 @@ public:
     }
 
     void frameRender(bool isInitialRender = false) {// render main
+        if (isInitialRender){
+            if (!game_start_message.empty()) {
+            std::cout<<game_start_message<<"\n";
+            }
+        }
+            
         mapRender();
         dialogueRender();
         generalRender();
         //renderDialogue();
         if (states == GameState::NextScene){
-            initializeGame(); // re-initialize game with next scene
+            initializeGame(false); // re-initialize game with next scene
         }
         if (states == GameState::Ongoing){
             inquiryRender();
