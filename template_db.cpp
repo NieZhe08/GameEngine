@@ -16,7 +16,7 @@ public:
             std::cout<<"error: template "<<templateName<<" is missing";
             exit(0);
         }
-        EngineUtils::ReadJsonFile("resources/templates/" + templateName + ".template", templates);
+        EngineUtils::ReadJsonFile("resources/actor_templates/" + templateName + ".template", templates);
     }
 
     std::string getName() {
