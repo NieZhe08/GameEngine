@@ -256,6 +256,7 @@ public:
         if (isInitialRender){
             //TODO 
             //std::cout<<initial_render<<"\n";
+            mapRender();
         } else {
             mapRender();
         }
@@ -270,7 +271,6 @@ public:
     }
 
     void mapRender(){
-        assert(true);// do check of index
         for (int i=0; i<viewSize.y; i++){
             int row = mainActor->position.y - viewSize.y/2 + i;
             for (int j=0; j<viewSize.x; j++){
@@ -285,6 +285,8 @@ public:
                     auto minIdActor = *std::min_element(it->second.begin(), it->second.end(), ActorSmallerId());
                     render_ss<<minIdActor->view;
                     continue;
+                } else {
+                    render_ss<<' ';
                 }
                 /*
                 bool has_actor = false;
