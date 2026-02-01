@@ -99,8 +99,8 @@ public:
                 contact_scene = "";
             }
 	    }
-    }
 };
+
 
 inline std::uint64_t hashPosition(const glm::ivec2& position) {
     // A simple hash function combining x and y coordinates
