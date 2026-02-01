@@ -43,9 +43,16 @@ public:
             const rapidjson::Value& actors = scenes["actors"];
             for (rapidjson::SizeType i = 0; i < actors.Size(); i++){
                 const rapidjson::Value& actor = actors[i];
-                std::string actor_name, view_str, nearby_dialogue, contact_dialogue;
-                int x, y, vel_x, vel_y;;
-                bool blocking;
+                // default values
+                std::string actor_name = "";
+                std::string view_str = "?";
+                std::string nearby_dialogue = "";
+                std::string contact_dialogue = "";
+                int x = 0; 
+                int y = 0;
+                int vel_x = 0;
+                int vel_y = 0;
+                bool blocking = false;
 
                 if (actor.HasMember("template")){
                     std::string templateName = actor["template"].GetString();
@@ -64,19 +71,28 @@ public:
                     contact_dialogue = actorTemplate.getContactDialogue();
                 }
 
-                actor_name = (actor.HasMember("name"))? actor["name"].GetString() : "";
-                view_str = (actor.HasMember("view"))? actor["view"].GetString() : "?";
-                char view = (!view_str.empty()) ? view_str[0] : '?';
-                x = (actor.HasMember("x"))? actor["x"].GetInt() : 0;
-                y = (actor.HasMember("y"))? actor["y"].GetInt() : 0;
-                vel_x = (actor.HasMember("vel_x"))? actor["vel_x"].GetInt() : 0;
-                vel_y = (actor.HasMember("vel_y"))? actor["vel_y"].GetInt() : 0;
-                blocking = (actor.HasMember("blocking"))? actor["blocking"].GetBool() : false;
-                nearby_dialogue = (actor.HasMember("nearby_dialogue"))? actor["nearby_dialogue"].GetString() : "";
-                contact_dialogue = (actor.HasMember("contact_dialogue"))? actor["contact_dialogue"].GetString() : "";
+                if (actor.HasMember("name")) 
+                    actor_name = actor["name"].GetString();
+                if (actor.HasMember("view"))
+                    view_str = actor["view"].GetString();
+                if (actor.HasMember("x"))
+                    x = actor["x"].GetInt();
+                if (actor.HasMember("y"))
+                    y = actor["y"].GetInt();
+                if (actor.HasMember("vel_x"))
+                    vel_x = actor["vel_x"].GetInt();
+                if (actor.HasMember("vel_y"))
+                    vel_y =  actor["vel_y"].GetInt();
+                if (actor.HasMember("blocking"))
+                    blocking = actor["blocking"].GetBool() ;
+                if (actor.HasMember("nearby_dialogue"))
+                    nearby_dialogue = actor["nearby_dialogue"].GetString();
+                if (actor.HasMember("contact_dialogue"))
+                    contact_dialogue = actor["contact_dialogue"].GetString();
 
                 if (x>max_x) max_x = x;
                 if (y>max_y) max_y = y;
+                char view = (!view_str.empty()) ? view_str[0] : '?';
 
                 sceneActors->emplace_back(actor_name, id_counter++, view, glm::ivec2(x,y), glm::ivec2(vel_x, vel_y),
                  blocking, nearby_dialogue, contact_dialogue);
