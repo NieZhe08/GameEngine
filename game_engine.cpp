@@ -218,7 +218,7 @@ public:
                     health -= 1;
                     break;
                 case GameIncident::ScoreUp:
-                        score += 1;
+                    score += 1;
                     break;
                 case GameIncident::YouWin:
                     states = GameState::Won;
@@ -243,6 +243,7 @@ public:
                         actor->triggered_scoreUp = true;
                     }
                 }
+                break;
             case ContactType::Overlap:
                 if (actor->contact_incident != GameIncident::None
                 && (actor->contact_incident != GameIncident::ScoreUp || !actor->triggered_scoreUp)){
@@ -251,6 +252,7 @@ public:
                         actor->triggered_scoreUp = true;
                     }
                 }
+                break;
         }
         return;
     }
