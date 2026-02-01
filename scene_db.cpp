@@ -13,6 +13,7 @@ public:
     Actor* mainActor;
     std::unique_ptr<std::vector<Actor>> sceneActors;
     glm::ivec2 mapSize;
+    int mainActorIndex;
 
         SceneDB (std::string sceneName, 
             std::unordered_map<std::uint64_t, std::vector<Actor*>>& mapHash) : sceneName(sceneName) {
@@ -28,6 +29,7 @@ public:
         */
         
         mainActor = nullptr;
+        mainActorIndex = -1;
         sceneActors = std::make_unique<std::vector<Actor>>();
         processSceneActors(mapHash);
     }
@@ -62,6 +64,7 @@ public:
 
                 if (actor_name == "player"){
                     mainActor = &sceneActors->back(); 
+                    mainActorIndex = static_cast<int>(sceneActors->size()) - 1;
                 }
             }
         }
@@ -72,8 +75,9 @@ public:
         return std::move(sceneActors);
     }
 
-    Actor* getMainActor() {
-        return mainActor;
+    // Return index of main actor inside the moved vector (or -1 if none)
+    int getMainActorIndex() {
+        return mainActorIndex;
     }
 
     glm::ivec2 getMapSize() {

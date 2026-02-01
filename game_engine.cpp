@@ -44,7 +44,13 @@ public:
         // load scene module
         SceneDB sceneDB(parser.getInitialScene(), mapHash);
         actorList = sceneDB.getSceneActors();
-        mainActor = sceneDB.getMainActor();
+        // After moving actorList, resolve mainActor to point inside actorList
+        int mainIndex = sceneDB.getMainActorIndex();
+        if (mainIndex >= 0 && actorList && mainIndex < static_cast<int>(actorList->size())){
+            mainActor = &(*actorList)[mainIndex];
+        } else {
+            mainActor = nullptr;
+        }
         mapSize = sceneDB.getMapSize();
 
         health = 3;
