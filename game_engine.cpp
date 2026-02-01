@@ -34,7 +34,13 @@ public:
     std::string game_over_good_message;
     std::string game_over_bad_message;
 
+    std::string next_scene_name;
+
     GameEngine() {
+        initializeGame();
+    }
+
+    void initializeGame() {
         JsonParser parser;
         game_start_message = parser.getGameStartMessage();
         game_over_good_message = parser.getGameOverGoodMessage();
@@ -57,9 +63,7 @@ public:
         score = 0;
         states = GameState::Ongoing;
         scored_actors = std::vector<std::string>();
-    }
-
-    void initializeGame() {
+        next_scene_name = "";
         // Initialize game state, load map, actors, etc.
         if (!game_start_message.empty()) {
             std::cout<<game_start_message<<"\n";
@@ -68,7 +72,7 @@ public:
     }
 
     void gameLoop() {
-        initializeGame();
+        //initializeGame();
         while (states == GameState::Ongoing){
             PlayerAction action = getPlayerAction();
             updateGameState(action);
@@ -226,6 +230,9 @@ public:
                 case GameIncident::GameOver:
                     states = GameState::Lost;
                     break;
+                case GameIncident::NextScene:
+                    states = GameState::NextScene;
+                    break;
                 default:
                     break;
             }
@@ -242,6 +249,9 @@ public:
                     if (actor->nearby_incident == GameIncident::ScoreUp){
                         actor->triggered_scoreUp = true;
                     }
+                    if (actor->nearby_incident == GameIncident::NextScene){
+                        next_scene_name = actor->nearby_scene;
+                    }
                 }
                 break;
             case ContactType::Overlap:
@@ -251,17 +261,22 @@ public:
                     if (actor->contact_incident == GameIncident::ScoreUp){
                         actor->triggered_scoreUp = true;
                     }
+                    if (actor->contact_incident == GameIncident::NextScene){
+                        next_scene_name = actor->contact_scene;
+                    }
                 }
                 break;
         }
         return;
     }
 
-    void generalRender(){
-        // Render Dialogue
+    void dialogueRender(){
         render_ss<<dialogue_ss.str();
         dialogue_ss.str(std::string());
         dialogue_ss.clear();
+    }
+
+    void generalRender(){
         // Render General Printing Messages
         render_ss<<"health : "<<health<<", score : "<<score<<"\n";
     }
@@ -272,14 +287,13 @@ public:
     }
 
     void frameRender(bool isInitialRender = false) {// render main
-        if (isInitialRender){
-            //TODO 
-            //std::cout<<initial_render<<"\n";
-            mapRender();
-        } else {
-            mapRender();
-        }
+        mapRender();
         //renderDialogue();
+        if (states == GameState::NextScene){
+            initializeGame(); // re-initialize game with next scene
+            return;
+        }
+        dialogueRender();
         generalRender();
         if (states == GameState::Ongoing){
             inquiryRender();
