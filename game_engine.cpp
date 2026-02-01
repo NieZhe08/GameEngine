@@ -352,7 +352,7 @@ public:
                         if ((*actorList)[idx].id > (*actorList)[best_idx].id) best_idx = idx;
                     }
                     char rc = (*actorList)[best_idx].view;
-                    if (rc == '\0') rc = '?';
+                    //if (rc == '\0') rc = '?'; // should not happen
                     render_ss<<rc;
                     continue;
                 }
