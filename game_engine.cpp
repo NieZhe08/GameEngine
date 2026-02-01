@@ -302,15 +302,15 @@ public:
                     render_ss<<" ";
                 }
                 */
+               char render_char = ' ';
                for (auto i=0; i<actorList->size(); i++){
                     Actor& actor = (*actorList)[i];
                     if (actor.position.x == col && actor.position.y == row){
-                        render_ss<<actor.view;
-                    }
-                    if (i == actorList->size()-1){
-                        render_ss<<" ";
+                        render_char = actor.view;
+
                     }
                 }
+                render_ss<<render_char;
                 /*
                 bool has_actor = false;
                 char actorView = ' ';
