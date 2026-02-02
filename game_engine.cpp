@@ -211,13 +211,12 @@ public:
                         if (actor.position.x == mainActor->position.x && actor.position.y == mainActor->position.y){
                             if (&actor == mainActor) continue;
                             if (actor.contact_dialogue.empty()) continue;
-                            // dialogue handling in checkGameIncidents
                             checkGameIncidents(&actor, allIncidents, ContactType::Overlap);
-                            //dialogue_ss<<actor.contact_dialogue<<"\n";
+                            dialogue_ss<<actor.contact_dialogue<<"\n";
                         } else {
                             if (actor.nearby_dialogue.empty()) continue;
                             checkGameIncidents(&actor, allIncidents, ContactType::Nearby);
-                            //dialogue_ss<<actor.nearby_dialogue<<"\n";
+                            dialogue_ss<<actor.nearby_dialogue<<"\n";
                         }
                     }
                 }
@@ -276,7 +275,7 @@ public:
                     } else if (actor->nearby_incident == GameIncident::NextScene){
                         next_scene_name = actor->nearby_scene;
                     } 
-                    dialogue_ss<<actor->nearby_dialogue<<"\n";
+                    //dialogue_ss<<actor->nearby_dialogue<<"\n";
                 }
                 break;
             case ContactType::Overlap:
@@ -289,7 +288,7 @@ public:
                     if (actor->contact_incident == GameIncident::NextScene){
                         next_scene_name = actor->contact_scene;
                     }
-                    dialogue_ss<<actor->contact_dialogue<<"\n";
+                    //dialogue_ss<<actor->contact_dialogue<<"\n";
                 }
                 break;
         }

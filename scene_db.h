@@ -4,6 +4,8 @@
 #include <vector>
 #include "engineUtils.h"
 #include "rapidjson/document.h"
+#include "rapidjson/writer.h"
+#include "rapidjson/stringbuffer.h"
 #include "game_utils.h"
 #include "template_db.h"
 
@@ -23,6 +25,13 @@ public:
             exit(0);
         }
         EngineUtils::ReadJsonFile("resources/scenes/" + sceneName + ".scene", scenes);
+        // Debug: print the loaded scene JSON to help diagnose parsing issues
+        {
+            rapidjson::StringBuffer buffer;
+            rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+            scenes.Accept(writer);
+            std::cout << "DEBUG: Loaded scene '" << sceneName << "': " << buffer.GetString() << std::endl;
+        }
         /*
         if (!scenes.IsObject()){
             exit(0);
@@ -39,12 +48,25 @@ public:
         sceneActors->clear();
         int max_x = 0; int max_y = 0;
         int id_counter = 0;
-        if (scenes.HasMember("actors") && scenes["actors"].IsArray()){
+        if (scenes.HasMember("actors")){
             const rapidjson::Value& actors = scenes["actors"];
-            // Reserve capacity to avoid reallocation while taking pointers to elements.
-            sceneActors->reserve(actors.Size());
-            for (rapidjson::SizeType i = 0; i < actors.Size(); i++){
-                const rapidjson::Value& actor = actors[i];
+            if (!actors.IsArray()){
+                std::cout<<"DEBUG: 'actors' exists but is NOT an array. Type checks:"<<std::endl;
+                std::cout<<"  IsArray: "<<(actors.IsArray()?"true":"false")<<std::endl;
+                std::cout<<"  IsObject: "<<(actors.IsObject()?"true":"false")<<std::endl;
+                std::cout<<"  IsString: "<<(actors.IsString()?"true":"false")<<std::endl;
+                std::cout<<"  GetType (int): "<<static_cast<int>(actors.GetType())<<std::endl;
+                // dump the 'actors' value
+                rapidjson::StringBuffer bufferActors;
+                rapidjson::Writer<rapidjson::StringBuffer> writerActors(bufferActors);
+                actors.Accept(writerActors);
+                std::cout<<"DEBUG: actors value: "<<bufferActors.GetString()<<std::endl;
+                // Avoid calling Size() on a non-array value
+            } else {
+                // Reserve capacity to avoid reallocation while taking pointers to elements.
+                sceneActors->reserve(actors.Size());
+                for (rapidjson::SizeType i = 0; i < actors.Size(); i++){
+                    const rapidjson::Value& actor = actors[i];
                 // default values
                 std::string actor_name = "";
                 std::string view_str = "?";
@@ -110,7 +132,7 @@ public:
             }
         }
         mapSize = glm::ivec2(max_x+1, max_y+1);
-    }
+    }}
 
     std::unique_ptr<std::vector<Actor>> getSceneActors() {
         return std::move(sceneActors);

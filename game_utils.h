@@ -135,8 +135,10 @@ public:
 
 
 inline std::uint64_t hashPosition(const glm::ivec2& position) {
-    // A simple hash function combining x and y coordinates
-    return (static_cast<std::uint64_t>(position.x) << 32) | static_cast<std::uint64_t>(position.y);
+    // A simple hash function combining x and y coordinates into a 64-bit key.
+    // Ensure we shift a 64-bit value to avoid 32-bit shift overflow/UB.
+    return (static_cast<std::uint64_t>(static_cast<std::uint32_t>(position.x)) << 32) |
+           static_cast<std::uint64_t>(static_cast<std::uint32_t>(position.y));
 }
 
 struct ActorSmallerId {
