@@ -66,13 +66,13 @@ struct Actor
 {
 private: 
     GameIncident checkGameIncidents(std::string dialogue){
-        if (dialogue.find("[health down]") != std::string::npos){
+        if (dialogue.find("health down") != std::string::npos){
             return (GameIncident::HealthDown);
-        } else if (dialogue.find("[score up]") != std::string::npos){
+        } else if (dialogue.find("score up") != std::string::npos){
             return (GameIncident::ScoreUp);
-        } else if (dialogue.find("[you win]") != std::string::npos){
+        } else if (dialogue.find("you win") != std::string::npos){
             return (GameIncident::YouWin);
-        } else if (dialogue.find("[game over]") != std::string::npos){
+        } else if (dialogue.find("game over") != std::string::npos){
             return (GameIncident::GameOver);
         } 
         return (GameIncident::None);
