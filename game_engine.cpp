@@ -66,8 +66,11 @@ public:
         }
         mapSize = sceneDB.getMapSize();
 
-        health = 3;
-        score = 0;
+        if (isInitialLoad){
+            health = 3;
+            score = 0;
+        }
+        
         states = GameState::Ongoing;
         scored_actors = std::vector<std::string>();
         next_scene_name = "";
