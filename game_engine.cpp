@@ -166,8 +166,10 @@ public:
             return true;
         }
         */
-        if (mapHash.find(hashPosition(position))!=mapHash.end()){
-            for (int idx : mapHash[hashPosition(position)]){
+        std::uint64_t key = hashPosition(position);
+        auto it = mapHash.find(key);
+        if (it != mapHash.end()){
+            for (int idx : it->second){
                 Actor* actor = &(*actorList)[idx];
                 if (actor->blocking && actor != actor_ptr){
                     return true;

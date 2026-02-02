@@ -44,6 +44,8 @@ public:
             if (actors.IsArray()){
                 // Reserve capacity to avoid reallocation while taking pointers to elements.
                 sceneActors->reserve(actors.Size());
+                // Reserve mapHash buckets to roughly avoid rehashing when many distinct positions exist.
+                mapHash.reserve(static_cast<size_t>(actors.Size()));
                 for (rapidjson::SizeType i = 0; i < actors.Size(); i++){
                     const rapidjson::Value& actor = actors[i];
                 // default values
