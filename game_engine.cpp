@@ -9,6 +9,7 @@
 #include <unordered_map>
 #include "game_utils.h"
 #include "scene_db.h"
+#include <queue>
 
 class GameEngine {
 public:
@@ -200,6 +201,8 @@ public:
 
     std::vector<GameIncident> updateDialogues(std::vector<GameIncident>& allIncidents) {
         // Update dialogues based on proximity to other actors
+        // Use min-heap (std::greater) so that smaller actor IDs are processed first
+        std::priority_queue<int, std::vector<int>, std::greater<int>> actorsToBeDealted;
         if (!actorList || !mainActor) return allIncidents;
         for (int i = -1; i<2; i++){
             for (int j = -1; j<2; j++){
@@ -207,20 +210,25 @@ public:
                 auto it = mapHash.find(hashPosition(check_position));
                 if (it != mapHash.end() && !it->second.empty()){
                     for (int actor_idx : it->second){
-                        Actor& actor = (*actorList)[actor_idx];
-                        if (actor.position.x == mainActor->position.x && actor.position.y == mainActor->position.y){
-                            if (&actor == mainActor) continue;
-                            if (actor.contact_dialogue.empty()) continue;
-                            checkGameIncidents(&actor, allIncidents, ContactType::Overlap);
-                            dialogue_ss<<actor.contact_dialogue<<"\n";
-                        } else {
-                            if (actor.nearby_dialogue.empty()) continue;
-                            checkGameIncidents(&actor, allIncidents, ContactType::Nearby);
-                            dialogue_ss<<actor.nearby_dialogue<<"\n";
-                        }
+                        actorsToBeDealted.push(actor_idx);
                     }
                 }
             }
+        }
+        while (!actorsToBeDealted.empty()){
+            int actor_idx = actorsToBeDealted.top();
+            actorsToBeDealted.pop();
+            Actor& actor = (*actorList)[actor_idx];
+                if (actor.position.x == mainActor->position.x && actor.position.y == mainActor->position.y){
+                    if (&actor == mainActor) continue;
+                    if (actor.contact_dialogue.empty()) continue;
+                    checkGameIncidents(&actor, allIncidents, ContactType::Overlap);
+                    dialogue_ss<<actor.contact_dialogue<<"\n";
+                } else {
+                    if (actor.nearby_dialogue.empty()) continue;
+                    checkGameIncidents(&actor, allIncidents, ContactType::Nearby);
+                    dialogue_ss<<actor.nearby_dialogue<<"\n";
+                }
         }
         /*
         for (Actor& actor : *actorList){
