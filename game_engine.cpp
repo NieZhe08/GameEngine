@@ -37,18 +37,25 @@ public:
     std::string next_scene_name;
 
     GameEngine() {
+        next_scene_name = "";
         initializeGame();
     }
 
     void initializeGame(bool isInitialLoad = true) {
-        JsonParser parser;
-        game_start_message = parser.getGameStartMessage();
-        game_over_good_message = parser.getGameOverGoodMessage();
-        game_over_bad_message = parser.getGameOverBadMessage();
-        viewSize = parser.getResolution(); 
+        if  (isInitialLoad) {
+            JsonParser parser;
+            game_start_message = parser.getGameStartMessage();
+            game_over_good_message = parser.getGameOverGoodMessage();
+            game_over_bad_message = parser.getGameOverBadMessage();
+            viewSize = parser.getResolution();
+            next_scene_name = parser.getInitialScene();
+        }
+
+        // Clear mapHash before loading new scene to avoid stale actor indices
+        mapHash.clear();
 
         // load scene module
-        SceneDB sceneDB(parser.getInitialScene(), mapHash);
+        SceneDB sceneDB(next_scene_name, mapHash);
         actorList = sceneDB.getSceneActors();
         // After moving actorList, resolve mainActor to point inside actorList
         int mainIndex = sceneDB.getMainActorIndex();
@@ -330,15 +337,15 @@ public:
         dialogueRender();
         generalRender();
         //renderDialogue();
-        if (states == GameState::NextScene){
-            initializeGame(false); // re-initialize game with next scene
-        }
         if (states == GameState::Ongoing){
             inquiryRender();
         }
         std::cout<<render_ss.str();
         render_ss.str(std::string());   
         render_ss.clear();
+        if (states == GameState::NextScene){
+            initializeGame(false); // re-initialize game with next scene
+        }
     }
 
     void mapRender(){
