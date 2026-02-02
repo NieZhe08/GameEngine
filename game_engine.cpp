@@ -72,11 +72,6 @@ public:
         scored_actors = std::vector<std::string>();
         next_scene_name = "";
         // Initialize game state, load map, actors, etc.
-        //DEBUG
-        std::cout<<"actors loaded: "<<actorList->size()<<"\n";
-        for (Actor& i : *actorList){
-            std::cout<<"actor: "<<i.actor_name<<" at ("<<i.position.x<<","<<i.position.y<<")\n";
-        }
         frameRender(isInitialLoad);
     }
 
