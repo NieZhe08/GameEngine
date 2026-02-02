@@ -47,6 +47,21 @@ inline std::optional<std::string> extractProceedTarget(const std::string& input)
     return std::nullopt;
 }
 
+static std::string obtain_word_after_phrase(const std::string& input, const std::string& phrase){
+    size_t pos = input.find(phrase);
+    if (pos == std::string::npos) return "";
+    pos += phrase.length();
+    while (pos < input.size() && isspace(input[pos])) {
+        pos++;
+    }
+    if (pos == input.size()) return "";
+    size_t endPos = pos;
+    while (endPos < input.size() && !isspace(input[endPos])) {
+        endPos++;
+    }
+    return input.substr(pos, endPos - pos);
+}
+
 struct Actor
 {
 private: 
@@ -84,6 +99,7 @@ public:
          triggered_scoreUp(false){
             nearby_incident = checkGameIncidents(nearby_dialogue);
             contact_incident = checkGameIncidents(contact_dialogue);
+            /*
             auto nearby_scene_opt = extractProceedTarget(nearby_dialogue);
             if (nearby_scene_opt.has_value()){
                 nearby_incident = GameIncident::NextScene;
@@ -98,6 +114,22 @@ public:
             } else {
                 contact_scene = "";
             }
+            */
+            std::string nb_scene = obtain_word_after_phrase(nearby_dialogue, "proceed to ");
+            if (!nb_scene.empty()){
+                nearby_incident = GameIncident::NextScene;
+                nearby_scene = nb_scene;
+            } else {
+                nearby_scene = "";
+            }
+            std::string ct_scene = obtain_word_after_phrase(contact_dialogue, "proceed to ");
+            if (!ct_scene.empty()){
+                contact_incident = GameIncident::NextScene;
+                contact_scene = ct_scene;
+            } else {
+                contact_scene = "";
+            }
+
 	    }
 };
 

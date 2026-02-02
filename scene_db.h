@@ -16,7 +16,7 @@ public:
     glm::ivec2 mapSize;
     int mainActorIndex;
 
-            SceneDB (std::string sceneName, 
+        SceneDB (std::string sceneName, 
                 std::unordered_map<std::uint64_t, std::vector<int>>& mapHash) : sceneName(sceneName) {
         if (!std::filesystem::exists("resources/scenes/" + sceneName + ".scene")){
             std::cout<<"error: scene "<<sceneName<<" is missing";

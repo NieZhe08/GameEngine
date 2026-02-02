@@ -276,7 +276,7 @@ public:
                     } else if (actor->nearby_incident == GameIncident::NextScene){
                         next_scene_name = actor->nearby_scene;
                     } 
-                    dialogue_ss<<actor->contact_dialogue<<"\n";
+                    dialogue_ss<<actor->nearby_dialogue<<"\n";
                 }
                 break;
             case ContactType::Overlap:
