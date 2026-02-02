@@ -82,11 +82,11 @@ public:
         //initializeGame();
         while (states == GameState::Ongoing){
             PlayerAction action = getPlayerAction();
-            updateGameState(action);
             if (action == PlayerAction::Quit){
                 states = GameState::Lost;
                 break;
             }
+            updateGameState(action);
             frameRender(false);
         };
         finalRender();
