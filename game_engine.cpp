@@ -72,6 +72,11 @@ public:
         scored_actors = std::vector<std::string>();
         next_scene_name = "";
         // Initialize game state, load map, actors, etc.
+        //DEBUG
+        std::cout<<"actors loaded: "<<actorList->size()<<"\n";
+        for (Actor& i : *actorList){
+            std::cout<<"actor: "<<i.actor_name<<" at ("<<i.position.x<<","<<i.position.y<<")\n";
+        }
         frameRender(isInitialLoad);
     }
 
@@ -122,7 +127,7 @@ public:
                 // remove the actor's index from its old cell
                 auto vectorIt = mapHash.find(hashPosition(actor.position));
                 if (vectorIt != mapHash.end()) {
-                    int idx = static_cast<int>(&actor - &(*actorList)[0]);
+                    int idx = static_cast<int>(&actor - &(*actorList)[0]);// TODO
                     auto removeIt = std::remove(vectorIt->second.begin(), vectorIt->second.end(), idx);
                     vectorIt->second.erase(removeIt, vectorIt->second.end());
                 }

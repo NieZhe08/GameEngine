@@ -32,23 +32,21 @@ public:
         }
         return '?';
     }
-
-    glm::ivec2 getPosition(){
-        if (templates.HasMember("position")){
-            int x = (templates["position"].HasMember("x"))? templates["position"]["x"].GetInt(): 0;
-            int y = (templates["position"].HasMember("y"))? templates["position"]["y"].GetInt(): 0;
-            return glm::ivec2(x, y);
-        }
-        return glm::ivec2(0, 0);
+    
+    int get_x (){
+        return (templates.HasMember("x"))? templates["x"].GetInt(): 0;
     }
 
-    glm::ivec2 getVelocity(){
-        if (templates.HasMember("velocity")){
-            int vel_x = (templates["velocity"].HasMember("x"))? templates["velocity"]["x"].GetInt(): 0;
-            int vel_y = (templates["velocity"].HasMember("y"))? templates["velocity"]["y"].GetInt(): 0;
-            return glm::ivec2(vel_x, vel_y);
-        }
-        return glm::ivec2(0, 0);
+    int get_y (){
+        return (templates.HasMember("y"))? templates["y"].GetInt(): 0;
+    }
+
+    int get_vel_x (){
+        return (templates.HasMember("vel_x"))? templates["vel_x"].GetInt(): 0;
+    }
+
+    int get_vel_y (){
+        return (templates.HasMember("vel_y"))? templates["vel_y"].GetInt(): 0;
     }
 
     bool getBlocking(){

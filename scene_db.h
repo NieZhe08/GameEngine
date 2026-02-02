@@ -63,12 +63,10 @@ public:
 
                     actor_name = actorTemplate.getName();
                     view_str = std::string(1, actorTemplate.getView());
-                    glm::ivec2 position = actorTemplate.getPosition();
-                    x = position.x;
-                    y = position.y;
-                    glm::ivec2 velocity = actorTemplate.getVelocity();
-                    vel_x = velocity.x;
-                    vel_y = velocity.y;
+                    x = actorTemplate.get_x();
+                    y = actorTemplate.get_y();
+                    vel_x = actorTemplate.get_vel_x();
+                    vel_y = actorTemplate.get_vel_y();
                     blocking = actorTemplate.getBlocking();
                     nearby_dialogue = actorTemplate.getNearbyDialogue();
                     contact_dialogue = actorTemplate.getContactDialogue();
