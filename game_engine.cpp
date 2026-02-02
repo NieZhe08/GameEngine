@@ -331,10 +331,6 @@ public:
     void inquiryRender(){
         std::cout<<"Please make a decision...\n";
         std::cout<<input_query_message;
-        /*
-        render_ss<<"Please make a decision...\n";
-        render_ss<<input_query_message;
-        */
     }
 
     void frameRender(bool isInitialRender = false) {// render main
@@ -361,19 +357,11 @@ public:
 
     void mapRender(){
         if (!mainActor) return;
-        //render_ss<<"name of main actor: "<<mainActor->actor_name<<", view"<<mainActor->view<<"\n";
         for (int i=0; i<viewSize.y; i++){
             int row = mainActor->position.y - viewSize.y/2 + i;
             for (int j=0; j<viewSize.x; j++){
                 int col = mainActor->position.x - viewSize.x/2 + j;
-                /*
-                if (row<0 || row>=mapSize.y || col<0 || col>=mapSize.x){ 
-                    render_ss<<"-"; // out of bounds
-                    continue;
-                }
-                */
-                
-               char render_char = ' ';
+                char render_char = ' ';
                 auto it = mapHash.find(hashPosition(glm::ivec2(col, row)));
                 if (it!=mapHash.end() && !it->second.empty()){
                     // choose the actor with the largest id among those in this cell
@@ -382,32 +370,11 @@ public:
                         if ((*actorList)[idx].id > (*actorList)[best_idx].id) best_idx = idx;
                     }
                     char rc = (*actorList)[best_idx].view;
-                    //if (rc == '\0') rc = '?'; // should not happen
-                    render_ss<<rc;
+                    std::cout<<rc;
                     continue;
                 }
-                //render_ss<<render_char;
                 std::cout<<render_char;
-                /*
-                bool has_actor = false;
-                char actorView = ' ';
-                if (hardcoded_map[row][col]==' '){
-                    for (Actor& actor : hardcoded_actors){
-                        if (actor.position.x == col && actor.position.y == row){
-                            actorView = actor.view;
-                            has_actor = true;
-                        }
-                    }
-                } 
-                if (has_actor) {
-                    render_ss<<actorView;
-                } else if (!has_actor){
-                    render_ss<<hardcoded_map[row][col];
-                }
-                */ // TODO 
-                
             }
-            //render_ss<<"\n";
             std::cout<<"\n";
         }
     }
