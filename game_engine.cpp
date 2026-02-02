@@ -125,12 +125,14 @@ public:
                 // remove the actor's index from its old cell
                 auto vectorIt = mapHash.find(hashPosition(actor.position));
                 if (vectorIt != mapHash.end()) {
-                    int idx = static_cast<int>(&actor - &(*actorList)[0]);// TODO
+                    //int idx = static_cast<int>(&actor - &(*actorList)[0]);// TODO
+                    int idx = actor.id;
                     auto removeIt = std::remove(vectorIt->second.begin(), vectorIt->second.end(), idx);
                     vectorIt->second.erase(removeIt, vectorIt->second.end());
                 }
                 // push actor index into new cell
-                int new_idx = static_cast<int>(&actor - &(*actorList)[0]);
+                //int new_idx = static_cast<int>(&actor - &(*actorList)[0]);
+                int new_idx = actor.id;
                 mapHash[hashPosition(nextPosition)].push_back(new_idx);
                 actor.position = nextPosition;
             } else {
@@ -314,19 +316,25 @@ public:
     }
 
     void dialogueRender(){
-        render_ss<<dialogue_ss.str();
+        std::cout<<dialogue_ss.str();
+        //render_ss<<dialogue_ss.str();
         dialogue_ss.str(std::string());
         dialogue_ss.clear();
     }
 
     void generalRender(){
         // Render General Printing Messages
-        render_ss<<"health : "<<health<<", score : "<<score<<"\n";
+        //render_ss<<"health : "<<health<<", score : "<<score<<"\n";
+        std::cout<<"health : "<<health<<", score : "<<score<<"\n";
     }
 
     void inquiryRender(){
+        std::cout<<"Please make a decision...\n";
+        std::cout<<input_query_message;
+        /*
         render_ss<<"Please make a decision...\n";
         render_ss<<input_query_message;
+        */
     }
 
     void frameRender(bool isInitialRender = false) {// render main
@@ -343,9 +351,9 @@ public:
         if (states == GameState::Ongoing){
             inquiryRender();
         }
-        std::cout<<render_ss.str();
-        render_ss.str(std::string());   
-        render_ss.clear();
+        //std::cout<<render_ss.str();
+        //render_ss.str(std::string());   
+        //render_ss.clear();
         if (states == GameState::NextScene){
             initializeGame(false); // re-initialize game with next scene
         }
@@ -378,7 +386,8 @@ public:
                     render_ss<<rc;
                     continue;
                 }
-                render_ss<<render_char;
+                //render_ss<<render_char;
+                std::cout<<render_char;
                 /*
                 bool has_actor = false;
                 char actorView = ' ';
@@ -398,7 +407,8 @@ public:
                 */ // TODO 
                 
             }
-            render_ss<<"\n";
+            //render_ss<<"\n";
+            std::cout<<"\n";
         }
     }
 
