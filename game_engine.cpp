@@ -272,7 +272,7 @@ public:
                 if (actor.contact_dialogue.empty()) continue;
                 checkGameIncidents(&actor, allIncidents, ContactType::Overlap);
                 dialogue_ss<<actor.contact_dialogue<<"\n";
-            } else if (abs(actor.position.x - mainActor->position.x) <=1 && abs(actor.position.y - mainActor->position.y) <=1){
+            } else if (glm::abs(actor.position.x - mainActor->position.x) <=1 && glm::abs(actor.position.y - mainActor->position.y) <=1){
                 if (actor.nearby_dialogue.empty()) continue;
                 checkGameIncidents(&actor, allIncidents, ContactType::Nearby);
                 dialogue_ss<<actor.nearby_dialogue<<"\n";

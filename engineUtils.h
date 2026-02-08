@@ -19,7 +19,7 @@ public:
         file_pointer = fopen(path.c_str(), "rb");
 #endif
         if (!file_pointer) {
-            std::cerr << "Failed to open file: " << path << std::endl;
+            std::cout << "Failed to open file: " << path << std::endl;
             return;
         }
 
