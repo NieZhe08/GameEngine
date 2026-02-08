@@ -155,7 +155,10 @@ public:
                     text_to_render.emplace_back((*intro_text)[text_idx >= intro_text->size()? intro_text->size()-1 : text_idx], 25, window_size.y - 50);
                 }
             } else {
-                if (intro_bgm_playing) AudioHelper::Mix_HaltChannel(0);
+                if (intro_bgm_playing) {
+                    AudioHelper::Mix_HaltChannel(0);
+                    intro_bgm_playing = false;
+                }
             }
                 
             frameRender(false);
