@@ -361,7 +361,6 @@ public:
         SDL_SetRenderDrawColor(ren, clear_color.x, clear_color.y, clear_color.z, 255);
         SDL_RenderClear(ren);
         Helper::SDL_RenderPresent(ren);
-        SDL_Delay(16); // Delay to control frame rate, adjust as needed
         //mapRender();
         //dialogueRender();
         //generalRender();
