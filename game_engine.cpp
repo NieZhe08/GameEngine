@@ -12,6 +12,9 @@
 #include <queue>
 #include "Helper.h"
 #include "SDL2/SDL.h"
+#include "SDL2/SDL_ttf.h"
+#include "image_db.h"
+#include "text_db.h"
 
 class GameEngine {
 public:
@@ -44,6 +47,12 @@ public:
     SDL_Event event;
     SDL_Window* win;
     SDL_Renderer* ren;
+    ImageDB* imageDB;
+    TextDB* textDB;
+    std::unique_ptr<std::vector<std::string>> intro_image;
+    std::unique_ptr<std::vector<std::string>> intro_text;
+    std::vector<ImageRenderConfig> images_to_render; // Queue of images to render each frame
+    std::vector<TextRenderConfig> text_to_render; // Queue of text to render each frame
 
     std::string next_scene_name;
 
@@ -68,8 +77,16 @@ public:
             clear_color = parser.getClearColor();
 
             SDL_Init(SDL_INIT_VIDEO);
-             win = helper.SDL_CreateWindow(game_title.c_str(), 100, 100, window_size.x, window_size.y, SDL_WINDOW_SHOWN);
-             ren = Helper::SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+            TTF_Init();
+            win = helper.SDL_CreateWindow(game_title.c_str(), 100, 100, window_size.x, window_size.y, SDL_WINDOW_SHOWN);
+            ren = Helper::SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+            imageDB = new ImageDB(ren);
+            imageDB->readIntroImage();
+            intro_image = imageDB->getIntroImageVector();
+
+            textDB = new TextDB(ren, (intro_image && !intro_image->empty())); // Only enable text rendering if intro images are present
+            textDB->readIntroText();
+            intro_text = textDB->getIntroTextVector();
         }
 
         // Clear mapHash before loading new scene to avoid stale actor indices
@@ -101,12 +118,30 @@ public:
 
     void gameLoop() {
         //initializeGame();
+        size_t image_idx = 0;
+        size_t text_idx = 0;
         while (states == GameState::Ongoing){
+            images_to_render.clear();
+            text_to_render.clear();
             while (Helper::SDL_PollEvent(&event)){
                 if (event.type == SDL_QUIT){
                     states = GameState::Lost;
+                    imageDB->clearCache();
                     break;
                 }
+                
+                if (intro_image && !intro_image->empty()) {
+                    SDL_Keycode key_press = event.key.keysym.scancode;
+                    if (key_press == SDL_SCANCODE_SPACE || key_press == SDL_SCANCODE_RETURN || 
+                        (event.type == SDL_MOUSEBUTTONDOWN && event.button.button == SDL_BUTTON_LEFT)) {
+                        image_idx++;
+                        text_idx++;
+                    }
+                }
+            }
+            if (intro_image && (image_idx < intro_image->size() || (intro_text && text_idx < intro_text->size()))) {
+                images_to_render.emplace_back((*intro_image)[image_idx >= intro_image->size()? intro_image->size()-1 : image_idx], SDL_Rect{0, 0, window_size.x, window_size.y});
+                text_to_render.emplace_back((*intro_text)[text_idx >= intro_text->size()? intro_text->size()-1 : text_idx], 100, 100);
             }
             frameRender(false);
         };
@@ -360,6 +395,21 @@ public:
         (void)isInitialRender;
         SDL_SetRenderDrawColor(ren, clear_color.x, clear_color.y, clear_color.z, 255);
         SDL_RenderClear(ren);
+        if (imageDB && !images_to_render.empty()) {
+            for (const ImageRenderConfig& config : images_to_render) {
+                if (!config.image_path.empty()) {
+                    imageDB->renderImage(config.image_path, config.dst);
+                }
+            }
+        }
+        if (textDB && !text_to_render.empty()) {
+            for (const TextRenderConfig& config : text_to_render) {
+                if (!config.text.empty()) {
+                    textDB->drawText(config.text, config.x, config.y);
+                }
+            }
+        }
+        
         Helper::SDL_RenderPresent(ren);
         //mapRender();
         //dialogueRender();
