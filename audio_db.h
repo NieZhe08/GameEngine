@@ -36,7 +36,7 @@ public:
 
             static bool audio_initialized = false;
             if (!audio_initialized) {
-                if (Mix_OpenAudio(48000, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
+                if (AudioHelper::Mix_OpenAudio(48000, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
                     std::cout << "error: Mix_OpenAudio failed: " << Mix_GetError() << "\n"; // should not happen
                     return nullptr;
                 }
