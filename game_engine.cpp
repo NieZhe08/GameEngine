@@ -481,13 +481,13 @@ public:
                 for (const Actor& actor : *actorList) {
                     if (actor.has_view_image) {
                         SDL_Texture* tex = imageDB->loadImage(actor.view_image);
-                        int tex_w = 0, tex_h = 0;
+                        float tex_w = 0.0f, tex_h = 0.0f;
                         if (tex) {
-                            SDL_QueryTexture(tex, nullptr, nullptr, &tex_w, &tex_h);
+                            Helper::SDL_QueryTexture(tex, &tex_w, &tex_h);
                         }
                         SDL_FRect dst_rect = {
-                            static_cast<float>(actor.transform_position.x) * 100 + camera.x - actor.view_pivot_offset.x, 
-                            static_cast<float>(actor.transform_position.y) * 100 + camera.y - actor.view_pivot_offset.y,
+                            (actor.transform_position.x) * 100 + camera.x - actor.view_pivot_offset.x, 
+                            (actor.transform_position.y) * 100 + camera.y - actor.view_pivot_offset.y,
                             tex_w * actor.transform_scale.x,
                             tex_h * actor.transform_scale.y
                         };

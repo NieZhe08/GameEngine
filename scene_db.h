@@ -87,10 +87,10 @@ public:
                     view_str = actor["view_image"].GetString();
                     if (view_str.length() > 0){
                         SDL_Texture* tex = imageDB->loadImage(view_str);
-                        int tex_width = 0, tex_height = 0;
-                        SDL_QueryTexture(tex, nullptr, nullptr, &tex_width, &tex_height);
-                        view_pivot_offset_x = static_cast<float>(tex_width) / 2.0f; // default pivot at center of the image
-                        view_pivot_offset_y = static_cast<float>(tex_height) / 2.0f;
+                        float tex_width = 0.0f, tex_height = 0.0f;
+                        Helper::SDL_QueryTexture(tex,  &tex_width, &tex_height);
+                        view_pivot_offset_x = (tex_width) / 2.0f; // default pivot at center of the image
+                        view_pivot_offset_y = (tex_height) / 2.0f;
                     }
                 }
                 if (actor.HasMember("transform_position_x"))
