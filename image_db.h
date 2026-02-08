@@ -56,7 +56,13 @@ public:
 
     SDL_Texture* loadImage(const std::string& path) {
         if (image_index_map.find(path) != image_index_map.end()) {
-            return cache[image_index_map[path]];
+            int idx = image_index_map[path];
+            if (idx >= 0 && idx < (int)cache.size() && cache[idx]) {
+                return cache[idx];
+            } else {
+                std::cout << "error: cache index out of bounds or null for " << path << "\n";
+                return nullptr;
+            }
         }
         std::string fullpath = path;
         if (!std::filesystem::exists(path)) {
@@ -81,8 +87,15 @@ public:
             if (!loadImage(path)) return;
         }
         int idx = image_index_map[path];
-        if (idx < 0 || idx >= (int)cache.size() || !cache[idx]) return;
+        if (idx < 0 || idx >= (int)cache.size()) {
+            std::cout << "error: renderImage cache index out of bounds for " << path << "\n";
+            return;
+        }
         SDL_Texture* tex = cache[idx];
+        if (!tex) {
+            std::cout << "error: renderImage cache texture is null for " << path << "\n";
+            return;
+        }
         Helper::SDL_QueryTexture(tex, &dst.w, &dst.h);
         Helper::SDL_RenderCopy(renderer_, tex, NULL, &dst);
     }

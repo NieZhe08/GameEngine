@@ -141,8 +141,11 @@ public:
             }
             if (intro_image && (image_idx < intro_image->size() || (intro_text && text_idx < intro_text->size()))) {
                 images_to_render.emplace_back((*intro_image)[image_idx >= intro_image->size()? intro_image->size()-1 : image_idx], SDL_FRect{0, 0, static_cast<float>(window_size.x), static_cast<float>(window_size.y)});
-                text_to_render.emplace_back((*intro_text)[text_idx >= intro_text->size()? intro_text->size()-1 : text_idx], 100, 100);
+                if (intro_text && !intro_text->empty()) {
+                    text_to_render.emplace_back((*intro_text)[text_idx >= intro_text->size()? intro_text->size()-1 : text_idx], 25, window_size.y - 50);
             }
+                }
+                
             frameRender(false);
         };
         //finalRender();
