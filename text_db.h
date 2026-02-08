@@ -52,7 +52,7 @@ public:
                 if (game.HasMember("font")){
                     std::string font_path = game["font"].GetString();
                     if (!std::filesystem::exists("resources/fonts/" + font_path + ".ttf")){
-                        std::cout<<"error: font "<<font_path<<" missing\n";// no newline at end
+                        std::cout<<"error: font "<<font_path<<" missing";// no newline at end
                         exit(0);
                     }
                     font = TTF_OpenFont(("resources/fonts/" + font_path + ".ttf").c_str(), 16);
@@ -61,7 +61,7 @@ public:
                         exit(0);
                     }
                 } else {
-                   std::cout << "error: text render failed. No font configured\n";
+                   std::cout << "error: text render failed. No font configured";
                     exit(0);
                 }
             } else {

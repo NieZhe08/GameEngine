@@ -68,7 +68,7 @@ public:
         if (!std::filesystem::exists(path)) {
             fullpath = "resources/images/" + path + ".png";
             if (!std::filesystem::exists(fullpath)) {
-                std::cout << "error: missing image " << fullpath << "\n";
+                std::cout << "error: missing image " << path << "\n";
                 return nullptr;
             }
         }
@@ -96,7 +96,6 @@ public:
             std::cout << "error: renderImage cache texture is null for " << path << "\n";
             return;
         }
-        Helper::SDL_QueryTexture(tex, &dst.w, &dst.h);
         Helper::SDL_RenderCopy(renderer_, tex, NULL, &dst);
     }
 
