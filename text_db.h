@@ -82,7 +82,7 @@ public:
         }
     }
 
-    void drawText(const std::string& text, int x, int y, SDL_Color color = {255, 255, 255, 255}) {
+    void drawText(const std::string& text, float x, float y, SDL_Color color = {255, 255, 255, 255}) {
         SDL_Surface* surface = TTF_RenderText_Solid(font, text.c_str(), color);
         if (!surface) {
             std::cout << "Failed to create text surface: " << TTF_GetError() << std::endl; // should not happen
@@ -94,8 +94,8 @@ public:
             SDL_FreeSurface(surface);
             return;
         }
-        SDL_Rect dstRect = { x, y, surface->w, surface->h };
-        SDL_RenderCopy(renderer_, texture, nullptr, &dstRect);
+        SDL_FRect dstRect = { x, y, static_cast<float>(surface->w), static_cast<float>(surface->h) };
+        Helper::SDL_RenderCopy(renderer_, texture, nullptr, &dstRect);
         SDL_FreeSurface(surface);
         SDL_DestroyTexture(texture);
         //std::cout << "[drawText] finished rendering text\n";

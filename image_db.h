@@ -76,15 +76,15 @@ public:
         return tex;
     }
 
-    void renderImage(const std::string& path, SDL_Rect dst) {
+    void renderImage(const std::string& path, SDL_FRect dst) {
         if (image_index_map.find(path) == image_index_map.end()){
             if (!loadImage(path)) return;
         }
         int idx = image_index_map[path];
         if (idx < 0 || idx >= (int)cache.size() || !cache[idx]) return;
         SDL_Texture* tex = cache[idx];
-        SDL_QueryTexture(tex, NULL, NULL, &dst.w, &dst.h);
-        SDL_RenderCopy(renderer_, tex, NULL, &dst);
+        Helper::SDL_QueryTexture(tex, &dst.w, &dst.h);
+        Helper::SDL_RenderCopy(renderer_, tex, NULL, &dst);
     }
 
     void clearCache() {
@@ -100,6 +100,6 @@ public:
 class ImageRenderConfig {
 public:
     std::string image_path;
-    SDL_Rect dst;
-    ImageRenderConfig(const std::string& path, SDL_Rect dst_rect) : image_path(path), dst(dst_rect) {}
+    SDL_FRect dst;
+    ImageRenderConfig(const std::string& path, SDL_FRect dst_rect) : image_path(path), dst(dst_rect) {}
 };
