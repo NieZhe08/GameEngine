@@ -159,7 +159,7 @@ public:
     }
 
     void updateIntroAnimation() {
-        if (states != GameState::IntroAnimation) return;
+        //if (states != GameState::IntroAnimation) return;
         if (intro_bgm_states == AudioState::Not_Started){
             AudioHelper::Mix_PlayChannel(0, intro_bgm_chunk, -1); // Play intro BGM in a loop
             intro_bgm_states = AudioState::Playing;
