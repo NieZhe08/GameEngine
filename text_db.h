@@ -1,3 +1,6 @@
+#ifndef TEXT_DB_H
+#define TEXT_DB_H
+
 #include <iostream>
 #include <filesystem>
 #include <vector>
@@ -111,4 +114,4 @@ public:
     TextRenderConfig(const std::string& text, int x, int y) : text(text), x(x), y(y) {}       
 };
 
-
+#endif // TEXT_DB_H

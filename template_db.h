@@ -1,3 +1,6 @@
+#ifndef TEMPLATE_DB_H
+#define TEMPLATE_DB_H
+
 #include <iostream>
 #include <filesystem>
 #include <unordered_map>
@@ -68,3 +71,5 @@ public:
         return "";
     }
 };
+
+#endif // TEMPLATE_DB_H

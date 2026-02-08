@@ -1,3 +1,6 @@
+#ifndef AUDIO_DB_H
+#define AUDIO_DB_H
+
 #include <iostream>
 #include <filesystem>
 #include <string.h>
@@ -13,9 +16,10 @@ class AudioDB {
     rapidjson::Document game;
     rapidjson::Document rendering;
     bool has_intro_bgm;
+    bool has_gameplay_bgm;
 
 public:
-    AudioDB(): has_intro_bgm(false){
+    AudioDB(): has_intro_bgm(false), has_gameplay_bgm(false) {
         //std::cout << "TextDB constructor called with do_text_rendering = " << do_text_rendering << std::endl;
         if (!std::filesystem::exists("resources/")){
             std::cout<<"error: resources/ missing"; // no newline at end
@@ -28,10 +32,14 @@ public:
         EngineUtils::ReadJsonFile("resources/game.config", game);   
     }
 
-    Mix_Chunk* readIntroBGM(){
-        if (game.HasMember("intro_bgm")) {
-            has_intro_bgm = true;
-            const rapidjson::Value& bgm = game["intro_bgm"];
+    Mix_Chunk* readBGM(std::string bgm_type){
+        if (game.HasMember(bgm_type.c_str())) {
+            if (bgm_type == "intro_bgm"){
+                has_intro_bgm = true;  
+            } else if (bgm_type == "gameplay_audio"){
+                has_gameplay_bgm = true;
+            }
+            const rapidjson::Value& bgm = game[bgm_type.c_str()];
             std::string intro_bgm = bgm.GetString();
 
             static bool audio_initialized = false;
@@ -66,12 +74,15 @@ public:
         }
     }
 
-    bool hasIntroBGM() const {
-        return has_intro_bgm;
+    AudioState hasIntroBGM() const {
+        return has_intro_bgm ? AudioState::Not_Started : AudioState::Stopped;
     }
 
+    AudioState hasGameplayBGM() const {
+        return has_gameplay_bgm ? AudioState::Not_Started : AudioState::Stopped;
+    }
 
 };
 
-
+#endif
 

@@ -1,3 +1,6 @@
+#ifndef JSON_PARSER_H
+#define JSON_PARSER_H
+
 #include <iostream>
 #include <cstdlib>
 #include <filesystem>
@@ -62,8 +65,8 @@ public:
 
     glm::ivec2 getResolution(){
         if (rendering.IsObject()){
-            int x_res = (rendering.HasMember("x_resolution"))? rendering["x_resolution"].GetInt(): 13;
-            int y_res = (rendering.HasMember("y_resolution"))? rendering["y_resolution"].GetInt(): 9;
+            int x_res = (rendering.HasMember("x_resolution"))? rendering["x_resolution"].GetInt(): 640;
+            int y_res = (rendering.HasMember("y_resolution"))? rendering["y_resolution"].GetInt(): 360;
             return glm::ivec2(x_res, y_res);
         } 
         return glm::ivec2(640, 360); // default resolution
@@ -89,3 +92,5 @@ public:
         }
     }
 };
+
+#endif

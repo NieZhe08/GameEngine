@@ -1,3 +1,6 @@
+#ifndef IMAGE_DB_H
+#define IMAGE_DB_H
+
 #include <iostream>
 #include <filesystem>
 #include <vector>
@@ -99,6 +102,26 @@ public:
         Helper::SDL_RenderCopy(renderer_, tex, NULL, &dst);
     }
 
+    void renderImageEx (int actor_id, const std::string& actor_name,
+        const std::string& path, SDL_FRect dst, float angle, SDL_FPoint* center,
+        glm::vec2 cam,
+        SDL_RendererFlip flip = SDL_FLIP_NONE) {
+        if (image_index_map.find(path) == image_index_map.end()){
+            if (!loadImage(path)) return;
+        }
+        int idx = image_index_map[path];
+        if (idx < 0 || idx >= (int)cache.size()) {
+            std::cout << "error: renderImageEx cache index out of bounds for " << path << "\n";
+            return;
+        }
+        SDL_Texture* tex = cache[idx];
+        if (!tex) {
+            std::cout << "error: renderImageEx cache texture is null for " << path << "\n";
+            return;
+        }
+        Helper::SDL_RenderCopyEx(actor_id, actor_name, renderer_, tex, NULL, &dst, angle, center, flip);
+    }
+
     void clearCache() {
         for (auto& tex : cache) {
             SDL_DestroyTexture(tex);
@@ -111,7 +134,22 @@ public:
 
 class ImageRenderConfig {
 public:
-    std::string image_path;
+
+    int actor_id; // for renderImageEx
+    std::string actor_name; // for renderImageEx
+
+    const std::string& image_path;
     SDL_FRect dst;
-    ImageRenderConfig(const std::string& path, SDL_FRect dst_rect) : image_path(path), dst(dst_rect) {}
+
+    float angle; // for renderImageEx
+    SDL_FPoint* view_pivot; // for renderImageEx
+
+    ImageRenderConfig(const std::string& path, SDL_FRect dst_rect, 
+    int _id = -1, std::string _name = "", float _agl = 0.0f, SDL_FPoint* _vp = nullptr) : 
+    actor_id(_id), actor_name(_name), 
+    image_path(path), dst(dst_rect),
+    angle(_agl), view_pivot(_vp)
+    {}
 };
+
+#endif // IMAGE_DB_H

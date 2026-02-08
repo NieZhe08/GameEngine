@@ -27,19 +27,19 @@ public:
     glm::ivec2 viewSize;
     // VIEWSIZE: here viewsize refers to viewSize (row, col)
     //std::string _game_start_message;
-    int health;
-    int score;
-    std::string input_query_message = std::string("Your options are \"n\", \"e\", \"s\", \"w\", \"quit\"\n");// TODO
+    //int health;
+    //int score;
+    //std::string input_query_message = std::string("Your options are \"n\", \"e\", \"s\", \"w\", \"quit\"\n");// TODO
     
     std::unordered_map<std::uint64_t, std::vector<int>> mapHash;
-    std::stringstream render_ss;
-    std::stringstream dialogue_ss;
+    //std::stringstream render_ss;
+    //std::stringstream dialogue_ss;
     GameState states;
-    std::vector<std::string> scored_actors; //TODO
+    //std::vector<std::string> scored_actors; //TODO
 
-    std::string game_start_message;
-    std::string game_over_good_message;
-    std::string game_over_bad_message;
+    //std::string game_start_message;
+    //std::string game_over_good_message;
+    //std::string game_over_bad_message;
 
     // SDL rendering stuff
     Helper helper;
@@ -57,29 +57,40 @@ public:
     std::vector<TextRenderConfig> text_to_render; // Queue of text to render each frame
 
     AudioDB audioDB;
-    Mix_Chunk* intro_bgm_chunk;
-    bool intro_bgm_playing = false;
-
+    Mix_Chunk* intro_bgm_chunk; // Intro Animation BGM chunk
+    Mix_Chunk* scene_bgm_chunk; // Game Scene BGM chunk
+    
     std::string next_scene_name;
+    
+    // Intro Animation Stage variables
+    size_t image_idx = 0;
+    size_t text_idx = 0;
+    AudioState intro_bgm_states = AudioState::Not_Started;
+
+    // Game Scene Wise Variables
+    // Call when states == GameState::Ongoing, update when GameState::NextScene
+    AudioState scene_bgm_states = AudioState::Not_Started;
+    glm::vec2 camera = glm::vec2(0,0); // Camera following the main actor
 
     GameEngine() {
-        next_scene_name = "";
+        //next_scene_name = "";
         initializeGame();
     }
 
     void initializeGame(bool isInitialLoad = true) {
         if  (isInitialLoad) {
             JsonParser parser;
-            game_start_message = parser.getGameStartMessage();
-            game_over_good_message = parser.getGameOverGoodMessage();
-            game_over_bad_message = parser.getGameOverBadMessage();
-            //viewSize = parser.getResolution();
-            
+            //game_start_message = parser.getGameStartMessage();
+            //game_over_good_message = parser.getGameOverGoodMessage();
+            //game_over_bad_message = parser.getGameOverBadMessage();
+            ////viewSize = parser.getResolution();
+            //
             next_scene_name = parser.getInitialScene();
 
             //SDL
             game_title = parser.getGameTitle();
             window_size = parser.getResolution();
+            //std::cout<<"window_size: "<<window_size.x<<" "<<window_size.y<<"\n";
             clear_color = parser.getClearColor();
 
             SDL_Init(SDL_INIT_VIDEO);
@@ -94,15 +105,19 @@ public:
             textDB->readIntroText();
             intro_text = textDB->getIntroTextVector();
 
-            intro_bgm_chunk = audioDB.readIntroBGM();
-            intro_bgm_playing  = audioDB.hasIntroBGM();
+            intro_bgm_chunk = audioDB.readBGM("intro_bgm");
+            intro_bgm_states  = audioDB.hasIntroBGM();
+            scene_bgm_chunk = audioDB.readBGM("gameplay_audio");
+            scene_bgm_states = audioDB.hasGameplayBGM();
+
+            camera = glm::vec2(window_size.x /2.0f, window_size.y /2.0f); // Initialize camera to center of the window
         }
 
         // Clear mapHash before loading new scene to avoid stale actor indices
         mapHash.clear();
 
         // load scene module
-        SceneDB sceneDB(next_scene_name, mapHash);
+        SceneDB sceneDB(next_scene_name, mapHash, imageDB);
         actorList = sceneDB.getSceneActors();
         // After moving actorList, resolve mainActor to point inside actorList
         int mainIndex = sceneDB.getMainActorIndex();
@@ -113,169 +128,197 @@ public:
         }
         mapSize = sceneDB.getMapSize();
 
-        if (isInitialLoad){
-            health = 3;
-            score = 0;
-        }
+        //if (isInitialLoad){
+        //    health = 3;
+        //    score = 0;
+        //}
         
-        states = GameState::Ongoing;
-        scored_actors = std::vector<std::string>();
+        states = GameState::IntroAnimation;
+        //scored_actors = std::vector<std::string>();
         next_scene_name = "";
         // Initialize game state, load map, actors, etc.
         //frameRender(isInitialLoad);
     }
 
-    void gameLoop() {
-        //initializeGame();
-        size_t image_idx = 0;
-        size_t text_idx = 0;
-        if (intro_bgm_playing ) AudioHelper::Mix_PlayChannel(0, intro_bgm_chunk, -1); // Play intro BGM in a loop
-        while (states == GameState::Ongoing){
-            images_to_render.clear();
-            text_to_render.clear();
-            while (Helper::SDL_PollEvent(&event)){
-                if (event.type == SDL_QUIT){
-                    states = GameState::Lost;
-                    imageDB->clearCache();
-                    break;
-                }
-                
-                if (intro_image && !intro_image->empty()) {
+    void update(){
+        switch (states) {
+            case GameState::IntroAnimation:
+                updateIntroAnimation();
+                break;
+            case GameState::Ongoing:
+                updateOngoing();
+                break;
+            case GameState::NextScene:
+                //initializeGame(false); // Load next scene without resetting game state
+                break;
+            case GameState::Won:
+            case GameState::Lost:
+                // Handle end game logic, show messages, etc.
+                break;
+        }
+    }
+
+    void updateIntroAnimation() {
+        if (states != GameState::IntroAnimation) return;
+        if (intro_bgm_states == AudioState::Not_Started){
+            AudioHelper::Mix_PlayChannel(0, intro_bgm_chunk, -1); // Play intro BGM in a loop
+            intro_bgm_states = AudioState::Playing;
+        } 
+
+        /* below is a FRAME-WISE update for Intro Animation Stage*/
+        images_to_render.clear();
+        text_to_render.clear();
+        while (Helper::SDL_PollEvent(&event)) {
+            if (event.type == SDL_QUIT) {
+                states = GameState::Lost;
+                break; // exit the Intro Animation Stage
+            }
+            if (intro_image && !intro_image->empty()) {
+                if (event.type == SDL_KEYDOWN) {
                     SDL_Keycode key_press = event.key.keysym.scancode;
-                    if (key_press == SDL_SCANCODE_SPACE || key_press == SDL_SCANCODE_RETURN || 
-                        (event.type == SDL_MOUSEBUTTONDOWN && event.button.button == SDL_BUTTON_LEFT)) {
+                    if (key_press == SDL_SCANCODE_SPACE || key_press == SDL_SCANCODE_RETURN) {
                         image_idx++;
                         text_idx++;
                     }
+                } else if (event.type == SDL_MOUSEBUTTONDOWN && event.button.button == SDL_BUTTON_LEFT) {
+                    image_idx++;
+                    text_idx++;
                 }
             }
-            if (intro_image && (image_idx < intro_image->size() || (intro_text && text_idx < intro_text->size()))) {
-                images_to_render.emplace_back((*intro_image)[image_idx >= intro_image->size()? intro_image->size()-1 : image_idx], SDL_FRect{0, 0, static_cast<float>(window_size.x), static_cast<float>(window_size.y)});
-                if (intro_text && !intro_text->empty()) {
-                    text_to_render.emplace_back((*intro_text)[text_idx >= intro_text->size()? intro_text->size()-1 : text_idx], 25, window_size.y - 50);
-                }
-            } else {
-                if (intro_bgm_playing) {
-                    AudioHelper::Mix_HaltChannel(0);
-                    intro_bgm_playing = false;
-                }
+        }
+        if (intro_image && (image_idx < intro_image->size() || (intro_text && text_idx < intro_text->size()))) {
+            images_to_render.emplace_back((*intro_image)[image_idx >= intro_image->size()? intro_image->size()-1 : image_idx], SDL_FRect{0, 0, static_cast<float>(window_size.x), static_cast<float>(window_size.y)});
+            if (intro_text && !intro_text->empty()) {
+                text_to_render.emplace_back((*intro_text)[text_idx >= intro_text->size()? intro_text->size()-1 : text_idx], 25, window_size.y - 50);
             }
-                
-            frameRender(false);
-        };
-        //finalRender();
-    }
-
-    PlayerAction getPlayerAction() { // input main
-        std::string input = "";
-        std::cin>>input;
-        if (input=="quit") return PlayerAction::Quit;
-        else if (input=="n") return PlayerAction::MoveUp;
-        else if (input=="s") return PlayerAction::MoveDown;
-        else if (input=="w") return PlayerAction::MoveLeft;
-        else if (input=="e") return PlayerAction::MoveRight;
-        else return PlayerAction::Invalid;
-    }
-
-    void updateActorPositions(PlayerAction playerAction) {
-        // Update NPC positions based on their velocities
-        if (!actorList) return;
-        for (Actor& actor : *actorList){
-            glm::ivec2 nextPosition;
-            bool hasMoved = false;
-            if (&actor == mainActor) {
-                auto result = updatePlayerPosition(playerAction);
-                nextPosition = result.first;
-                hasMoved = result.second;
-            } else {
-                if (actor.velocity != glm::ivec2(0,0)){
-                    hasMoved = true;
-                }
-                nextPosition = actor.position + actor.velocity;
-            }
-            if (!hasMoved) continue; // skip the following steps if the actor has not moved
-            // collision detection only worry about whether collision happens between actor itself and others
-            if (!collisionDetected(nextPosition, & actor)){// need to update mapHash
-                // remove the actor's index from its old cell
-                auto vectorIt = mapHash.find(hashPosition(actor.position));
-                if (vectorIt != mapHash.end()) {
-                    //int idx = static_cast<int>(&actor - &(*actorList)[0]);// TODO
-                    int idx = actor.id;
-                    auto removeIt = std::remove(vectorIt->second.begin(), vectorIt->second.end(), idx);
-                    vectorIt->second.erase(removeIt, vectorIt->second.end());
-                }
-                // push actor index into new cell
-                //int new_idx = static_cast<int>(&actor - &(*actorList)[0]);
-                int new_idx = actor.id;
-                mapHash[hashPosition(nextPosition)].push_back(new_idx);
-                actor.position = nextPosition;
-            } else {
-                actor.velocity = -actor.velocity; // Reverse direction on collision
+        } else {// exit the Intro Animation Stage when all intro images and texts have been shown
+            states = GameState::Ongoing;
+            if (intro_bgm_states == AudioState::Playing){ 
+                AudioHelper::Mix_HaltChannel(0);
             }
         }
     }
 
+    void updateOngoing(){
+        if (states != GameState::Ongoing) return;
 
-    void updateGameState(PlayerAction action) { // update main
-        // Update game state based on player action
-        updateActorPositions(action);
-        if (action == PlayerAction::Quit){
-            health = 0; // End game
-        } else {
-            //updatePlayerPosition(action);
-            std::vector<GameIncident> incidents;
-            updateDialogues(incidents);
-            updateGameIncidents(incidents);
-            if (health <= 0){
+        if (scene_bgm_states == AudioState::Not_Started){
+            AudioHelper::Mix_PlayChannel(0, scene_bgm_chunk, -1); // Play gameplay BGM in a loop
+            scene_bgm_states = AudioState::Playing;
+        }
+
+        images_to_render.clear();
+        text_to_render.clear();
+
+        while (Helper::SDL_PollEvent(&event)) {
+            if (event.type == SDL_QUIT) {
                 states = GameState::Lost;
+                break; // exit the game loop
             }
+            // Handle other events like player input for actions
         }
+        
     }
+
+    //void updateActorPositions(PlayerAction playerAction) {
+    //    // Update NPC positions based on their velocities
+    //    if (!actorList) return;
+    //    for (Actor& actor : *actorList){
+    //        glm::ivec2 nextPosition;
+    //        bool hasMoved = false;
+    //        if (&actor == mainActor) {
+    //            auto result = updatePlayerPosition(playerAction);
+    //            nextPosition = result.first;
+    //            hasMoved = result.second;
+    //        } else {
+    //            if (actor.velocity != glm::ivec2(0,0)){
+    //                hasMoved = true;
+    //            }
+    //            nextPosition = actor.position + actor.velocity;
+    //        }
+    //        if (!hasMoved) continue; // skip the following steps if the actor has not moved
+    //        // collision detection only worry about whether collision happens between actor itself and others
+    //        if (!collisionDetected(nextPosition, & actor)){// need to update mapHash
+    //            // remove the actor's index from its old cell
+    //            auto vectorIt = mapHash.find(hashPosition(actor.position));
+    //            if (vectorIt != mapHash.end()) {
+    //                //int idx = static_cast<int>(&actor - &(*actorList)[0]);// TODO
+    //                int idx = actor.id;
+    //                auto removeIt = std::remove(vectorIt->second.begin(), vectorIt->second.end(), idx);
+    //                vectorIt->second.erase(removeIt, vectorIt->second.end());
+    //            }
+    //            // push actor index into new cell
+    //            //int new_idx = static_cast<int>(&actor - &(*actorList)[0]);
+    //            int new_idx = actor.id;
+    //            mapHash[hashPosition(nextPosition)].push_back(new_idx);
+    //            actor.position = nextPosition;
+    //        } else {
+    //            actor.velocity = -actor.velocity; // Reverse direction on collision
+    //        }
+    //    }
+    //}
+
+
+    //void updateGameState(PlayerAction action) { // update main
+        // Update game state based on player action
+        //updateActorPositions(action);
+        //if (action == PlayerAction::Quit){
+        //    health = 0; // End game
+        //} else {
+        //    //updatePlayerPosition(action);
+        //    std::vector<GameIncident> incidents;
+        //    updateDialogues(incidents);
+        //    updateGameIncidents(incidents);
+        //    if (health <= 0){
+        //        states = GameState::Lost;
+        //    }
+        //}
+    //}
 
     // TO DO
-    bool collisionDetected(glm::ivec2 position, Actor* actor_ptr) {
-        //assert (true);// do check of index
-        /*
-        if (position.x<0 || position.x>=mapSize.x || position.y<0 || position.y>=mapSize.y){
-            return true;
-        }
-        */
-        std::uint64_t key = hashPosition(position);
-        auto it = mapHash.find(key);
-        if (it != mapHash.end()){
-            for (int idx : it->second){
-                Actor* actor = &(*actorList)[idx];
-                if (actor->blocking && actor != actor_ptr){
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
+    //bool collisionDetected(glm::ivec2 position, Actor* actor_ptr) {
+    //    //assert (true);// do check of index
+    //    /*
+    //    if (position.x<0 || position.x>=mapSize.x || position.y<0 || position.y>=mapSize.y){
+    //        return true;
+    //    }
+    //    */
+    //    std::uint64_t key = hashPosition(position);
+    //    auto it = mapHash.find(key);
+    //    if (it != mapHash.end()){
+    //        for (int idx : it->second){
+    //            Actor* actor = &(*actorList)[idx];
+    //            if (actor->blocking && actor != actor_ptr){
+    //                return true;
+    //            }
+    //        }
+    //    }
+    //    return false;
+    //}
 
-    std::pair<glm::ivec2, bool> updatePlayerPosition(PlayerAction action) {
-        // Update player position based on action
-        if (!mainActor) return std::make_pair(glm::ivec2(0,0), false);
-        glm::ivec2 nextPosition = mainActor->position;
-        bool hasMoved = true;
-        switch (action) {
-            case PlayerAction::MoveUp:
-                nextPosition.y -= 1;
-                break;
-            case PlayerAction::MoveDown:
-                nextPosition.y += 1;
-                break;
-            case PlayerAction::MoveLeft:
-                nextPosition.x -= 1;
-                break;
-            case PlayerAction::MoveRight:
-                nextPosition.x += 1;
-                break;
-            default:
-                hasMoved = false;
-                break;
-        }
-        return std::make_pair(nextPosition, hasMoved);
+    //std::pair<glm::ivec2, bool> updatePlayerPosition(PlayerAction action) {
+    //    // Update player position based on action
+    //    if (!mainActor) return std::make_pair(glm::ivec2(0,0), false);
+    //    glm::ivec2 nextPosition = mainActor->position;
+    //    bool hasMoved = true;
+    //    switch (action) {
+    //        case PlayerAction::MoveUp:
+    //            nextPosition.y -= 1;
+    //            break;
+    //        case PlayerAction::MoveDown:
+    //            nextPosition.y += 1;
+    //            break;
+    //        case PlayerAction::MoveLeft:
+    //            nextPosition.x -= 1;
+    //            break;
+    //        case PlayerAction::MoveRight:
+    //            nextPosition.x += 1;
+    //            break;
+    //        default:
+    //            hasMoved = false;
+    //            break;
+    //    }
+    //    return std::make_pair(nextPosition, hasMoved);
         /*
         //std::cout<<"collision"<<(collisionDetected(nextPosition) ? " detected\n" : " not detected\n");
         if (!collisionDetected(nextPosition, mainActor->actor_name)){
@@ -285,39 +328,39 @@ public:
         return mainActor->position;
         */
         
-    }
+    //}
 
-    std::vector<GameIncident> updateDialogues(std::vector<GameIncident>& allIncidents) {
-        // Update dialogues based on proximity to other actors
-        // Use min-heap (std::greater) so that smaller actor IDs are processed first
-        std::priority_queue<int, std::vector<int>, std::greater<int>> actorsToBeDealted;
-        if (!actorList || !mainActor) return allIncidents;
-        for (int i = -1; i<2; i++){
-            for (int j = -1; j<2; j++){
-                glm::ivec2 check_position = mainActor->position + glm::ivec2(i, j);
-                auto it = mapHash.find(hashPosition(check_position));
-                if (it != mapHash.end() && !it->second.empty()){
-                    for (int actor_idx : it->second){
-                        actorsToBeDealted.push(actor_idx);
-                    }
-                }
-            }
-        }
-        while (!actorsToBeDealted.empty()){
-            int actor_idx = actorsToBeDealted.top();
-            actorsToBeDealted.pop();
-            Actor& actor = (*actorList)[actor_idx];
-                if (actor.position.x == mainActor->position.x && actor.position.y == mainActor->position.y){
-                    if (&actor == mainActor) continue;
-                    if (actor.contact_dialogue.empty()) continue;
-                    checkGameIncidents(&actor, allIncidents, ContactType::Overlap);
-                    dialogue_ss<<actor.contact_dialogue<<"\n";
-                } else {
-                    if (actor.nearby_dialogue.empty()) continue;
-                    checkGameIncidents(&actor, allIncidents, ContactType::Nearby);
-                    dialogue_ss<<actor.nearby_dialogue<<"\n";
-                }
-        }
+    //std::vector<GameIncident> updateDialogues(std::vector<GameIncident>& allIncidents) {
+    //    // Update dialogues based on proximity to other actors
+    //    // Use min-heap (std::greater) so that smaller actor IDs are processed first
+    //    std::priority_queue<int, std::vector<int>, std::greater<int>> actorsToBeDealted;
+    //    if (!actorList || !mainActor) return allIncidents;
+    //    for (int i = -1; i<2; i++){
+    //        for (int j = -1; j<2; j++){
+    //            glm::ivec2 check_position = mainActor->position + glm::ivec2(i, j);
+    //            auto it = mapHash.find(hashPosition(check_position));
+    //            if (it != mapHash.end() && !it->second.empty()){
+    //                for (int actor_idx : it->second){
+    //                    actorsToBeDealted.push(actor_idx);
+    //                }
+    //            }
+    //        }
+    //    }
+    //    while (!actorsToBeDealted.empty()){
+    //        int actor_idx = actorsToBeDealted.top();
+    //        actorsToBeDealted.pop();
+    //        Actor& actor = (*actorList)[actor_idx];
+    //            if (actor.position.x == mainActor->position.x && actor.position.y == mainActor->position.y){
+    //                if (&actor == mainActor) continue;
+    //                if (actor.contact_dialogue.empty()) continue;
+    //                checkGameIncidents(&actor, allIncidents, ContactType::Overlap);
+    //                dialogue_ss<<actor.contact_dialogue<<"\n";
+    //            } else {
+    //                if (actor.nearby_dialogue.empty()) continue;
+    //                checkGameIncidents(&actor, allIncidents, ContactType::Nearby);
+    //                dialogue_ss<<actor.nearby_dialogue<<"\n";
+    //            }
+    //    }
         /*
         for (Actor& actor : *actorList){
             if (actor.position.x == mainActor->position.x && actor.position.y == mainActor->position.y){
@@ -332,85 +375,96 @@ public:
             }
         }
         */
-        return allIncidents;
-    }
+    //    return allIncidents;
+    //}
 
-    void updateGameIncidents(std::vector<GameIncident>& incidents) {
-        for (GameIncident& incident : incidents){
-            switch (incident){
-                case GameIncident::HealthDown:
-                    health -= 1;
-                    break;
-                case GameIncident::ScoreUp:
-                    score += 1;
-                    break;
-                case GameIncident::YouWin:
-                    states = GameState::Won;
-                    break;
-                case GameIncident::GameOver:
-                    states = GameState::Lost;
-                    break;
-                case GameIncident::NextScene:
-                    states = GameState::NextScene;
-                    break;
-                default:
-                    break;
-            }
-        }
-    }
+    //void updateGameIncidents(std::vector<GameIncident>& incidents) {
+    //    for (GameIncident& incident : incidents){
+    //        switch (incident){
+    //            case GameIncident::HealthDown:
+    //                health -= 1;
+    //                break;
+    //            case GameIncident::ScoreUp:
+    //                score += 1;
+    //                break;
+    //            case GameIncident::YouWin:
+    //                states = GameState::Won;
+    //                break;
+    //            case GameIncident::GameOver:
+    //                states = GameState::Lost;
+    //                break;
+    //            case GameIncident::NextScene:
+    //                states = GameState::NextScene;
+    //                break;
+    //            default:
+    //                break;
+    //        }
+    //    }
+    //}
 
     //TO DO check when read in
-    void checkGameIncidents(Actor* actor, std::vector<GameIncident>& allIncidents, ContactType contactType) {
-        switch (contactType){
-            case ContactType::Nearby:
-                if (actor->nearby_incident != GameIncident::None
-                && (actor->nearby_incident != GameIncident::ScoreUp || !actor->triggered_scoreUp)){
-                    allIncidents.push_back(actor->nearby_incident);
-                    if (actor->nearby_incident == GameIncident::ScoreUp){
-                        actor->triggered_scoreUp = true;
-                    } else if (actor->nearby_incident == GameIncident::NextScene){
-                        next_scene_name = actor->nearby_scene;
-                    } 
-                    //dialogue_ss<<actor->nearby_dialogue<<"\n";
-                }
-                break;
-            case ContactType::Overlap:
-                if (actor->contact_incident != GameIncident::None
-                && (actor->contact_incident != GameIncident::ScoreUp || !actor->triggered_scoreUp)){
-                    allIncidents.push_back(actor->contact_incident); 
-                    if (actor->contact_incident == GameIncident::ScoreUp){
-                        actor->triggered_scoreUp = true;
-                    }
-                    if (actor->contact_incident == GameIncident::NextScene){
-                        next_scene_name = actor->contact_scene;
-                    }
-                    //dialogue_ss<<actor->contact_dialogue<<"\n";
-                }
-                break;
+    //void checkGameIncidents(Actor* actor, std::vector<GameIncident>& allIncidents, ContactType contactType) {
+    //    switch (contactType){
+    //        case ContactType::Nearby:
+    //            if (actor->nearby_incident != GameIncident::None
+    //            && (actor->nearby_incident != GameIncident::ScoreUp || !actor->triggered_scoreUp)){
+    //                allIncidents.push_back(actor->nearby_incident);
+    //                if (actor->nearby_incident == GameIncident::ScoreUp){
+    //                    actor->triggered_scoreUp = true;
+    //                } else if (actor->nearby_incident == GameIncident::NextScene){
+    //                    next_scene_name = actor->nearby_scene;
+    //                } 
+    //                //dialogue_ss<<actor->nearby_dialogue<<"\n";
+    //            }
+    //            break;
+    //        case ContactType::Overlap:
+    //            if (actor->contact_incident != GameIncident::None
+    //            && (actor->contact_incident != GameIncident::ScoreUp || !actor->triggered_scoreUp)){
+    //                allIncidents.push_back(actor->contact_incident); 
+    //                if (actor->contact_incident == GameIncident::ScoreUp){
+    //                    actor->triggered_scoreUp = true;
+    //                }
+    //                if (actor->contact_incident == GameIncident::NextScene){
+    //                    next_scene_name = actor->contact_scene;
+    //                }
+    //                //dialogue_ss<<actor->contact_dialogue<<"\n";
+    //            }
+    //            break;
+    //    }
+    //    return;
+    //}
+
+    //void dialogueRender(){
+    //    std::cout<<dialogue_ss.str();
+    //    //render_ss<<dialogue_ss.str();
+    //    dialogue_ss.str(std::string());
+    //    dialogue_ss.clear();
+    //}
+//
+    //void generalRender(){
+    //    // Render General Printing Messages
+    //    //render_ss<<"health : "<<health<<", score : "<<score<<"\n";
+    //    std::cout<<"health : "<<health<<", score : "<<score<<"\n";
+    //}
+//
+    //void inquiryRender(){
+    //    std::cout<<"Please make a decision...\n";
+    //    std::cout<<input_query_message;
+    //}
+
+    void gameLoop() {
+        //initializeGame();
+        while (states != GameState::Won && states != GameState::Lost) {
+            update();
+            frameRender(false);
         }
-        return;
-    }
-
-    void dialogueRender(){
-        std::cout<<dialogue_ss.str();
-        //render_ss<<dialogue_ss.str();
-        dialogue_ss.str(std::string());
-        dialogue_ss.clear();
-    }
-
-    void generalRender(){
-        // Render General Printing Messages
-        //render_ss<<"health : "<<health<<", score : "<<score<<"\n";
-        std::cout<<"health : "<<health<<", score : "<<score<<"\n";
-    }
-
-    void inquiryRender(){
-        std::cout<<"Please make a decision...\n";
-        std::cout<<input_query_message;
+        //finalRender();
+        imageDB->clearCache();
     }
 
     void frameRender(bool isInitialRender = false) {// render main
         (void)isInitialRender;
+        //std::cout << "clear color is "<< clear_color.x<< clear_color.y<< clear_color.z<< std::endl;
         SDL_SetRenderDrawColor(ren, clear_color.x, clear_color.y, clear_color.z, 255);
         SDL_RenderClear(ren);
         if (imageDB && !images_to_render.empty()) {
@@ -418,8 +472,51 @@ public:
                 if (!config.image_path.empty()) {
                     imageDB->renderImage(config.image_path, config.dst);
                 }
+                //std::cout<<"rendering image "<<config.image_path<<" at position "<<config.dst.x<<","<<config.dst.y<<"\n";
             }
         }
+        if (states == GameState::Ongoing){
+            // Render game scene based on actor positions and map
+            if (actorList) {
+                for (const Actor& actor : *actorList) {
+                    if (actor.has_view_image) {
+                        SDL_Texture* tex = imageDB->loadImage(actor.view_image);
+                        int tex_w = 0, tex_h = 0;
+                        if (tex) {
+                            SDL_QueryTexture(tex, nullptr, nullptr, &tex_w, &tex_h);
+                        }
+                        SDL_FRect dst_rect = {
+                            static_cast<float>(actor.transform_position.x) * 100 + camera.x - actor.view_pivot_offset.x, 
+                            static_cast<float>(actor.transform_position.y) * 100 + camera.y - actor.view_pivot_offset.y,
+                            tex_w * actor.transform_scale.x,
+                            tex_h * actor.transform_scale.y
+                        };
+                        SDL_RendererFlip f;
+                        if (actor.flip_x && actor.flip_y) {
+                            f = static_cast<SDL_RendererFlip>(SDL_FLIP_HORIZONTAL | SDL_FLIP_VERTICAL);
+                        } else if (actor.flip_x) {
+                            f = SDL_FLIP_HORIZONTAL;
+                        } else if (actor.flip_y) {
+                            f = SDL_FLIP_VERTICAL;
+                        } else {
+                            f = SDL_FLIP_NONE;
+                        }
+                        imageDB->renderImageEx(
+                            actor.id,
+                            actor.actor_name,
+                            actor.view_image,
+                            dst_rect,
+                            actor.transform_rotation_degrees,
+                            (SDL_FPoint*)&actor.view_pivot_offset,
+                            camera,
+                            f
+                        );
+                        //std::cout<<"rendering actor "<<actor.actor_name<<" at position "<<actor.transform_position.x<<","<<actor.transform_position.y<<"\n";
+                    }
+                }
+            }
+        }
+
         if (textDB && !text_to_render.empty()) {
             for (const TextRenderConfig& config : text_to_render) {
                 if (!config.text.empty()) {
@@ -444,40 +541,40 @@ public:
         //}
     }
 
-    void mapRender(){
-        if (!mainActor) return;
-        for (int i=0; i<viewSize.y; i++){
-            int row = mainActor->position.y - viewSize.y/2 + i;
-            for (int j=0; j<viewSize.x; j++){
-                int col = mainActor->position.x - viewSize.x/2 + j;
-                char render_char = ' ';
-                auto it = mapHash.find(hashPosition(glm::ivec2(col, row)));
-                if (it!=mapHash.end() && !it->second.empty()){
-                    // choose the actor with the largest id among those in this cell
-                    int best_idx = it->second[0];
-                    for (int idx : it->second){
-                        if ((*actorList)[idx].id > (*actorList)[best_idx].id) best_idx = idx;
-                    }
-                    char rc = (*actorList)[best_idx].view;
-                    std::cout<<rc;
-                    continue;
-                }
-                std::cout<<render_char;
-            }
-            std::cout<<"\n";
-        }
-    }
+    //void mapRender(){
+    //    if (!mainActor) return;
+    //    for (int i=0; i<viewSize.y; i++){
+    //        int row = mainActor->position.y - viewSize.y/2 + i;
+    //        for (int j=0; j<viewSize.x; j++){
+    //            int col = mainActor->position.x - viewSize.x/2 + j;
+    //            char render_char = ' ';
+    //            auto it = mapHash.find(hashPosition(glm::ivec2(col, row)));
+    //            if (it!=mapHash.end() && !it->second.empty()){
+    //                // choose the actor with the largest id among those in this cell
+    //                int best_idx = it->second[0];
+    //                for (int idx : it->second){
+    //                    if ((*actorList)[idx].id > (*actorList)[best_idx].id) best_idx = idx;
+    //                }
+    //                char rc = (*actorList)[best_idx].view;
+    //                std::cout<<rc;
+    //                continue;
+    //            }
+    //            std::cout<<render_char;
+    //        }
+    //        std::cout<<"\n";
+    //    }
+    //}
 
-    void finalRender() {
-        switch (states){
-        case GameState::Won:
-            std::cout<<game_over_good_message;
-            break;
-        case GameState::Lost:
-            std::cout<<game_over_bad_message;
-            break;
-        default:
-            break;
-        }
-    }
+    //void finalRender() {
+    //    switch (states){
+    //    case GameState::Won:
+    //        std::cout<<game_over_good_message;
+    //        break;
+    //    case GameState::Lost:
+    //        std::cout<<game_over_bad_message;
+    //        break;
+    //    default:
+    //        break;
+    //    }
+    //}
 };
