@@ -71,6 +71,11 @@ public:
     // Call when states == GameState::Ongoing, update when GameState::NextScene
     AudioState scene_bgm_states = AudioState::Not_Started;
     glm::vec2 camera = glm::vec2(0,0); // Camera following the main actor
+    // HUD and decisive game variables
+    int health = 3;
+    int score = 0;
+    std::string hp_image = "";
+
 
     GameEngine() {
         //next_scene_name = "";
@@ -467,56 +472,27 @@ public:
         //std::cout << "clear color is "<< clear_color.x<< clear_color.y<< clear_color.z<< std::endl;
         SDL_SetRenderDrawColor(ren, clear_color.x, clear_color.y, clear_color.z, 255);
         SDL_RenderClear(ren);
-        if (imageDB && !images_to_render.empty()) {
-            for (const ImageRenderConfig& config : images_to_render) {
-                if (!config.image_path.empty()) {
-                    imageDB->renderImage(config.image_path, config.dst);
-                }
-                //std::cout<<"rendering image "<<config.image_path<<" at position "<<config.dst.x<<","<<config.dst.y<<"\n";
-            }
-        }
-        if (states == GameState::Ongoing){
+        if (true){
             // Render game scene based on actor positions and map
             if (actorList) {
                 for (const Actor& actor : *actorList) {
                     if (actor.has_view_image) {
-                        SDL_Texture* tex = imageDB->loadImage(actor.view_image);
-                        float tex_w = 0.0f, tex_h = 0.0f;
-                        if (tex) {
-                            Helper::SDL_QueryTexture(tex, &tex_w, &tex_h);
-                        }
-                        SDL_FRect dst_rect = {
-                            (actor.transform_position.x) * 100 + camera.x - actor.view_pivot_offset.x, 
-                            (actor.transform_position.y) * 100 + camera.y - actor.view_pivot_offset.y,
-                            tex_w * actor.transform_scale.x,
-                            tex_h * actor.transform_scale.y
-                        };
-                        SDL_RendererFlip f;
-                        if (actor.flip_x && actor.flip_y) {
-                            f = static_cast<SDL_RendererFlip>(SDL_FLIP_HORIZONTAL | SDL_FLIP_VERTICAL);
-                        } else if (actor.flip_x) {
-                            f = SDL_FLIP_HORIZONTAL;
-                        } else if (actor.flip_y) {
-                            f = SDL_FLIP_VERTICAL;
-                        } else {
-                            f = SDL_FLIP_NONE;
-                        }
                         imageDB->renderImageEx(
-                            actor.id,
-                            actor.actor_name,
-                            actor.view_image,
-                            dst_rect,
-                            actor.transform_rotation_degrees,
-                            (SDL_FPoint*)&actor.view_pivot_offset,
-                            camera,
-                            f
+                            &actor, camera
                         );
                         //std::cout<<"rendering actor "<<actor.actor_name<<" at position "<<actor.transform_position.x<<","<<actor.transform_position.y<<"\n";
                     }
                 }
             }
         }
-
+        if (imageDB && !images_to_render.empty()) {
+                    for (const ImageRenderConfig& config : images_to_render) {
+                        if (!config.image_path.empty()) {
+                            imageDB->renderImage(config.image_path, config.dst);
+                        }
+                        //std::cout<<"rendering image "<<config.image_path<<" at position "<<config.dst.x<<","<<config.dst.y<<"\n";
+                    }
+                }
         if (textDB && !text_to_render.empty()) {
             for (const TextRenderConfig& config : text_to_render) {
                 if (!config.text.empty()) {

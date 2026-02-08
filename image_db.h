@@ -102,24 +102,42 @@ public:
         Helper::SDL_RenderCopy(renderer_, tex, NULL, &dst);
     }
 
-    void renderImageEx (int actor_id, const std::string& actor_name,
-        const std::string& path, SDL_FRect dst, float angle, SDL_FPoint* center,
-        glm::vec2 cam,
-        SDL_RendererFlip flip = SDL_FLIP_NONE) {
-        if (image_index_map.find(path) == image_index_map.end()){
-            if (!loadImage(path)) return;
+    void renderImageEx (const Actor* actor,
+        glm::vec2 cam) {
+        if (image_index_map.find(actor->view_image) == image_index_map.end()){
+            if (!loadImage(actor->view_image)) return;
         }
-        int idx = image_index_map[path];
+        int idx = image_index_map[actor->view_image];
         if (idx < 0 || idx >= (int)cache.size()) {
-            std::cout << "error: renderImageEx cache index out of bounds for " << path << "\n";
+            std::cout << "error: renderImageEx cache index out of bounds for " << actor->view_image << "\n";
             return;
         }
         SDL_Texture* tex = cache[idx];
         if (!tex) {
-            std::cout << "error: renderImageEx cache texture is null for " << path << "\n";
+            std::cout << "error: renderImageEx cache texture is null for " << actor->view_image << "\n";
             return;
         }
-        Helper::SDL_RenderCopyEx(actor_id, actor_name, renderer_, tex, NULL, &dst, angle, center, flip);
+        float tex_w = 0.0f, tex_h = 0.0f;
+        Helper::SDL_QueryTexture(tex, &tex_w, &tex_h);
+        SDL_FRect dst_rect = {
+                            (actor->transform_position.x) * 100 + cam.x - actor->view_pivot_offset.x, 
+                            (actor->transform_position.y) * 100 + cam.y - actor->view_pivot_offset.y,
+                            tex_w * actor->transform_scale.x,
+                            tex_h * actor->transform_scale.y
+                        };
+        
+        SDL_RendererFlip f;
+                        if (actor->flip_x && actor->flip_y) {
+                            f = static_cast<SDL_RendererFlip>(SDL_FLIP_HORIZONTAL | SDL_FLIP_VERTICAL);
+                        } else if (actor->flip_x) {
+                            f = SDL_FLIP_HORIZONTAL;
+                        } else if (actor->flip_y) {
+                            f = SDL_FLIP_VERTICAL;
+                        } else {
+                            f = SDL_FLIP_NONE;
+                        }
+        Helper::SDL_RenderCopyEx(actor->id, actor->actor_name, renderer_, tex, NULL, &dst_rect, 
+            actor->transform_rotation_degrees, (SDL_FPoint*)&actor->view_pivot_offset, f);
     }
 
     void clearCache() {
