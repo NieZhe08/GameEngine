@@ -54,13 +54,29 @@ public:
         return "";
     }
 
+    std::string getGameTitle() {
+        if (game.HasMember("game_title"))
+            return game["game_title"].GetString();
+        return "";
+    }
+
     glm::ivec2 getResolution(){
         if (rendering.IsObject()){
             int x_res = (rendering.HasMember("x_resolution"))? rendering["x_resolution"].GetInt(): 13;
             int y_res = (rendering.HasMember("y_resolution"))? rendering["y_resolution"].GetInt(): 9;
             return glm::ivec2(x_res, y_res);
         } 
-        return glm::ivec2(13, 9); // default resolution
+        return glm::ivec2(640, 360); // default resolution
+    }
+
+    glm::ivec3 getClearColor(){
+        int r = 255; int g = 255; int b = 255; // default clear color is white
+        if (rendering.IsObject()){
+            r = (rendering.HasMember("clear_color_r"))? rendering["clear_color_r"].GetInt(): r;
+            g = (rendering.HasMember("clear_color_g"))? rendering["clear_color_g"].GetInt(): g;
+            b = (rendering.HasMember("clear_color_b"))? rendering["clear_color_b"].GetInt(): b;
+        }
+        return glm::ivec3(r, g, b);
     }
 
     std::string getInitialScene(){

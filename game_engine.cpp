@@ -10,13 +10,15 @@
 #include "game_utils.h"
 #include "scene_db.h"
 #include <queue>
+#include "Helper.h"
+#include "SDL2/SDL.h"
 
 class GameEngine {
 public:
     Actor* mainActor;
     std::unique_ptr<std::vector<Actor>> actorList;
     //Point camera; // Camera following the main actor
-    glm::ivec2 mapSize; 
+    glm::ivec2 mapSize; // x_resolution and y_resolution of the map
     glm::ivec2 viewSize;
     // VIEWSIZE: here viewsize refers to viewSize (row, col)
     //std::string _game_start_message;
@@ -34,6 +36,15 @@ public:
     std::string game_over_good_message;
     std::string game_over_bad_message;
 
+    // SDL rendering stuff
+    Helper helper;
+    std::string  game_title = "";
+    glm::ivec2 window_size;
+    glm::ivec3 clear_color;
+    SDL_Event event;
+    SDL_Window* win;
+    SDL_Renderer* ren;
+
     std::string next_scene_name;
 
     GameEngine() {
@@ -47,8 +58,18 @@ public:
             game_start_message = parser.getGameStartMessage();
             game_over_good_message = parser.getGameOverGoodMessage();
             game_over_bad_message = parser.getGameOverBadMessage();
-            viewSize = parser.getResolution();
+            //viewSize = parser.getResolution();
+            
             next_scene_name = parser.getInitialScene();
+
+            //SDL
+            game_title = parser.getGameTitle();
+            window_size = parser.getResolution();
+            clear_color = parser.getClearColor();
+
+            SDL_Init(SDL_INIT_VIDEO);
+             win = helper.SDL_CreateWindow(game_title.c_str(), 100, 100, window_size.x, window_size.y, SDL_WINDOW_SHOWN);
+             ren = Helper::SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
         }
 
         // Clear mapHash before loading new scene to avoid stale actor indices
@@ -75,21 +96,21 @@ public:
         scored_actors = std::vector<std::string>();
         next_scene_name = "";
         // Initialize game state, load map, actors, etc.
-        frameRender(isInitialLoad);
+        //frameRender(isInitialLoad);
     }
 
     void gameLoop() {
         //initializeGame();
         while (states == GameState::Ongoing){
-            PlayerAction action = getPlayerAction();
-            if (action == PlayerAction::Quit){
-                states = GameState::Lost;
-                break;
+            while (Helper::SDL_PollEvent(&event)){
+                if (event.type == SDL_QUIT){
+                    states = GameState::Lost;
+                    break;
+                }
             }
-            updateGameState(action);
             frameRender(false);
         };
-        finalRender();
+        //finalRender();
     }
 
     PlayerAction getPlayerAction() { // input main
@@ -336,25 +357,24 @@ public:
     }
 
     void frameRender(bool isInitialRender = false) {// render main
-        if (isInitialRender){
-            if (!game_start_message.empty()) {
-            std::cout<<game_start_message<<"\n";
-            }
-        }
-            
-        mapRender();
-        dialogueRender();
-        generalRender();
+        (void)isInitialRender;
+        SDL_SetRenderDrawColor(ren, clear_color.x, clear_color.y, clear_color.z, 255);
+        SDL_RenderClear(ren);
+        Helper::SDL_RenderPresent(ren);
+        SDL_Delay(16); // Delay to control frame rate, adjust as needed
+        //mapRender();
+        //dialogueRender();
+        //generalRender();
         //renderDialogue();
-        if (states == GameState::Ongoing){
-            inquiryRender();
-        }
+        //if (states == GameState::Ongoing){
+        //    inquiryRender();
+        //}
         //std::cout<<render_ss.str();
         //render_ss.str(std::string());   
         //render_ss.clear();
-        if (states == GameState::NextScene){
-            initializeGame(false); // re-initialize game with next scene
-        }
+        //if (states == GameState::NextScene){
+        //    initializeGame(false); // re-initialize game with next scene
+        //}
     }
 
     void mapRender(){

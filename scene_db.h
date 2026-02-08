@@ -110,7 +110,7 @@ public:
                 }
             }
         }
-        mapSize = glm::ivec2(max_x+1, max_y+1);
+        mapSize = glm::ivec2(max_x, max_y+1); // TODO
     }}
 
     std::unique_ptr<std::vector<Actor>> getSceneActors() {
