@@ -15,6 +15,8 @@
 #include "SDL2/SDL_ttf.h"
 #include "image_db.h"
 #include "text_db.h"
+#include "audio_db.h"
+#include "AudioHelper.h"
 
 class GameEngine {
 public:
@@ -54,6 +56,10 @@ public:
     std::vector<ImageRenderConfig> images_to_render; // Queue of images to render each frame
     std::vector<TextRenderConfig> text_to_render; // Queue of text to render each frame
 
+    AudioDB audioDB;
+    Mix_Chunk* intro_bgm_chunk;
+    bool intro_bgm_playing = false;
+
     std::string next_scene_name;
 
     GameEngine() {
@@ -87,6 +93,9 @@ public:
             textDB = new TextDB(ren, (intro_image && !intro_image->empty())); // Only enable text rendering if intro images are present
             textDB->readIntroText();
             intro_text = textDB->getIntroTextVector();
+
+            intro_bgm_chunk = audioDB.readIntroBGM();
+            intro_bgm_playing  = audioDB.hasIntroBGM();
         }
 
         // Clear mapHash before loading new scene to avoid stale actor indices
@@ -120,6 +129,7 @@ public:
         //initializeGame();
         size_t image_idx = 0;
         size_t text_idx = 0;
+        if (intro_bgm_playing ) AudioHelper::Mix_PlayChannel(0, intro_bgm_chunk, -1); // Play intro BGM in a loop
         while (states == GameState::Ongoing){
             images_to_render.clear();
             text_to_render.clear();
@@ -144,7 +154,9 @@ public:
                 if (intro_text && !intro_text->empty()) {
                     text_to_render.emplace_back((*intro_text)[text_idx >= intro_text->size()? intro_text->size()-1 : text_idx], 25, window_size.y - 50);
                 }
-            } 
+            } else {
+                if (intro_bgm_playing) AudioHelper::Mix_HaltChannel(0);
+            }
                 
             frameRender(false);
         };
