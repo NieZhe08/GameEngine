@@ -37,7 +37,7 @@ public:
             static bool audio_initialized = false;
             if (!audio_initialized) {
                 if (AudioHelper::Mix_OpenAudio(48000, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
-                    std::cout << "error: Mix_OpenAudio failed: " << Mix_GetError() << "\n"; // should not happen
+                    std::cout << "error: AudioHelper::Mix_OpenAudio failed: " << Mix_GetError() << "\n"; // should not happen
                     return nullptr;
                 }
                 audio_initialized = true;
@@ -48,13 +48,13 @@ public:
             if (std::filesystem::exists(wav_path)) {
                 Mix_Chunk* chunk = AudioHelper::Mix_LoadWAV(wav_path.c_str());
                 if (!chunk) {
-                    std::cout << "error: Mix_LoadWAV failed for " << wav_path << ": " << Mix_GetError() << "\n"; // should not happen
+                    std::cout << "error: AudioHelper::Mix_LoadWAV failed for " << wav_path << ": " << Mix_GetError() << "\n"; // should not happen
                 }
                 return chunk;
             } else if (std::filesystem::exists(ogg_path)) {
                 Mix_Chunk* chunk = AudioHelper::Mix_LoadWAV(ogg_path.c_str());
                 if (!chunk) {
-                    std::cout << "error: Mix_LoadWAV failed for " << ogg_path << ": " << Mix_GetError() << "\n"; // should not happen
+                    std::cout << "error: AudioHelper::Mix_LoadWAV failed for " << ogg_path << ": " << Mix_GetError() << "\n"; // should not happen
                 }
                 return chunk;
             } else {
