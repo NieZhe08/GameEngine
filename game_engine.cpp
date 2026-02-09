@@ -135,7 +135,7 @@ public:
         } 
         // After moving actorList, resolve mainActor to point inside actorList
         int mainIndex = sceneDB.getMainActorIndex();
-        if (mainIndex >= 0 && actorList && mainIndex < static_cast<int>(actorList->size())){
+        if (mainIndex >= 0 && actorList && !actorList->empty() && mainIndex < static_cast<int>(actorList->size())){
             mainActor = &(*actorList)[mainIndex];
         } else {
             mainActor = nullptr;
@@ -202,10 +202,16 @@ public:
                 }
             }
         }
-        if (intro_image && (image_idx < intro_image->size() || (intro_text && text_idx < intro_text->size()))) {
-            images_to_render.emplace_back((*intro_image)[image_idx >= intro_image->size()? intro_image->size()-1 : image_idx], SDL_FRect{0, 0, static_cast<float>(window_size.x), static_cast<float>(window_size.y)});
+        if (intro_image && !intro_image->empty() && (image_idx < intro_image->size() || (intro_text && !intro_text->empty() && text_idx < intro_text->size()))) {
+            size_t img_idx = (image_idx >= intro_image->size()) ? intro_image->size()-1 : image_idx;
+            if (img_idx < intro_image->size()) {
+                images_to_render.emplace_back((*intro_image)[img_idx], SDL_FRect{0, 0, static_cast<float>(window_size.x), static_cast<float>(window_size.y)});
+            }
             if (intro_text && !intro_text->empty()) {
-                text_to_render.emplace_back((*intro_text)[text_idx >= intro_text->size()? intro_text->size()-1 : text_idx], 25, window_size.y - 50);
+                size_t txt_idx = (text_idx >= intro_text->size()) ? intro_text->size()-1 : text_idx;
+                if (txt_idx < intro_text->size()) {
+                    text_to_render.emplace_back((*intro_text)[txt_idx], 25, window_size.y - 50);
+                }
             }
         } else {// exit the Intro Animation Stage when all intro images and texts have been shown
             states = GameState::Ongoing;
@@ -501,6 +507,7 @@ public:
         while (states != GameState::Won && states != GameState::Lost) {
             update();
             frameRender(false);
+            //std::cout<<"state"<<(static_cast<int>(states))<<"\n";
         }
         //finalRender();
         imageDB->clearCache();
@@ -512,7 +519,7 @@ public:
         SDL_SetRenderDrawColor(ren, clear_color.x, clear_color.y, clear_color.z, 255);
         SDL_RenderClear(ren);
 
-        if (true){
+        if (states == GameState::Ongoing){
             // Render game scene based on actor positions and map
             if (actorList) {
                 std::priority_queue<const Actor*, std::vector<const Actor*>, ActorRenderComparator> renderQueue;
