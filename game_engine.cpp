@@ -82,7 +82,7 @@ public:
     glm::vec2 camera_lift = glm::vec2(0,0); // Additional camera lift applied on top of main actor centering, can be used for effects
     int coolDownTriggerFrame = -180;
     bool endingFlag = false; // Flag to indicate if the game is in the ending sequence after winning or losing
-    GameState endingState; // Store whether the ending sequence is for winning or losing
+    GameState endingState = GameState::Ongoing; // Store whether the ending sequence is for winning or losing
 
     GameEngine() {
         //next_scene_name = "";
@@ -164,6 +164,8 @@ public:
         
         //scored_actors = std::vector<std::string>();
         next_scene_name = "";
+        endingFlag = false;
+        endingState = GameState::Ongoing;
         // Initialize game state, load map, actors, etc.
         //frameRender(isInitialLoad);
     }
@@ -253,13 +255,6 @@ public:
             camera = -offset  + glm::vec2(window_size.x /2.0f, window_size.y /2.0f) - camera_lift;
         }
         //std::cout<<"Camera Position: ("<<camera.x<<", "<<camera.y<<")\n";
-        if (hp_image != "" ){
-            for (int i = 0; i < health; i++) {
-                SDL_FRect dst = {5.0f + i * (hp_image_width + 5.0f), 25.0f, hp_image_width, hp_image_height};
-                images_to_render.emplace_back(hp_image, dst);
-            }
-            text_to_render.push_back(TextRenderConfig("Score : " + std::to_string(score), 5, 5));
-        }
         std::vector<GameIncident> incidents;
         updateDialogues(incidents);
         updateGameIncidents(incidents);
@@ -273,6 +268,7 @@ public:
     void updateActorPositions(PlayerAction playerAction) {
         // Update NPC positions based on their velocities
         if (!actorList) return;
+        bool nonPlayerUpdate = (Helper::GetFrameNumber() &&Helper::GetFrameNumber() % 60 == 0); 
         for (Actor& actor : *actorList){
             glm::ivec2 nextPosition;
             bool hasMoved = false;
@@ -281,6 +277,7 @@ public:
                 nextPosition = result.first;
                 hasMoved = result.second;
             } else {
+                if (!nonPlayerUpdate) continue; // Only update non-player actors every 60 frames to slow down their movement
                 if (actor.velocity != glm::ivec2(0,0)){
                     hasMoved = true;
                 }
@@ -549,13 +546,13 @@ public:
     void gameLoop() {
         //initializeGame();
         while (states != GameState::Won && states != GameState::Lost) {
+            if (states == GameState::NextScene){
+                initializeGame(false); // re-initialize game with next scene
+            }
             update();
             frameRender(false);
             if (endingFlag){
                 states = endingState;
-            }
-            if (states == GameState::NextScene){
-                initializeGame(false); // re-initialize game with next scene
             }
             //std::cout<<"state"<<(static_cast<int>(states))<<"\n";
         }
@@ -569,8 +566,21 @@ public:
         SDL_SetRenderDrawColor(ren, clear_color.x, clear_color.y, clear_color.z, 255);
         SDL_RenderClear(ren);
 
+        //HUD
+        if (states == GameState::Ongoing || states == GameState::NextScene){
+            if (hp_image != "" ){
+                for (int i = 0; i < health; i++) {
+                    SDL_FRect dst = {5.0f + i * (hp_image_width + 5.0f), 25.0f, hp_image_width, hp_image_height};
+                    images_to_render.emplace_back(hp_image, dst);
+                }
+                text_to_render.push_back(TextRenderConfig("Score : " + std::to_string(score), 5, 5));
+                }   
+            
+        }
+
         if (states == GameState::Ongoing){
             // Render game scene based on actor positions and map
+            
             if (actorList) {
                 std::priority_queue<const Actor*, std::vector<const Actor*>, ActorRenderComparator> renderQueue;
                 for (const Actor& actor : *actorList) {
