@@ -120,8 +120,8 @@ public:
         float tex_w = 0.0f, tex_h = 0.0f;
         Helper::SDL_QueryTexture(tex, &tex_w, &tex_h);
         SDL_FRect dst_rect = {
-                            (actor->transform_position.x) * 100 + cam.x - actor->view_pivot_offset.x, 
-                            (actor->transform_position.y) * 100 + cam.y - actor->view_pivot_offset.y,
+                            (actor->transform_position.x) * 100 + cam.x - actor->view_pivot_offset.x * actor->transform_scale.x, 
+                            (actor->transform_position.y) * 100 + cam.y - actor->view_pivot_offset.y * actor->transform_scale.y,
                             tex_w * actor->transform_scale.x,
                             tex_h * actor->transform_scale.y
                         };

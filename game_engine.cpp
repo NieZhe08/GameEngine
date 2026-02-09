@@ -143,8 +143,10 @@ public:
         //    health = 3;
         //    score = 0;
         //}
-        
         states = GameState::IntroAnimation;
+        if (!intro_image){
+            states = GameState::Ongoing; // Skip intro animation if no intro image
+        }
         //scored_actors = std::vector<std::string>();
         next_scene_name = "";
         // Initialize game state, load map, actors, etc.
