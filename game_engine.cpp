@@ -79,6 +79,9 @@ public:
     float hp_image_width = 0.0f;
     float hp_image_height = 0.0f;
     glm::vec2 camera_lift = glm::vec2(0,0); // Additional camera lift applied on top of main actor centering, can be used for effects
+    int coolDownTriggerFrame = -180;
+    bool endingFlag = false; // Flag to indicate if the game is in the ending sequence after winning or losing
+    GameState endingState; // Store whether the ending sequence is for winning or losing
 
     GameEngine() {
         //next_scene_name = "";
@@ -291,7 +294,9 @@ public:
 
     void updateGameState(SDL_Event evt) { // update main
         if (evt.type == SDL_QUIT) {
-            states = GameState::Lost;
+            //states = GameState::Lost;
+            endingFlag = true;
+            endingState = GameState::Lost;
         } else if (evt.type == SDL_KEYDOWN) {
             SDL_Keycode key_press = evt.key.keysym.scancode;
             PlayerAction action = PlayerAction::Invalid;
@@ -314,15 +319,17 @@ public:
             //Update game state based on player action
             //std::cout<<"Player Action: "<<(action != PlayerAction::Invalid ? std::to_string(static_cast<int>(action)) : "Invalid")<<"\n";
             updateActorPositions(action);
-            if (action == PlayerAction::Quit){
+            if (action == PlayerAction::Quit){ // This should never happen
                 health = 0; // End game
             } else {
-                updatePlayerPosition(action);
+                //updatePlayerPosition(action);
                 std::vector<GameIncident> incidents;
                 updateDialogues(incidents);
                 updateGameIncidents(incidents);
                 if (health <= 0){
-                    states = GameState::Lost;
+                    //states = GameState::Lost;
+                    endingFlag = true;
+                    endingState = GameState::Lost;
                 }
             }
         }
@@ -515,6 +522,9 @@ public:
     void gameLoop() {
         //initializeGame();
         while (states != GameState::Won && states != GameState::Lost) {
+            if (endingFlag ){
+                states = endingState;
+            }
             update();
             frameRender(false);
             //std::cout<<"state"<<(static_cast<int>(states))<<"\n";
