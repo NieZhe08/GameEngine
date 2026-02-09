@@ -100,6 +100,15 @@ public:
             exit(0);
         }
     }
+
+    glm::vec2 getCameraOffset(){
+        if (rendering.IsObject()){
+            float x_offset = (rendering.HasMember("cam_offset_x"))? rendering["cam_offset_x"].GetFloat(): 0.0f;
+            float y_offset = (rendering.HasMember("cam_offset_y"))? rendering["cam_offset_y"].GetFloat(): 0.0f;
+            return glm::vec2(x_offset, y_offset);
+        } 
+        return glm::vec2(0.0f, 0.0f); // default camera offset
+    }
 };
 
 #endif

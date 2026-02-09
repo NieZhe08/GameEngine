@@ -116,7 +116,8 @@ public:
             scene_bgm_chunk = audioDB.readBGM("gameplay_audio");
             scene_bgm_states = audioDB.hasGameplayBGM();
 
-            camera = glm::vec2(window_size.x /2.0f, window_size.y /2.0f); // Initialize camera to center of the window
+            camera = glm::vec2(window_size.x /2.0f, window_size.y /2.0f) + 
+                    parser.getCameraOffset() * 100.0f; // Initialize camera to center of the window
 
         // Clear mapHash before loading new scene to avoid stale actor indices
         mapHash.clear();
@@ -144,7 +145,7 @@ public:
         //    score = 0;
         //}
         states = GameState::IntroAnimation;
-        if (!intro_image){
+        if (!intro_image || intro_image->empty()){
             states = GameState::Ongoing; // Skip intro animation if no intro image
         }
         //scored_actors = std::vector<std::string>();
