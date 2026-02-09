@@ -18,6 +18,7 @@ class TextDB {
     rapidjson::Document rendering;
     std::unique_ptr<std::vector<std::string>> intro_text;
     SDL_Renderer* renderer_;
+public:
     TTF_Font* font;
     bool do_text_rendering;
     //std::unordered_map<std::string, int> image_index_map; // Map from image path to index in cache
@@ -25,18 +26,16 @@ class TextDB {
 
 public:
     TextDB(SDL_Renderer* renderer, bool _do_text_rendering) : renderer_(renderer), do_text_rendering(_do_text_rendering){
-        //std::cout << "TextDB constructor called with do_text_rendering = " << do_text_rendering << std::endl;
-        if (do_text_rendering){
-            if (!std::filesystem::exists("resources/")){
-                std::cout<<"error: resources/ missing"; // no newline at end
-                exit(0);
-            }
-            if (!std::filesystem::exists("resources/game.config")){
-                std::cout<<"error: resources/game.config missing";// no newline at end
-                exit(0);
-            }
-            EngineUtils::ReadJsonFile("resources/game.config", game);
+    //std::cout << "TextDB constructor called with do_text_rendering = " << do_text_rendering << std::endl;
+        if (!std::filesystem::exists("resources/")){
+            std::cout<<"error: resources/ missing"; // no newline at end
+            exit(0);
         }
+        if (!std::filesystem::exists("resources/game.config")){
+            std::cout<<"error: resources/game.config missing";// no newline at end
+            exit(0);
+        }
+        EngineUtils::ReadJsonFile("resources/game.config", game);
     }
 
     void readIntroText(){
@@ -85,7 +84,36 @@ public:
         }
     }
 
+    void loadFont(){
+        if (game.IsObject()){
+            if (game.HasMember("font")){
+                std::string font_path = game["font"].GetString();
+                if (!std::filesystem::exists("resources/fonts/" + font_path + ".ttf")){
+                    std::cout<<"error: font "<<font_path<<" missing";// no newline at end
+                    exit(0);
+                }
+                font = TTF_OpenFont(("resources/fonts/" + font_path + ".ttf").c_str(), 16);
+                if (!font) {
+                    std::cout << "Failed to load font: " << TTF_GetError() << std::endl;// should not happen
+                    exit(0);
+                }
+                do_text_rendering = true;
+            } else {
+                std::cout << "error: text render failed. No font configured";
+                exit(0);
+            }
+        } else {
+            std::cout << "error: game.config is not an object. Cannot load font.";
+            exit(0);
+        }
+    }
+
     void drawText(const std::string& text, float x, float y, SDL_Color color = {255, 255, 255, 255}) {
+        if (!do_text_rendering) {
+            //std::cout << "Text rendering is disabled. Skipping drawText call.\n";
+            return;
+        }
+        if (!font) std::cout << "error: cannot draw text because font is not loaded\n";
         SDL_Surface* surface = TTF_RenderText_Solid(font, text.c_str(), color);
         if (!surface) {
             std::cout << "Failed to create text surface: " << TTF_GetError() << std::endl; // should not happen

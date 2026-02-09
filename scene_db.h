@@ -151,6 +151,10 @@ public:
         return mainActorIndex;
     }
 
+    bool hasMainActor() {
+        return mainActorIndex >=0;
+    }
+
     glm::ivec2 getMapSize() {
         return mapSize;
     }

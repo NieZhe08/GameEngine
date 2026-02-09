@@ -75,6 +75,8 @@ public:
     int health = 3;
     int score = 0;
     std::string hp_image = "";
+    float hp_image_width = 0.0f;
+    float hp_image_height = 0.0f;
 
 
     GameEngine() {
@@ -83,7 +85,6 @@ public:
     }
 
     void initializeGame(bool isInitialLoad = true) {
-        if  (isInitialLoad) {
             JsonParser parser;
             //game_start_message = parser.getGameStartMessage();
             //game_over_good_message = parser.getGameOverGoodMessage();
@@ -116,7 +117,6 @@ public:
             scene_bgm_states = audioDB.hasGameplayBGM();
 
             camera = glm::vec2(window_size.x /2.0f, window_size.y /2.0f); // Initialize camera to center of the window
-        }
 
         // Clear mapHash before loading new scene to avoid stale actor indices
         mapHash.clear();
@@ -124,6 +124,12 @@ public:
         // load scene module
         SceneDB sceneDB(next_scene_name, mapHash, imageDB);
         actorList = sceneDB.getSceneActors();
+        if (sceneDB.hasMainActor()){
+            hp_image = parser.getHPimage();
+            SDL_Texture* hp_tex = imageDB->loadImage(hp_image);
+            Helper::SDL_QueryTexture(hp_tex,  &hp_image_width, &hp_image_height);
+            textDB->loadFont();
+        } 
         // After moving actorList, resolve mainActor to point inside actorList
         int mainIndex = sceneDB.getMainActorIndex();
         if (mainIndex >= 0 && actorList && mainIndex < static_cast<int>(actorList->size())){
@@ -222,6 +228,14 @@ public:
             }
             // Handle other events like player input for actions
         }
+        if (hp_image != "" ){
+            for (int i = 0; i < health; i++) {
+                SDL_FRect dst = {5.0f + i * (hp_image_width + 5.0f), 25.0f, hp_image_width, hp_image_height};
+                images_to_render.emplace_back(hp_image, dst);
+            }
+        }
+        text_to_render.push_back(TextRenderConfig("Score: " + std::to_string(score), 5, 5));
+        
         
     }
 
@@ -472,6 +486,7 @@ public:
         //std::cout << "clear color is "<< clear_color.x<< clear_color.y<< clear_color.z<< std::endl;
         SDL_SetRenderDrawColor(ren, clear_color.x, clear_color.y, clear_color.z, 255);
         SDL_RenderClear(ren);
+
         if (true){
             // Render game scene based on actor positions and map
             if (actorList) {
@@ -486,13 +501,13 @@ public:
             }
         }
         if (imageDB && !images_to_render.empty()) {
-                    for (const ImageRenderConfig& config : images_to_render) {
-                        if (!config.image_path.empty()) {
-                            imageDB->renderImage(config.image_path, config.dst);
-                        }
-                        //std::cout<<"rendering image "<<config.image_path<<" at position "<<config.dst.x<<","<<config.dst.y<<"\n";
-                    }
+            for (const ImageRenderConfig& config : images_to_render) {
+                if (!config.image_path.empty()) {
+                    imageDB->renderImage(config.image_path, config.dst);
                 }
+                //std::cout<<"rendering image "<<config.image_path<<" at position "<<config.dst.x<<","<<config.dst.y<<"\n";
+            }
+        }
         if (textDB && !text_to_render.empty()) {
             for (const TextRenderConfig& config : text_to_render) {
                 if (!config.text.empty()) {

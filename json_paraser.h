@@ -91,6 +91,15 @@ public:
             exit(0);
         }
     }
+
+    std::string getHPimage(){ // only call when exist a player
+        if (game.IsObject() && game.HasMember("hp_image")){
+            return game["hp_image"].GetString();
+        } else {
+            std::cout<<"error: player actor requires an hp_image be defined"; 
+            exit(0);
+        }
+    }
 };
 
 #endif
