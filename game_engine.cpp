@@ -233,8 +233,9 @@ public:
                 SDL_FRect dst = {5.0f + i * (hp_image_width + 5.0f), 25.0f, hp_image_width, hp_image_height};
                 images_to_render.emplace_back(hp_image, dst);
             }
+            text_to_render.push_back(TextRenderConfig("Score : " + std::to_string(score), 5, 5));
         }
-        text_to_render.push_back(TextRenderConfig("Score: " + std::to_string(score), 5, 5));
+        
         
         
     }
