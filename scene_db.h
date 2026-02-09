@@ -68,6 +68,8 @@ public:
                 float view_pivot_offset_x = 0.0f;
                 float view_pivot_offset_y = 0.0f;
                 int render_order = 0;
+                std::string nearby_dialogue = "";
+                std::string contact_dialogue = "";
                 //int vel_x = 0;
                 //int vel_y = 0;
                 //bool blocking = false;
@@ -122,6 +124,10 @@ public:
                 if (actor.HasMember("render_order")){
                     render_order = actor["render_order"].GetInt();
                 }
+                if (actor.HasMember("nearby_dialogue"))
+                    nearby_dialogue = actor["nearby_dialogue"].GetString();
+                if (actor.HasMember("contact_dialogue"))
+                    contact_dialogue = actor["contact_dialogue"].GetString();
                     
                 //if (actor.HasMember("vel_x"))
                 //    vel_x = actor["vel_x"].GetInt();
@@ -142,7 +148,8 @@ public:
                     glm::ivec2(vel_x, vel_y), blocking,
                     view_str,
                     glm::vec2(transform_scale_x, transform_scale_y), transform_rotation_degrees, 
-                    glm::vec2(view_pivot_offset_x, view_pivot_offset_y), render_order);
+                    glm::vec2(view_pivot_offset_x, view_pivot_offset_y), render_order,
+                    nearby_dialogue, contact_dialogue);
 
                 // store the index of the just-emplaced actor into mapHash
                 int actor_index = static_cast<int>(sceneActors->size()) - 1;

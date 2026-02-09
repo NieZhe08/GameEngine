@@ -73,18 +73,18 @@ static std::string obtain_word_after_phrase(const std::string& input, const std:
 struct Actor
 {
 private: 
-   // GameIncident checkGameIncidents(std::string dialogue){
-   //     if (dialogue.find("health down") != std::string::npos){
-   //         return (GameIncident::HealthDown);
-   //     } else if (dialogue.find("score up") != std::string::npos){
-   //         return (GameIncident::ScoreUp);
-   //     } else if (dialogue.find("you win") != std::string::npos){
-   //         return (GameIncident::YouWin);
-   //     } else if (dialogue.find("game over") != std::string::npos){
-   //         return (GameIncident::GameOver);
-   //     } 
-   //     return (GameIncident::None);
-    //}
+    GameIncident checkGameIncidents(std::string dialogue){
+        if (dialogue.find("health down") != std::string::npos){
+            return (GameIncident::HealthDown);
+        } else if (dialogue.find("score up") != std::string::npos){
+            return (GameIncident::ScoreUp);
+        } else if (dialogue.find("you win") != std::string::npos){
+            return (GameIncident::YouWin);
+        } else if (dialogue.find("game over") != std::string::npos){
+            return (GameIncident::GameOver);
+        } 
+        return (GameIncident::None);
+    }
 public:
 	std::string actor_name;
     int id;
@@ -100,30 +100,33 @@ public:
     bool flip_y ;
     float transform_rotation_degrees;
     glm::vec2 view_pivot_offset;
-
-	//std::string nearby_dialogue;
-	//std::string contact_dialogue;
-    //GameIncident nearby_incident;
-    //GameIncident contact_incident;
     bool triggered_scoreUp;
-    //std::string nearby_scene;
-    //std::string contact_scene;
     int render_order;
+	std::string nearby_dialogue;
+	std::string contact_dialogue;
+    GameIncident nearby_incident;
+    GameIncident contact_incident;
+    
+    std::string nearby_scene;
+    std::string contact_scene;
+   
 
 	Actor(std::string actor_name, int id, glm::ivec2 _transform_position,
         glm::ivec2 _velocity, bool _blocking,
         std::string _view_image, glm::vec2 _transform_scale, 
-        float _transform_rotation_degrees, glm::vec2 _view_pivot_offset, int _render_order) : 
+        float _transform_rotation_degrees, glm::vec2 _view_pivot_offset, int _render_order,
+        std::string _nearby_dialogue , std::string _contact_dialogue) : 
 
         actor_name(actor_name), id(id), transform_position(_transform_position),
         velocity(_velocity), blocking(_blocking),
         view_image(_view_image), has_view_image(!_view_image.empty()), transform_scale(glm::abs(_transform_scale)),
         flip_x(_transform_scale.x <0), flip_y(_transform_scale.y <0),
         transform_rotation_degrees(_transform_rotation_degrees), view_pivot_offset(_view_pivot_offset),
-        triggered_scoreUp(false), render_order(_render_order){
-            //nearby_incident = checkGameIncidents(nearby_dialogue);
-            //contact_incident = checkGameIncidents(contact_dialogsue);
-            /*
+        triggered_scoreUp(false), render_order(_render_order),
+        nearby_dialogue(_nearby_dialogue), contact_dialogue(_contact_dialogue) {
+            nearby_incident = checkGameIncidents(nearby_dialogue);
+            contact_incident = checkGameIncidents(contact_dialogue);
+            
             auto nearby_scene_opt = extractProceedTarget(nearby_dialogue);
             if (nearby_scene_opt.has_value()){
                 nearby_incident = GameIncident::NextScene;
@@ -138,21 +141,21 @@ public:
             } else {
                 contact_scene = "";
             }
-            */
-           //std::string nb_scene = obtain_word_after_phrase(nearby_dialogue, "proceed to ");
-           //if (!nb_scene.empty()){
-           //    nearby_incident = GameIncident::NextScene;
-           //    nearby_scene = nb_scene;
-           //} else {
-           //    nearby_scene = "";
-           //}
-           //std::string ct_scene = obtain_word_after_phrase(contact_dialogue, "proceed to ");
-           //if (!ct_scene.empty()){
-           //    contact_incident = GameIncident::NextScene;
-           //    contact_scene = ct_scene;
-           //} else {
-           //    contact_scene = "";
-           //}
+            
+           std::string nb_scene = obtain_word_after_phrase(nearby_dialogue, "proceed to ");
+           if (!nb_scene.empty()){
+               nearby_incident = GameIncident::NextScene;
+               nearby_scene = nb_scene;
+           } else {
+               nearby_scene = "";
+           }
+           std::string ct_scene = obtain_word_after_phrase(contact_dialogue, "proceed to ");
+           if (!ct_scene.empty()){
+               contact_incident = GameIncident::NextScene;
+               contact_scene = ct_scene;
+           } else {
+               contact_scene = "";
+           }
 
 	    }
 };
