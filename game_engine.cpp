@@ -471,6 +471,7 @@ public:
     //TO DO check when read in
     void checkGameIncidents(Actor* actor, std::vector<GameIncident>& allIncidents, ContactType contactType) {
         if (!mainActor) return;
+        if (Helper::GetFrameNumber)
         switch (contactType){
             case ContactType::Nearby:
                 if (actor->nearby_incident != GameIncident::None
@@ -522,11 +523,11 @@ public:
     void gameLoop() {
         //initializeGame();
         while (states != GameState::Won && states != GameState::Lost) {
-            if (endingFlag ){
-                states = endingState;
-            }
             update();
             frameRender(false);
+            if (endingFlag){
+                states = endingState;
+            }
             //std::cout<<"state"<<(static_cast<int>(states))<<"\n";
         }
         //finalRender();
