@@ -246,9 +246,11 @@ public:
         images_to_render.clear();
         text_to_render.clear();
 
+        PlayerAction action = PlayerAction::Invalid;
         while (Helper::SDL_PollEvent(&event)) {
-            updateGameState(event);
+            action = updateGameState(event);
         }
+        updateActorPositions(action);
         if (mainActor){
             glm::vec offset = glm::vec2((mainActor->transform_position.x) * 100 , 
                             (mainActor->transform_position.y) * 100 );
@@ -306,11 +308,13 @@ public:
     }
 
 
-    void updateGameState(SDL_Event evt) { // update main
+    PlayerAction updateGameState(SDL_Event evt) { // update main
+        PlayerAction action = PlayerAction::Invalid;
         if (evt.type == SDL_QUIT) {
             //states = GameState::Lost;
             endingFlag = true;
             endingState = GameState::Lost;
+            return PlayerAction::Invalid;
         } else if (evt.type == SDL_KEYDOWN) {
             SDL_Keycode key_press = evt.key.keysym.scancode;
             PlayerAction action = PlayerAction::Invalid;
@@ -332,9 +336,8 @@ public:
             }
             //Update game state based on player action
             //std::cout<<"Player Action: "<<(action != PlayerAction::Invalid ? std::to_string(static_cast<int>(action)) : "Invalid")<<"\n";
-            updateActorPositions(action);
             //updatePlayerPosition(action);
-            
+            return action;
         }
     }
 
