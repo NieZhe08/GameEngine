@@ -250,7 +250,7 @@ public:
         while (Helper::SDL_PollEvent(&event)) {
             action = updateGameState(event);
         }
-        updateActorPositions(action);
+        //updateActorPositions(action);
         if (mainActor){
             glm::vec offset = glm::vec2((mainActor->transform_position.x) * 100 , 
                             (mainActor->transform_position.y) * 100 );
@@ -272,12 +272,20 @@ public:
         if (!actorList) return;
         bool nonPlayerUpdate = (Helper::GetFrameNumber() &&Helper::GetFrameNumber() % 60 == 0); 
         for (Actor& actor : *actorList){
-            glm::ivec2 nextPosition;
-            bool hasMoved = false;
-            if (&actor == mainActor) {
-                auto result = updatePlayerPosition(playerAction);
-                nextPosition = result.first;
-                hasMoved = result.second;
+                glm::ivec2 nextPosition;
+                bool hasMoved = false;
+                if (&actor == mainActor) {
+                    auto result = updatePlayerPosition(playerAction);
+                    nextPosition = result.first;
+                    hasMoved = result.second;
+                    //if (hasMoved){
+                    //    std::cout << "[DEBUG] 主角尝试移动: action=" << static_cast<int>(playerAction)
+                    //          << ", 当前坐标=(" << mainActor->transform_position.x << ", " << mainActor->transform_position.y << ")"
+                    //          << ", 目标坐标=(" << nextPosition.x << ", " << nextPosition.y << ")"
+                    //          << ", hasMoved=" << hasMoved << std::endl;
+                    //    std::cout<<Helper::GetFrameNumber() << "\n";
+                    //}
+                    
             } else {
                 if (!nonPlayerUpdate) continue; // Only update non-player actors every 60 frames to slow down their movement
                 if (actor.velocity != glm::ivec2(0,0)){
@@ -309,7 +317,6 @@ public:
 
 
     PlayerAction updateGameState(SDL_Event evt) { // update main
-        PlayerAction action = PlayerAction::Invalid;
         if (evt.type == SDL_QUIT) {
             //states = GameState::Lost;
             endingFlag = true;
@@ -336,7 +343,7 @@ public:
             }
             //Update game state based on player action
             //std::cout<<"Player Action: "<<(action != PlayerAction::Invalid ? std::to_string(static_cast<int>(action)) : "Invalid")<<"\n";
-            //updatePlayerPosition(action);
+            updateActorPositions(action);
             return action;
         }
     }
