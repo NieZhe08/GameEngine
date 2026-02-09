@@ -58,12 +58,16 @@ public:
                 //std::string contact_dialogue = "";
                 int x = 0; 
                 int y = 0;
+                int vel_x = 0;
+                int vel_y = 0;
+                bool blocking = false;
                 std::string view_str = "";
                 float transform_scale_x = 1.0f;
                 float transform_scale_y = 1.0f;
                 float transform_rotation_degrees = 0.0f;
                 float view_pivot_offset_x = 0.0f;
                 float view_pivot_offset_y = 0.0f;
+                int render_order = 0;
                 //int vel_x = 0;
                 //int vel_y = 0;
                 //bool blocking = false;
@@ -97,6 +101,12 @@ public:
                     x = actor["transform_position_x"].GetInt();
                 if (actor.HasMember("transform_position_y"))
                     y = actor["transform_position_y"].GetInt();
+                if (actor.HasMember("vel_x"))
+                    vel_x = actor["vel_x"].GetInt();
+                if (actor.HasMember("vel_y"))
+                    vel_y = actor["vel_y"].GetInt();
+                if (actor.HasMember("blocking"))
+                    blocking = actor["blocking"].GetBool() ;
                 if (actor.HasMember("transform_scale_x"))
                     transform_scale_x = actor["transform_scale_x"].GetFloat();
                 if (actor.HasMember("transform_scale_y"))
@@ -108,6 +118,9 @@ public:
                 }
                 if (actor.HasMember("view_pivot_offset_y")){
                     view_pivot_offset_y = actor["view_pivot_offset_y"].GetFloat();
+                }
+                if (actor.HasMember("render_order")){
+                    render_order = actor["render_order"].GetInt();
                 }
                     
                 //if (actor.HasMember("vel_x"))
@@ -125,9 +138,11 @@ public:
                 if (y>max_y) max_y = y;
                 //char view = (!view_str.empty()) ? view_str[0] : '?';
 
-                sceneActors->emplace_back(actor_name, id_counter++, glm::ivec2(x,y), view_str,
+                sceneActors->emplace_back(actor_name, id_counter++, glm::ivec2(x,y), 
+                    glm::ivec2(vel_x, vel_y), blocking,
+                    view_str,
                     glm::vec2(transform_scale_x, transform_scale_y), transform_rotation_degrees, 
-                    glm::vec2(view_pivot_offset_x, view_pivot_offset_y));
+                    glm::vec2(view_pivot_offset_x, view_pivot_offset_y), render_order);
 
                 // store the index of the just-emplaced actor into mapHash
                 int actor_index = static_cast<int>(sceneActors->size()) - 1;

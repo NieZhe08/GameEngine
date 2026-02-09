@@ -2,6 +2,7 @@
 #define GAME_UTILS_H
 #include <iostream>
 #include "glm/glm.hpp"
+#include <optional>
 
 enum class PlayerAction {
     MoveUp,
@@ -88,8 +89,8 @@ public:
 	std::string actor_name;
     int id;
 	glm::ivec2 transform_position;
-	//glm::vec2 velocity;
-	//bool blocking;
+	glm::ivec2 velocity;
+	bool blocking;
 
     // SDL stuff
     std::string view_image;
@@ -107,16 +108,19 @@ public:
     bool triggered_scoreUp;
     //std::string nearby_scene;
     //std::string contact_scene;
+    int render_order;
 
 	Actor(std::string actor_name, int id, glm::ivec2 _transform_position,
+        glm::ivec2 _velocity, bool _blocking,
         std::string _view_image, glm::vec2 _transform_scale, 
-        float _transform_rotation_degrees, glm::vec2 _view_pivot_offset): 
+        float _transform_rotation_degrees, glm::vec2 _view_pivot_offset, int _render_order) : 
 
         actor_name(actor_name), id(id), transform_position(_transform_position),
+        velocity(_velocity), blocking(_blocking),
         view_image(_view_image), has_view_image(!_view_image.empty()), transform_scale(glm::abs(_transform_scale)),
         flip_x(_transform_scale.x <0), flip_y(_transform_scale.y <0),
         transform_rotation_degrees(_transform_rotation_degrees), view_pivot_offset(_view_pivot_offset),
-        triggered_scoreUp(false){
+        triggered_scoreUp(false), render_order(_render_order){
             //nearby_incident = checkGameIncidents(nearby_dialogue);
             //contact_incident = checkGameIncidents(contact_dialogsue);
             /*
@@ -167,4 +171,18 @@ struct ActorSmallerId {
     }
 };
 
-#endif // GAME_UTILS_H
+//functor ActorRenderComparator
+struct ActorRenderComparator {
+    bool operator() (const Actor* a1, const Actor* a2) const {
+        if (a1->render_order != a2->render_order) {
+            return a1->render_order > a2->render_order; // Higher render_order is higher priority
+        }
+        else if (a1->transform_position.y != a2->transform_position.y) {
+            return a1->transform_position.y > a2->transform_position.y; // Higher y is lower priority
+        }
+        return a1->id > a2->id; // For same y, smaller id is lower priority
+    }
+};
+
+
+#endif 

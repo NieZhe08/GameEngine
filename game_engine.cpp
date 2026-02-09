@@ -17,6 +17,7 @@
 #include "text_db.h"
 #include "audio_db.h"
 #include "AudioHelper.h"
+#include <queue>
 
 class GameEngine {
 public:
@@ -77,7 +78,7 @@ public:
     std::string hp_image = "";
     float hp_image_width = 0.0f;
     float hp_image_height = 0.0f;
-
+    glm::vec2 camera_lift = glm::vec2(0,0); // Additional camera lift applied on top of main actor centering, can be used for effects
 
     GameEngine() {
         //next_scene_name = "";
@@ -116,8 +117,9 @@ public:
             scene_bgm_chunk = audioDB.readBGM("gameplay_audio");
             scene_bgm_states = audioDB.hasGameplayBGM();
 
+            camera_lift = parser.getCameraOffset() * 100.0f; // Apply camera offset from config, scaled by 100 to convert from tile units to pixel units
             camera = glm::vec2(window_size.x /2.0f, window_size.y /2.0f) + 
-                    parser.getCameraOffset() * 100.0f; // Initialize camera to center of the window
+                    camera_lift; // Initialize camera to center of the window
 
         // Clear mapHash before loading new scene to avoid stale actor indices
         mapHash.clear();
@@ -225,12 +227,12 @@ public:
         text_to_render.clear();
 
         while (Helper::SDL_PollEvent(&event)) {
-            if (event.type == SDL_QUIT) {
-                states = GameState::Lost;
-                break; // exit the game loop
-            }
-            // Handle other events like player input for actions
+            updateGameState(event);
         }
+        glm::vec offset = glm::vec2((mainActor->transform_position.x) * 100 , 
+                            (mainActor->transform_position.y) * 100 );
+        camera = mainActor ? -offset  + glm::vec2(window_size.x /2.0f, window_size.y /2.0f) - camera_lift: camera;
+        //std::cout<<"Camera Position: ("<<camera.x<<", "<<camera.y<<")\n";
         if (hp_image != "" ){
             for (int i = 0; i < health; i++) {
                 SDL_FRect dst = {5.0f + i * (hp_image_width + 5.0f), 25.0f, hp_image_width, hp_image_height};
@@ -238,110 +240,129 @@ public:
             }
             text_to_render.push_back(TextRenderConfig("Score : " + std::to_string(score), 5, 5));
         }
-        
-        
-        
     }
 
-    //void updateActorPositions(PlayerAction playerAction) {
-    //    // Update NPC positions based on their velocities
-    //    if (!actorList) return;
-    //    for (Actor& actor : *actorList){
-    //        glm::ivec2 nextPosition;
-    //        bool hasMoved = false;
-    //        if (&actor == mainActor) {
-    //            auto result = updatePlayerPosition(playerAction);
-    //            nextPosition = result.first;
-    //            hasMoved = result.second;
-    //        } else {
-    //            if (actor.velocity != glm::ivec2(0,0)){
-    //                hasMoved = true;
-    //            }
-    //            nextPosition = actor.position + actor.velocity;
-    //        }
-    //        if (!hasMoved) continue; // skip the following steps if the actor has not moved
-    //        // collision detection only worry about whether collision happens between actor itself and others
-    //        if (!collisionDetected(nextPosition, & actor)){// need to update mapHash
-    //            // remove the actor's index from its old cell
-    //            auto vectorIt = mapHash.find(hashPosition(actor.position));
-    //            if (vectorIt != mapHash.end()) {
-    //                //int idx = static_cast<int>(&actor - &(*actorList)[0]);// TODO
-    //                int idx = actor.id;
-    //                auto removeIt = std::remove(vectorIt->second.begin(), vectorIt->second.end(), idx);
-    //                vectorIt->second.erase(removeIt, vectorIt->second.end());
-    //            }
-    //            // push actor index into new cell
-    //            //int new_idx = static_cast<int>(&actor - &(*actorList)[0]);
-    //            int new_idx = actor.id;
-    //            mapHash[hashPosition(nextPosition)].push_back(new_idx);
-    //            actor.position = nextPosition;
-    //        } else {
-    //            actor.velocity = -actor.velocity; // Reverse direction on collision
-    //        }
-    //    }
-    //}
+    void updateActorPositions(PlayerAction playerAction) {
+        // Update NPC positions based on their velocities
+        if (!actorList) return;
+        for (Actor& actor : *actorList){
+            glm::ivec2 nextPosition;
+            bool hasMoved = false;
+            if (&actor == mainActor) {
+                auto result = updatePlayerPosition(playerAction);
+                nextPosition = result.first;
+                hasMoved = result.second;
+            } else {
+                if (actor.velocity != glm::ivec2(0,0)){
+                    hasMoved = true;
+                }
+                nextPosition = actor.transform_position + actor.velocity;
+            }
+            if (!hasMoved) continue; // skip the following steps if the actor has not moved
+            // collision detection only worry about whether collision happens between actor itself and others
+            if (!collisionDetected(nextPosition, & actor)){// need to update mapHash
+                // remove the actor's index from its old cell
+                auto vectorIt = mapHash.find(hashPosition(actor.transform_position));
+                if (vectorIt != mapHash.end()) {
+                    //int idx = static_cast<int>(&actor - &(*actorList)[0]);// TODO
+                    int idx = actor.id;
+                    auto removeIt = std::remove(vectorIt->second.begin(), vectorIt->second.end(), idx);
+                    vectorIt->second.erase(removeIt, vectorIt->second.end());
+                }
+                // push actor index into new cell
+                //int new_idx = static_cast<int>(&actor - &(*actorList)[0]);
+                int new_idx = actor.id;
+                mapHash[hashPosition(nextPosition)].push_back(new_idx);
+                actor.transform_position = nextPosition;
+            } else {
+                actor.velocity = -actor.velocity; // Reverse direction on collision
+            }
+        }
+    }
 
 
-    //void updateGameState(PlayerAction action) { // update main
-        // Update game state based on player action
-        //updateActorPositions(action);
-        //if (action == PlayerAction::Quit){
-        //    health = 0; // End game
-        //} else {
-        //    //updatePlayerPosition(action);
-        //    std::vector<GameIncident> incidents;
-        //    updateDialogues(incidents);
-        //    updateGameIncidents(incidents);
-        //    if (health <= 0){
-        //        states = GameState::Lost;
-        //    }
-        //}
-    //}
+    void updateGameState(SDL_Event evt) { // update main
+        if (evt.type == SDL_QUIT) {
+            states = GameState::Lost;
+        } else if (evt.type == SDL_KEYDOWN) {
+            SDL_Keycode key_press = evt.key.keysym.scancode;
+            PlayerAction action = PlayerAction::Invalid;
+            switch (key_press) {
+                case SDL_SCANCODE_UP:
+                    action = PlayerAction::MoveUp;
+                    break;
+                case SDL_SCANCODE_DOWN:
+                    action = PlayerAction::MoveDown;
+                    break;
+                case SDL_SCANCODE_LEFT:
+                    action = PlayerAction::MoveLeft;
+                    break;
+                case SDL_SCANCODE_RIGHT:
+                    action = PlayerAction::MoveRight;
+                    break;
+                default:
+                    break;
+            }
+            //Update game state based on player action
+            //std::cout<<"Player Action: "<<(action != PlayerAction::Invalid ? std::to_string(static_cast<int>(action)) : "Invalid")<<"\n";
+            updateActorPositions(action);
+            if (action == PlayerAction::Quit){
+                health = 0; // End game
+            } else {
+                //updatePlayerPosition(action);
+                //std::vector<GameIncident> incidents;
+                //updateDialogues(incidents);
+                //updateGameIncidents(incidents);
+                if (health <= 0){
+                    states = GameState::Lost;
+                }
+            }
+        }
+    }
 
-    // TO DO
-    //bool collisionDetected(glm::ivec2 position, Actor* actor_ptr) {
-    //    //assert (true);// do check of index
-    //    /*
-    //    if (position.x<0 || position.x>=mapSize.x || position.y<0 || position.y>=mapSize.y){
-    //        return true;
-    //    }
-    //    */
-    //    std::uint64_t key = hashPosition(position);
-    //    auto it = mapHash.find(key);
-    //    if (it != mapHash.end()){
-    //        for (int idx : it->second){
-    //            Actor* actor = &(*actorList)[idx];
-    //            if (actor->blocking && actor != actor_ptr){
-    //                return true;
-    //            }
-    //        }
-    //    }
-    //    return false;
-    //}
+    bool collisionDetected(glm::ivec2 position, Actor* actor_ptr) {
+        //assert (true);// do check of index
+        /*
+        if (position.x<0 || position.x>=mapSize.x || position.y<0 || position.y>=mapSize.y){
+            return true;
+        }
+        */
+        std::uint64_t key = hashPosition(position);
+        auto it = mapHash.find(key);
+        if (it != mapHash.end()){
+            for (int idx : it->second){
+                Actor* actor = &(*actorList)[idx];
+                if (actor->blocking && actor != actor_ptr){
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 
-    //std::pair<glm::ivec2, bool> updatePlayerPosition(PlayerAction action) {
-    //    // Update player position based on action
-    //    if (!mainActor) return std::make_pair(glm::ivec2(0,0), false);
-    //    glm::ivec2 nextPosition = mainActor->position;
-    //    bool hasMoved = true;
-    //    switch (action) {
-    //        case PlayerAction::MoveUp:
-    //            nextPosition.y -= 1;
-    //            break;
-    //        case PlayerAction::MoveDown:
-    //            nextPosition.y += 1;
-    //            break;
-    //        case PlayerAction::MoveLeft:
-    //            nextPosition.x -= 1;
-    //            break;
-    //        case PlayerAction::MoveRight:
-    //            nextPosition.x += 1;
-    //            break;
-    //        default:
-    //            hasMoved = false;
-    //            break;
-    //    }
-    //    return std::make_pair(nextPosition, hasMoved);
+    std::pair<glm::ivec2, bool> updatePlayerPosition(PlayerAction action) {
+        // Update player position based on action
+        if (!mainActor) return std::make_pair(glm::ivec2(0,0), false);
+        glm::ivec2 nextPosition = mainActor->transform_position;
+        bool hasMoved = true;
+        switch (action) {
+            case PlayerAction::MoveUp:
+                nextPosition.y -= 1;
+                break;
+            case PlayerAction::MoveDown:
+                nextPosition.y += 1;
+                break;
+            case PlayerAction::MoveLeft:
+                nextPosition.x -= 1;
+                break;
+            case PlayerAction::MoveRight:
+                nextPosition.x += 1;
+                break;
+            default:
+                hasMoved = false;
+                break;
+        }
+        return std::make_pair(nextPosition, hasMoved);
         /*
         //std::cout<<"collision"<<(collisionDetected(nextPosition) ? " detected\n" : " not detected\n");
         if (!collisionDetected(nextPosition, mainActor->actor_name)){
@@ -351,7 +372,7 @@ public:
         return mainActor->position;
         */
         
-    //}
+    }
 
     //std::vector<GameIncident> updateDialogues(std::vector<GameIncident>& allIncidents) {
     //    // Update dialogues based on proximity to other actors
@@ -494,13 +515,19 @@ public:
         if (true){
             // Render game scene based on actor positions and map
             if (actorList) {
+                std::priority_queue<const Actor*, std::vector<const Actor*>, ActorRenderComparator> renderQueue;
                 for (const Actor& actor : *actorList) {
-                    if (actor.has_view_image) {
-                        imageDB->renderImageEx(
-                            &actor, camera
-                        );
+                    if (actor.has_view_image) {// TODO more effecient way to do 
+                        renderQueue.push(&actor);
                         //std::cout<<"rendering actor "<<actor.actor_name<<" at position "<<actor.transform_position.x<<","<<actor.transform_position.y<<"\n";
-                    }
+                    }   
+                }
+                while (!renderQueue.empty()){
+                    const Actor* renderActor = renderQueue.top();
+                    renderQueue.pop();
+                    imageDB->renderImageEx(
+                        renderActor, camera
+                    );
                 }
             }
         }
