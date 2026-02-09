@@ -235,9 +235,11 @@ public:
         while (Helper::SDL_PollEvent(&event)) {
             updateGameState(event);
         }
-        glm::vec offset = glm::vec2((mainActor->transform_position.x) * 100 , 
+        if (mainActor){
+            glm::vec offset = glm::vec2((mainActor->transform_position.x) * 100 , 
                             (mainActor->transform_position.y) * 100 );
-        camera = mainActor ? -offset  + glm::vec2(window_size.x /2.0f, window_size.y /2.0f) - camera_lift: camera;
+            camera = -offset  + glm::vec2(window_size.x /2.0f, window_size.y /2.0f) - camera_lift;
+        }
         //std::cout<<"Camera Position: ("<<camera.x<<", "<<camera.y<<")\n";
         if (hp_image != "" ){
             for (int i = 0; i < health; i++) {
@@ -315,10 +317,10 @@ public:
             if (action == PlayerAction::Quit){
                 health = 0; // End game
             } else {
-                //updatePlayerPosition(action);
-                //std::vector<GameIncident> incidents;
-                //updateDialogues(incidents);
-                //updateGameIncidents(incidents);
+                updatePlayerPosition(action);
+                std::vector<GameIncident> incidents;
+                updateDialogues(incidents);
+                updateGameIncidents(incidents);
                 if (health <= 0){
                     states = GameState::Lost;
                 }
@@ -380,109 +382,117 @@ public:
         
     }
 
-    //std::vector<GameIncident> updateDialogues(std::vector<GameIncident>& allIncidents) {
-    //    // Update dialogues based on proximity to other actors
-    //    // Use min-heap (std::greater) so that smaller actor IDs are processed first
-    //    std::priority_queue<int, std::vector<int>, std::greater<int>> actorsToBeDealted;
-    //    if (!actorList || !mainActor) return allIncidents;
-    //    for (int i = -1; i<2; i++){
-    //        for (int j = -1; j<2; j++){
-    //            glm::ivec2 check_position = mainActor->position + glm::ivec2(i, j);
-    //            auto it = mapHash.find(hashPosition(check_position));
-    //            if (it != mapHash.end() && !it->second.empty()){
-    //                for (int actor_idx : it->second){
-    //                    actorsToBeDealted.push(actor_idx);
-    //                }
-    //            }
-    //        }
-    //    }
-    //    while (!actorsToBeDealted.empty()){
-    //        int actor_idx = actorsToBeDealted.top();
-    //        actorsToBeDealted.pop();
-    //        Actor& actor = (*actorList)[actor_idx];
-    //            if (actor.position.x == mainActor->position.x && actor.position.y == mainActor->position.y){
-    //                if (&actor == mainActor) continue;
-    //                if (actor.contact_dialogue.empty()) continue;
-    //                checkGameIncidents(&actor, allIncidents, ContactType::Overlap);
-    //                dialogue_ss<<actor.contact_dialogue<<"\n";
-    //            } else {
-    //                if (actor.nearby_dialogue.empty()) continue;
-    //                checkGameIncidents(&actor, allIncidents, ContactType::Nearby);
-    //                dialogue_ss<<actor.nearby_dialogue<<"\n";
-    //            }
-    //    }
-        /*
+    std::vector<GameIncident> updateDialogues(std::vector<GameIncident>& allIncidents) {
+        if (!mainActor) return allIncidents;
+        // Update dialogues based on proximity to other actors
+        // Use min-heap (std::greater) so that smaller actor IDs are processed first
+        //std::priority_queue<int, std::vector<int>, std::greater<int>> actorsToBeDealted;
+        //if (!actorList || !mainActor) return allIncidents;
+        //for (int i = -10; i<20; i++){
+        //    for (int j = -10; j<20; j++){
+        //        glm::ivec2 check_position = mainActor->transform_position + glm::ivec2(i, j);
+        //        auto it = mapHash.find(hashPosition(check_position));
+        //        if (it != mapHash.end() && !it->second.empty()){
+        //            for (int actor_idx : it->second){
+        //                actorsToBeDealted.push(actor_idx);
+        //            }
+        //        }
+        //    }
+        //}
+        //while (!actorsToBeDealted.empty()){
+        //    int actor_idx = actorsToBeDealted.top();
+        //    actorsToBeDealted.pop();
+        //    Actor& actor = (*actorList)[actor_idx];
+        //        if (actor.transform_position.x == mainActor->transform_position.x 
+        //            && actor.transform_position.y == mainActor->transform_position.y){
+        //            if (&actor == mainActor) continue;
+        //            if (actor.contact_dialogue.empty()) continue;
+        //            checkGameIncidents(&actor, allIncidents, ContactType::Overlap);
+        //            //dialogue_ss<<actor.contact_dialogue<<"\n";
+        //            text_to_render.emplace_back( actor.contact_dialogue, 25, window_size.y / 2.0f - 50 - 50* (text_to_render.size()-1 ));
+        //        } else {
+        //            if (actor.nearby_dialogue.empty()) continue;
+        //            checkGameIncidents(&actor, allIncidents, ContactType::Nearby);
+        //            //dialogue_ss<<actor.nearby_dialogue<<"\n";
+        //            text_to_render.emplace_back( actor.contact_dialogue, 25, window_size.y / 2.0f - 50 - 50* (text_to_render.size()-1 ));
+        //        }
+        //}
+        
         for (Actor& actor : *actorList){
-            if (actor.position.x == mainActor->position.x && actor.position.y == mainActor->position.y){
+            if (actor.transform_position.x == mainActor->transform_position.x && actor.transform_position.y == mainActor->transform_position.y){
                 if (&actor == mainActor) continue;
                 if (actor.contact_dialogue.empty()) continue;
                 checkGameIncidents(&actor, allIncidents, ContactType::Overlap);
-                dialogue_ss<<actor.contact_dialogue<<"\n";
-            } else if (glm::abs(actor.position.x - mainActor->position.x) <=1 && glm::abs(actor.position.y - mainActor->position.y) <=1){
+                //dialogue_ss<<actor.contact_dialogue<<"\n";
+                text_to_render.emplace_back( actor.contact_dialogue, 25, window_size.y / 2.0f - 50 - 50* (text_to_render.size()-1 ));
+            } else if (glm::abs(actor.transform_position.x - mainActor->transform_position.x) <=1 && glm::abs(actor.transform_position.y - mainActor->transform_position.y) <=1){
                 if (actor.nearby_dialogue.empty()) continue;
                 checkGameIncidents(&actor, allIncidents, ContactType::Nearby);
-                dialogue_ss<<actor.nearby_dialogue<<"\n";
+                //dialogue_ss<<actor.nearby_dialogue<<"\n";
+                text_to_render.emplace_back( actor.contact_dialogue, 25, window_size.y / 2.0f - 50 - 50* (text_to_render.size()-1 ));
             }
         }
-        */
-    //    return allIncidents;
-    //}
+        
+        return allIncidents;
+    }
 
-    //void updateGameIncidents(std::vector<GameIncident>& incidents) {
-    //    for (GameIncident& incident : incidents){
-    //        switch (incident){
-    //            case GameIncident::HealthDown:
-    //                health -= 1;
-    //                break;
-    //            case GameIncident::ScoreUp:
-    //                score += 1;
-    //                break;
-    //            case GameIncident::YouWin:
-    //                states = GameState::Won;
-    //                break;
-    //            case GameIncident::GameOver:
-    //                states = GameState::Lost;
-    //                break;
-    //            case GameIncident::NextScene:
-    //                states = GameState::NextScene;
-    //                break;
-    //            default:
-    //                break;
-    //        }
-    //    }
-    //}
+    void updateGameIncidents(std::vector<GameIncident>& incidents) {
+        if (!mainActor) return;
+        for (GameIncident& incident : incidents){
+            switch (incident){
+                case GameIncident::HealthDown:
+                    health -= 1;
+                    break;
+                case GameIncident::ScoreUp:
+                    score += 1;
+                    break;
+                case GameIncident::YouWin:
+                    states = GameState::Won;
+                    break;
+                case GameIncident::GameOver:
+                    states = GameState::Lost;
+                    break;
+                case GameIncident::NextScene:
+                    states = GameState::NextScene;
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
 
     //TO DO check when read in
-    //void checkGameIncidents(Actor* actor, std::vector<GameIncident>& allIncidents, ContactType contactType) {
-    //    switch (contactType){
-    //        case ContactType::Nearby:
-    //            if (actor->nearby_incident != GameIncident::None
-    //            && (actor->nearby_incident != GameIncident::ScoreUp || !actor->triggered_scoreUp)){
-    //                allIncidents.push_back(actor->nearby_incident);
-    //                if (actor->nearby_incident == GameIncident::ScoreUp){
-    //                    actor->triggered_scoreUp = true;
-    //                } else if (actor->nearby_incident == GameIncident::NextScene){
-    //                    next_scene_name = actor->nearby_scene;
-    //                } 
-    //                //dialogue_ss<<actor->nearby_dialogue<<"\n";
-    //            }
-    //            break;
-    //        case ContactType::Overlap:
-    //            if (actor->contact_incident != GameIncident::None
-    //            && (actor->contact_incident != GameIncident::ScoreUp || !actor->triggered_scoreUp)){
-    //                allIncidents.push_back(actor->contact_incident); 
-    //                if (actor->contact_incident == GameIncident::ScoreUp){
-    //                    actor->triggered_scoreUp = true;
-    //                }
-    //                if (actor->contact_incident == GameIncident::NextScene){
-    //                    next_scene_name = actor->contact_scene;
-    //                }
-    //                //dialogue_ss<<actor->contact_dialogue<<"\n";
-    //            }
-    //            break;
-    //    }
-    //    return;
-    //}
+    void checkGameIncidents(Actor* actor, std::vector<GameIncident>& allIncidents, ContactType contactType) {
+        if (!mainActor) return;
+        switch (contactType){
+            case ContactType::Nearby:
+                if (actor->nearby_incident != GameIncident::None
+                && (actor->nearby_incident != GameIncident::ScoreUp || !actor->triggered_scoreUp)){
+                    allIncidents.push_back(actor->nearby_incident);
+                    if (actor->nearby_incident == GameIncident::ScoreUp){
+                        actor->triggered_scoreUp = true;
+                    } else if (actor->nearby_incident == GameIncident::NextScene){
+                        next_scene_name = actor->nearby_scene;
+                    } 
+                    //dialogue_ss<<actor->nearby_dialogue<<"\n";
+                }
+                break;
+            case ContactType::Overlap:
+                if (actor->contact_incident != GameIncident::None
+                && (actor->contact_incident != GameIncident::ScoreUp || !actor->triggered_scoreUp)){
+                    allIncidents.push_back(actor->contact_incident); 
+                    if (actor->contact_incident == GameIncident::ScoreUp){
+                        actor->triggered_scoreUp = true;
+                    }
+                    if (actor->contact_incident == GameIncident::NextScene){
+                        next_scene_name = actor->contact_scene;
+                    }
+                    //dialogue_ss<<actor->contact_dialogue<<"\n";
+                }
+                break;
+        }
+        return;
+    }
 
     //void dialogueRender(){
     //    std::cout<<dialogue_ss.str();
