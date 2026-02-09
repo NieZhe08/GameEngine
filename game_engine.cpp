@@ -18,6 +18,7 @@
 #include "audio_db.h"
 #include "AudioHelper.h"
 #include <queue>
+#include <deque>
 
 class GameEngine {
 public:
@@ -89,19 +90,20 @@ public:
     }
 
     void initializeGame(bool isInitialLoad = true) {
-            JsonParser parser;
-            //game_start_message = parser.getGameStartMessage();
-            //game_over_good_message = parser.getGameOverGoodMessage();
-            //game_over_bad_message = parser.getGameOverBadMessage();
-            ////viewSize = parser.getResolution();
-            //
+            
+        //game_start_message = parser.getGameStartMessage();
+        //game_over_good_message = parser.getGameOverGoodMessage();
+        //game_over_bad_message = parser.getGameOverBadMessage();
+        ////viewSize = parser.getResolution();
+        JsonParser parser;
+        if (isInitialLoad){
             next_scene_name = parser.getInitialScene();
 
             //SDL
             game_title = parser.getGameTitle();
             window_size = parser.getResolution();
-            //std::cout<<"window_size: "<<window_size.x<<" "<<window_size.y<<"\n";
             clear_color = parser.getClearColor();
+            //std::cout<<"window_size: "<<window_size.x<<" "<<window_size.y<<"\n";
 
             SDL_Init(SDL_INIT_VIDEO);
             TTF_Init();
@@ -117,16 +119,26 @@ public:
 
             intro_bgm_chunk = audioDB.readBGM("intro_bgm");
             intro_bgm_states  = audioDB.hasIntroBGM();
-            scene_bgm_chunk = audioDB.readBGM("gameplay_audio");
-            scene_bgm_states = audioDB.hasGameplayBGM();
 
-            camera_lift = parser.getCameraOffset() * 100.0f; // Apply camera offset from config, scaled by 100 to convert from tile units to pixel units
-            camera = glm::vec2(window_size.x /2.0f, window_size.y /2.0f) + 
-                    camera_lift; // Initialize camera to center of the window
+            states = GameState::IntroAnimation;
+            if (!intro_image || intro_image->empty()){
+            states = GameState::Ongoing; // Skip intro animation if no intro image
+            }
+        } else {
+            states = GameState::Ongoing; // Load next scene directly without intro animation
+        }
+        
+        scene_bgm_chunk = audioDB.readBGM("gameplay_audio");
+        scene_bgm_states = audioDB.hasGameplayBGM();
+
+        camera_lift = parser.getCameraOffset() * 100.0f; // Apply camera offset from config, scaled by 100 to convert from tile units to pixel units
+        camera = glm::vec2(window_size.x /2.0f, window_size.y /2.0f) + 
+                camera_lift; // Initialize camera to center of the window
 
         // Clear mapHash before loading new scene to avoid stale actor indices
         mapHash.clear();
 
+        //std::cout<<"Loading scene: "<<next_scene_name<<"\n";
         // load scene module
         SceneDB sceneDB(next_scene_name, mapHash, imageDB);
         actorList = sceneDB.getSceneActors();
@@ -149,10 +161,7 @@ public:
         //    health = 3;
         //    score = 0;
         //}
-        states = GameState::IntroAnimation;
-        if (!intro_image || intro_image->empty()){
-            states = GameState::Ongoing; // Skip intro animation if no intro image
-        }
+        
         //scored_actors = std::vector<std::string>();
         next_scene_name = "";
         // Initialize game state, load map, actors, etc.
@@ -251,6 +260,14 @@ public:
             }
             text_to_render.push_back(TextRenderConfig("Score : " + std::to_string(score), 5, 5));
         }
+        std::vector<GameIncident> incidents;
+        updateDialogues(incidents);
+        updateGameIncidents(incidents);
+        if (health <= 0){
+            //states = GameState::Lost;
+            endingFlag = true;
+            endingState = GameState::Lost;
+        }
     }
 
     void updateActorPositions(PlayerAction playerAction) {
@@ -319,19 +336,8 @@ public:
             //Update game state based on player action
             //std::cout<<"Player Action: "<<(action != PlayerAction::Invalid ? std::to_string(static_cast<int>(action)) : "Invalid")<<"\n";
             updateActorPositions(action);
-            if (action == PlayerAction::Quit){ // This should never happen
-                health = 0; // End game
-            } else {
-                //updatePlayerPosition(action);
-                std::vector<GameIncident> incidents;
-                updateDialogues(incidents);
-                updateGameIncidents(incidents);
-                if (health <= 0){
-                    //states = GameState::Lost;
-                    endingFlag = true;
-                    endingState = GameState::Lost;
-                }
-            }
+            //updatePlayerPosition(action);
+            
         }
     }
 
@@ -425,19 +431,31 @@ public:
         //        }
         //}
         
+        std::vector<std::string> dialogue_queue; // To store dialogues in the order they are processed
         for (Actor& actor : *actorList){
             if (actor.transform_position.x == mainActor->transform_position.x && actor.transform_position.y == mainActor->transform_position.y){
                 if (&actor == mainActor) continue;
                 if (actor.contact_dialogue.empty()) continue;
                 checkGameIncidents(&actor, allIncidents, ContactType::Overlap);
                 //dialogue_ss<<actor.contact_dialogue<<"\n";
-                text_to_render.emplace_back( actor.contact_dialogue, 25, window_size.y / 2.0f - 50 - 50* (text_to_render.size()-1 ));
+                if (actor.contact_dialogue != ""){
+                    //std::cout<<actor.nearby_dialogue<<"\n";
+                    dialogue_queue.push_back(actor.contact_dialogue);
+                }
+                
             } else if (glm::abs(actor.transform_position.x - mainActor->transform_position.x) <=1 && glm::abs(actor.transform_position.y - mainActor->transform_position.y) <=1){
                 if (actor.nearby_dialogue.empty()) continue;
                 checkGameIncidents(&actor, allIncidents, ContactType::Nearby);
                 //dialogue_ss<<actor.nearby_dialogue<<"\n";
-                text_to_render.emplace_back( actor.contact_dialogue, 25, window_size.y / 2.0f - 50 - 50* (text_to_render.size()-1 ));
+                if (actor.nearby_dialogue != "") {
+                    //std::cout<<actor.nearby_dialogue<<"\n";
+                    dialogue_queue.push_back(actor.nearby_dialogue);
+                }
+                
             }
+        }
+        for (size_t i=0; i<dialogue_queue.size(); i++){
+            text_to_render.emplace_back( dialogue_queue[i], 25, window_size.y - 50 - 50* (dialogue_queue.size()-1 -i));
         }
         
         return allIncidents;
@@ -448,7 +466,10 @@ public:
         for (GameIncident& incident : incidents){
             switch (incident){
                 case GameIncident::HealthDown:
-                    health -= 1;
+                    if (Helper::GetFrameNumber() - coolDownTriggerFrame >= 180){ // Cool down period of 3 seconds at 60 FPS 
+                        health -= 1;
+                        coolDownTriggerFrame = Helper::GetFrameNumber();
+                    }
                     break;
                 case GameIncident::ScoreUp:
                     score += 1;
@@ -457,7 +478,10 @@ public:
                     states = GameState::Won;
                     break;
                 case GameIncident::GameOver:
-                    states = GameState::Lost;
+                    if (Helper::GetFrameNumber() - coolDownTriggerFrame >= 180){ // Cool down period of 3 seconds at 60 FPS to prevent rapid score increase
+                        states = GameState::Lost;
+                        coolDownTriggerFrame = Helper::GetFrameNumber();
+                    }
                     break;
                 case GameIncident::NextScene:
                     states = GameState::NextScene;
@@ -471,7 +495,9 @@ public:
     //TO DO check when read in
     void checkGameIncidents(Actor* actor, std::vector<GameIncident>& allIncidents, ContactType contactType) {
         if (!mainActor) return;
-        if (Helper::GetFrameNumber)
+        //if (Helper::GetFrameNumber() - coolDownTriggerFrame < 180){ // Cool down period of 3 seconds at 60 FPS to prevent rapid re-triggering of incidents
+        //    return;
+        //}
         switch (contactType){
             case ContactType::Nearby:
                 if (actor->nearby_incident != GameIncident::None
@@ -527,6 +553,9 @@ public:
             frameRender(false);
             if (endingFlag){
                 states = endingState;
+            }
+            if (states == GameState::NextScene){
+                initializeGame(false); // re-initialize game with next scene
             }
             //std::cout<<"state"<<(static_cast<int>(states))<<"\n";
         }

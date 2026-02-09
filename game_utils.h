@@ -146,6 +146,7 @@ public:
            if (!nb_scene.empty()){
                nearby_incident = GameIncident::NextScene;
                nearby_scene = nb_scene;
+               //std::cout<<"nearby_scene: "<<nearby_scene<<"\n";
            } else {
                nearby_scene = "";
            }
@@ -153,6 +154,7 @@ public:
            if (!ct_scene.empty()){
                contact_incident = GameIncident::NextScene;
                contact_scene = ct_scene;
+                //std::cout<<"contact_scene: "<<contact_scene<<"\n";
            } else {
                contact_scene = "";
            }
