@@ -87,7 +87,8 @@ public:
 
     void renderImage(const std::string& path, SDL_FRect dst) {
         if (image_index_map.find(path) == image_index_map.end()){
-            if (!loadImage(path)) return;
+            //if (!loadImage(path)) 
+            return;
         }
         int idx = image_index_map[path];
         if (idx < 0 || idx >= (int)cache.size()) {
