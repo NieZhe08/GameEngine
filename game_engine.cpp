@@ -250,7 +250,7 @@ public:
         while (Helper::SDL_PollEvent(&event)) {
             action = updateGameState(event);
         }
-        //updateActorPositions(action);
+        updateActorPositions(action);
         if (mainActor){
             glm::vec offset = glm::vec2((mainActor->transform_position.x) * 100 , 
                             (mainActor->transform_position.y) * 100 );
@@ -270,22 +270,23 @@ public:
     void updateActorPositions(PlayerAction playerAction) {
         // Update NPC positions based on their velocities
         if (!actorList) return;
+        bool hasMainPlayer = false;
         bool nonPlayerUpdate = (Helper::GetFrameNumber() &&Helper::GetFrameNumber() % 60 == 0); 
         for (Actor& actor : *actorList){
-                glm::ivec2 nextPosition;
-                bool hasMoved = false;
-                if (&actor == mainActor) {
-                    auto result = updatePlayerPosition(playerAction);
-                    nextPosition = result.first;
-                    hasMoved = result.second;
-                    //if (hasMoved){
-                    //    std::cout << "[DEBUG] 主角尝试移动: action=" << static_cast<int>(playerAction)
-                    //          << ", 当前坐标=(" << mainActor->transform_position.x << ", " << mainActor->transform_position.y << ")"
-                    //          << ", 目标坐标=(" << nextPosition.x << ", " << nextPosition.y << ")"
-                    //          << ", hasMoved=" << hasMoved << std::endl;
-                    //    std::cout<<Helper::GetFrameNumber() << "\n";
-                    //}
-                    
+            glm::ivec2 nextPosition;
+            bool hasMoved = false;
+            if (&actor == mainActor) {
+                if (hasMainPlayer){
+                    //std::cout<<"Multiple main actors\n";
+                }
+                hasMainPlayer = true;
+                auto result = updatePlayerPosition(playerAction);
+                nextPosition = result.first;
+                hasMoved = result.second;
+                if (hasMoved) {
+                    glm::ivec2 delta = nextPosition - actor.transform_position;
+                    //std::cout<<"Frame Number:"<<Helper::GetFrameNumber() << ", Player Moved:("<<delta.x<<", "<<delta.y<<")\n";
+                }
             } else {
                 if (!nonPlayerUpdate) continue; // Only update non-player actors every 60 frames to slow down their movement
                 if (actor.velocity != glm::ivec2(0,0)){
@@ -322,7 +323,7 @@ public:
             endingFlag = true;
             endingState = GameState::Lost;
             return PlayerAction::Invalid;
-        } else if (evt.type == SDL_KEYDOWN) {
+        } else if (evt.type == SDL_KEYDOWN && evt.key.repeat == 0) { // Only consider non-repeated keydown events for player actions
             SDL_Keycode key_press = evt.key.keysym.scancode;
             PlayerAction action = PlayerAction::Invalid;
             switch (key_press) {
@@ -343,9 +344,10 @@ public:
             }
             //Update game state based on player action
             //std::cout<<"Player Action: "<<(action != PlayerAction::Invalid ? std::to_string(static_cast<int>(action)) : "Invalid")<<"\n";
-            updateActorPositions(action);
+            //updateActorPositions(action);
             return action;
         }
+        return PlayerAction::Invalid;
     }
 
     bool collisionDetected(glm::ivec2 position, Actor* actor_ptr) {
@@ -360,7 +362,9 @@ public:
         if (it != mapHash.end()){
             for (int idx : it->second){
                 Actor* actor = &(*actorList)[idx];
+                //std::cout<<"Actor name:"<<actor->actor_name<<",blocking:"<<actor->blocking<<"\n";
                 if (actor->blocking && actor != actor_ptr){
+                    
                     return true;
                 }
             }
