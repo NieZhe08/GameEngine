@@ -84,6 +84,8 @@ public:
     bool endingFlag = false; // Flag to indicate if the game is in the ending sequence after winning or losing
     GameState endingState = GameState::Ongoing; // Store whether the ending sequence is for winning or losing
 
+    //Ending Game Stage variables
+
     GameEngine() {
         //next_scene_name = "";
         initializeGame();
@@ -449,7 +451,7 @@ public:
                 if (actor.contact_dialogue.empty()) continue;
                 checkGameIncidents(&actor, allIncidents, ContactType::Overlap);
                 //dialogue_ss<<actor.contact_dialogue<<"\n";
-                if (actor.contact_dialogue != ""){
+                if (actor.contact_dialogue != "" && actor.contact_incident != GameIncident::NextScene){
                     //std::cout<<actor.nearby_dialogue<<"\n";
                     dialogue_queue.push_back(actor.contact_dialogue);
                 }
@@ -458,7 +460,7 @@ public:
                 if (actor.nearby_dialogue.empty()) continue;
                 checkGameIncidents(&actor, allIncidents, ContactType::Nearby);
                 //dialogue_ss<<actor.nearby_dialogue<<"\n";
-                if (actor.nearby_dialogue != "") {
+                if (actor.nearby_dialogue != ""&& actor.nearby_incident != GameIncident::NextScene) {
                     //std::cout<<actor.nearby_dialogue<<"\n";
                     dialogue_queue.push_back(actor.nearby_dialogue);
                 }
@@ -564,6 +566,9 @@ public:
                 initializeGame(false); // re-initialize game with next scene
             }
             update();
+            if (states == GameState::NextScene){
+                continue; // skip rendering for the current frame if we are transitioning to the next scene
+            }
             frameRender(false);
             if (endingFlag){
                 states = endingState;
@@ -680,4 +685,5 @@ public:
     //        break;
     //    }
     //}
+
 };
