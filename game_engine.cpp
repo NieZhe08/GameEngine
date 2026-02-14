@@ -323,7 +323,7 @@ public:
             endingFlag = true;
             endingState = GameState::Lost;
             return PlayerAction::Invalid;
-        } else if (evt.type == SDL_KEYDOWN && evt.key.repeat == 0) { // Only consider non-repeated keydown events for player actions
+        } else if (evt.type == SDL_KEYDOWN ) { // Only consider non-repeated keydown events for player actions
             SDL_Keycode key_press = evt.key.keysym.scancode;
             PlayerAction action = PlayerAction::Invalid;
             switch (key_press) {
