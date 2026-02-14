@@ -7,7 +7,7 @@
 #include <vector>
 #include "AudioHelper.h"
 #include "SDL2/SDL.h"
-#include "SDL2/SDL_mixer.h"
+#include "SDL_mixer/SDL_mixer.h"
 #include "engineUtils.h"
 #include "rapidjson/document.h"
 

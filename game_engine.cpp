@@ -12,7 +12,7 @@
 #include <queue>
 #include "Helper.h"
 #include "SDL2/SDL.h"
-#include "SDL2/SDL_ttf.h"
+#include "SDL_ttf/SDL_ttf.h"
 #include "image_db.h"
 #include "text_db.h"
 #include "audio_db.h"

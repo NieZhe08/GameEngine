@@ -7,7 +7,7 @@
 #include <string.h>
 #include "Helper.h"
 #include "SDL2/SDL.h"
-#include "SDL2/SDL_ttf.h"
+#include "SDL_ttf/SDL_ttf.h"
 #include "engineUtils.h"
 #include "rapidjson/document.h"
 #include "glm/glm.hpp"
