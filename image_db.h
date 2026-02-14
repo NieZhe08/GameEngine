@@ -89,7 +89,7 @@ public:
         if (!std::filesystem::exists(path)) {
             fullpath = "resources/images/" + path + ".png";
             if (!std::filesystem::exists(fullpath)) {
-                std::cout << "error: missing image " << path << "\n";
+                std::cout << "error: missing image " << path ;
                 return nullptr;
             }
         }

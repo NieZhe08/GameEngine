@@ -641,7 +641,7 @@ public:
                 states = endingState;
             }
             //std::cout<<"state"<<(static_cast<int>(states))<<"\n";
-            endingFlag = true;
+            endingFlag = false;
         }
         //finalRender();
         imageDB->clearCache();
