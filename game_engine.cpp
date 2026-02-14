@@ -138,6 +138,12 @@ public:
             // game ending 
             gamewin_image = imageDB->getGameWinImage();
             gamelose_image = imageDB->getGameLoseImage();
+            if (gamewin_image != ""){
+                imageDB -> loadImage(gamewin_image);
+            }
+            if (gamelose_image != ""){
+                imageDB -> loadImage(gamelose_image);
+            }
             has_gameend_stage = !gamewin_image.empty() || !gamelose_image.empty();
             gamewin_bgm_chunk = audioDB.readBGM("game_over_good_audio");
             gamelose_bgm_chunk = audioDB.readBGM("game_over_bad_audio");
@@ -682,13 +688,7 @@ public:
                 }
             }
         }
-        if (states == GameState::Won || states == GameState::Lost){
-            std::cout<<"game ended rendering, ";
-        }
         if (imageDB && !images_to_render.empty()) {
-            if (states == GameState::Won || states == GameState::Lost){
-                std::cout<<"imageDB valid\n";
-            }
             for (const ImageRenderConfig& config : images_to_render) {
                 if (!config.image_path.empty()) {
                     imageDB->renderImage(config.image_path, config.dst);

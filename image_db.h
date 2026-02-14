@@ -61,7 +61,7 @@ public:
         std::string game_win_image = "";
         if (game.HasMember("game_over_good_image")){
             game_win_image = game["game_over_good_image"].GetString();
-            loadImage(game_win_image); // Preload game win image into cache
+            //loadImage(game_win_image); // Preload game win image into cache
         }
         return game_win_image;
     }
@@ -70,7 +70,7 @@ public:
         std::string game_lose_image = "";
         if (game.HasMember("game_over_bad_image")){
             game_lose_image = game["game_over_bad_image"].GetString();
-            loadImage(game_lose_image); // Preload game lose image into cache
+            //loadImage(game_lose_image); // Preload game lose image into cache
         }
         return game_lose_image;
     }
