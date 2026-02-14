@@ -109,6 +109,8 @@ public:
         } 
         return glm::vec2(0.0f, 0.0f); // default camera offset
     }
+
+    
 };
 
 #endif

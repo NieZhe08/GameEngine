@@ -27,7 +27,8 @@ enum class GameState {
     Won,
     Lost,
     NextScene,
-    IntroAnimation
+    IntroAnimation,
+    Quit
 };
 
 enum class ContactType {

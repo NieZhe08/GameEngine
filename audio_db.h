@@ -17,9 +17,11 @@ class AudioDB {
     rapidjson::Document rendering;
     bool has_intro_bgm;
     bool has_gameplay_bgm;
+    bool has_gamewin_bgm;
+    bool has_gamelose_bgm;
 
 public:
-    AudioDB(): has_intro_bgm(false), has_gameplay_bgm(false) {
+    AudioDB(): has_intro_bgm(false), has_gameplay_bgm(false), has_gamewin_bgm(false), has_gamelose_bgm(false) {
         //std::cout << "TextDB constructor called with do_text_rendering = " << do_text_rendering << std::endl;
         if (!std::filesystem::exists("resources/")){
             std::cout<<"error: resources/ missing"; // no newline at end
@@ -38,6 +40,10 @@ public:
                 has_intro_bgm = true;  
             } else if (bgm_type == "gameplay_audio"){
                 has_gameplay_bgm = true;
+            } else if (bgm_type == "game_over_bad_audio"){
+                has_gamelose_bgm = true;
+            } else if (bgm_type == "game_over_good_audio"){
+                has_gamewin_bgm = true;
             }
             const rapidjson::Value& bgm = game[bgm_type.c_str()];
             std::string intro_bgm = bgm.GetString();
@@ -80,6 +86,14 @@ public:
 
     AudioState hasGameplayBGM() const {
         return has_gameplay_bgm ? AudioState::Not_Started : AudioState::Stopped;
+    }
+
+    AudioState hasGameWinBGM() const {
+        return has_gamewin_bgm ? AudioState::Not_Started : AudioState::Stopped;
+    }
+
+    AudioState hasGameLoseBGM() const {
+        return has_gamelose_bgm ? AudioState::Not_Started : AudioState::Stopped;
     }
 
 };

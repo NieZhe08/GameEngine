@@ -61,6 +61,8 @@ public:
     AudioDB audioDB;
     Mix_Chunk* intro_bgm_chunk; // Intro Animation BGM chunk
     Mix_Chunk* scene_bgm_chunk; // Game Scene BGM chunk
+    Mix_Chunk* gamewin_bgm_chunk; // Game Win BGM chunk
+    Mix_Chunk* gamelose_bgm_chunk; // Game Lose BGM chunk
     
     std::string next_scene_name;
     
@@ -85,6 +87,12 @@ public:
     GameState endingState = GameState::Ongoing; // Store whether the ending sequence is for winning or losing
 
     //Ending Game Stage variables
+    AudioState gamewin_bgm_states = AudioState::Not_Started;
+    AudioState gamelose_bgm_states = AudioState::Not_Started;
+    std::string gamewin_image = "";
+    std::string gamelose_image = "";
+    bool has_gameend_stage = false; // Flag to indicate if there is a separate game end stage (with its own image and BGM) after winning or losing
+    bool gameEndFirstFrame = false;
 
     GameEngine() {
         //next_scene_name = "";
@@ -126,6 +134,16 @@ public:
             if (!intro_image || intro_image->empty()){
             states = GameState::Ongoing; // Skip intro animation if no intro image
             }
+
+            // game ending 
+            gamewin_image = imageDB->getGameWinImage();
+            gamelose_image = imageDB->getGameLoseImage();
+            has_gameend_stage = !gamewin_image.empty() || !gamelose_image.empty();
+            gamewin_bgm_chunk = audioDB.readBGM("game_over_good_audio");
+            gamelose_bgm_chunk = audioDB.readBGM("game_over_bad_audio");
+            gamewin_bgm_states = audioDB.hasGameWinBGM();
+            gamelose_bgm_states = audioDB.hasGameLoseBGM();
+
         } else {
             states = GameState::Ongoing; // Load next scene directly without intro animation
         }
@@ -184,7 +202,12 @@ public:
                 //initializeGame(false); // Load next scene without resetting game state
                 break;
             case GameState::Won:
+                updateGameEnd(true);
+                break;
             case GameState::Lost:
+                updateGameEnd(false);
+                break;
+            case GameState::Quit:
                 // Handle end game logic, show messages, etc.
                 break;
         }
@@ -202,7 +225,9 @@ public:
         text_to_render.clear();
         while (Helper::SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT) {
-                states = GameState::Lost;
+                //states = GameState::Lost;
+                endingFlag = true;
+                endingState = GameState::Quit;
                 break; // exit the Intro Animation Stage
             }
             if (intro_image && !intro_image->empty()) {
@@ -237,6 +262,40 @@ public:
         }
     }
 
+    void updateGameEnd(bool win) {
+        //if (states != GameState::IntroAnimation) return;
+        if (scene_bgm_states == AudioState::Playing){ 
+                AudioHelper::Mix_HaltChannel(0);
+                scene_bgm_states = AudioState::Stopped;
+        }
+
+        AudioState& bgm_state = win ? gamewin_bgm_states : gamelose_bgm_states;
+        Mix_Chunk* bgm_chunk = win ? gamewin_bgm_chunk : gamelose_bgm_chunk;
+        std::string end_image = win ? gamewin_image : gamelose_image;
+        if (bgm_state == AudioState::Not_Started){
+            AudioHelper::Mix_PlayChannel(0, bgm_chunk, -1); // Play intro BGM in a loop
+            bgm_state = AudioState::Playing;
+        } 
+
+        /* below is a FRAME-WISE update for Intro Animation Stage*/
+        images_to_render.clear();
+        text_to_render.clear();
+        images_to_render.emplace_back(end_image, SDL_FRect{0, 0, static_cast<float>(window_size.x), static_cast<float>(window_size.y)});
+
+        while (Helper::SDL_PollEvent(&event)) {
+            if (event.type == SDL_QUIT) {
+                //states = GameState::Lost;
+                endingFlag = true;
+                endingState = GameState::Quit;
+                if (bgm_state == AudioState::Playing){ 
+                    AudioHelper::Mix_HaltChannel(0);
+                }
+                break; // exit the GameEnd Stage
+            }
+        }
+        
+    }
+
     void updateOngoing(){
         if (states != GameState::Ongoing) return;
 
@@ -264,8 +323,10 @@ public:
         updateGameIncidents(incidents);
         if (health <= 0){
             //states = GameState::Lost;
-            endingFlag = true;
-            endingState = GameState::Lost;
+            //endingFlag = true;
+            //endingState = GameState::Lost;
+            states = GameState::Lost;
+            gameEndFirstFrame = true;
         }
     }
 
@@ -323,7 +384,7 @@ public:
         if (evt.type == SDL_QUIT) {
             //states = GameState::Lost;
             endingFlag = true;
-            endingState = GameState::Lost;
+            endingState = GameState::Quit;
             return PlayerAction::Invalid;
         } else if (evt.type == SDL_KEYDOWN ) { // Only consider non-repeated keydown events for player actions
             SDL_Keycode key_press = evt.key.keysym.scancode;
@@ -489,9 +550,11 @@ public:
                     break;
                 case GameIncident::YouWin:
                     states = GameState::Won;
+                    gameEndFirstFrame = true;
                     break;
                 case GameIncident::GameOver:
                     if (Helper::GetFrameNumber() - coolDownTriggerFrame >= 180){ // Cool down period of 3 seconds at 60 FPS to prevent rapid score increase
+                        gameEndFirstFrame = true;
                         states = GameState::Lost;
                         coolDownTriggerFrame = Helper::GetFrameNumber();
                     }
@@ -561,7 +624,7 @@ public:
 
     void gameLoop() {
         //initializeGame();
-        while (states != GameState::Won && states != GameState::Lost) {
+        while (states != GameState::Quit) {
             if (states == GameState::NextScene){
                 initializeGame(false); // re-initialize game with next scene
             }
@@ -569,11 +632,16 @@ public:
             if (states == GameState::NextScene){
                 continue; // skip rendering for the current frame if we are transitioning to the next scene
             }
+            if (gameEndFirstFrame && (states == GameState::Won || states == GameState::Lost)){
+                updateGameEnd(states == GameState::Won);
+                gameEndFirstFrame = false;
+            }
             frameRender(false);
             if (endingFlag){
                 states = endingState;
             }
             //std::cout<<"state"<<(static_cast<int>(states))<<"\n";
+            endingFlag = true;
         }
         //finalRender();
         imageDB->clearCache();
