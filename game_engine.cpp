@@ -287,9 +287,6 @@ public:
                 //states = GameState::Lost;
                 endingFlag = true;
                 endingState = GameState::Quit;
-                if (bgm_state == AudioState::Playing){ 
-                    AudioHelper::Mix_HaltChannel(0);
-                }
                 break; // exit the GameEnd Stage
             }
         }

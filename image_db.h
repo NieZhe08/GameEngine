@@ -155,8 +155,9 @@ public:
                         } else {
                             f = SDL_FLIP_NONE;
                         }
-        Helper::SDL_RenderCopyEx(actor->id, actor->actor_name, renderer_, tex, NULL, &dst_rect, 
-            actor->transform_rotation_degrees, (SDL_FPoint*)&actor->view_pivot_offset, f);
+        SDL_FPoint pivot = { actor->view_pivot_offset.x, actor->view_pivot_offset.y };
+        Helper::SDL_RenderCopyEx(actor->id, actor->actor_name, renderer_, tex, NULL, &dst_rect,
+            actor->transform_rotation_degrees, &pivot, f);
     }
 
     void clearCache() {
