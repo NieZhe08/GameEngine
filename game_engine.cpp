@@ -273,7 +273,7 @@ public:
         Mix_Chunk* bgm_chunk = win ? gamewin_bgm_chunk : gamelose_bgm_chunk;
         std::string end_image = win ? gamewin_image : gamelose_image;
         if (bgm_state == AudioState::Not_Started){
-            AudioHelper::Mix_PlayChannel(0, bgm_chunk, -1); // Play intro BGM in a loop
+            AudioHelper::Mix_PlayChannel(0, bgm_chunk, 0); // Play intro BGM in a loop
             bgm_state = AudioState::Playing;
         } 
 
