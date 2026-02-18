@@ -176,7 +176,7 @@ public:
     int actor_id; // for renderImageEx
     std::string actor_name; // for renderImageEx
 
-    const std::string& image_path;
+    std::string image_path;
     SDL_FRect dst;
 
     float angle; // for renderImageEx
