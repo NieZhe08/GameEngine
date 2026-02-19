@@ -381,16 +381,16 @@ public:
             //SDL_Keycode key_press = evt.key.keysym.scancode;
             //PlayerAction action = PlayerAction::Invalid;
             glm::vec2 playerSpeed = glm::vec2(0.0f, 0.0f);
-            if (input.GetKey(SDL_SCANCODE_UP)) {
+            if (input.GetKey(SDL_SCANCODE_UP) || input.GetKey(SDL_SCANCODE_W)) {
                 playerSpeed += glm::vec2(0.0f, -player_movement_speed);
             } 
-            if (input.GetKey(SDL_SCANCODE_DOWN)) {
+            if (input.GetKey(SDL_SCANCODE_DOWN)|| input.GetKey(SDL_SCANCODE_S)) {
                 playerSpeed += glm::vec2(0.0f, player_movement_speed);
             } 
-            if (input.GetKey(SDL_SCANCODE_LEFT)) {
+            if (input.GetKey(SDL_SCANCODE_LEFT) || input.GetKey(SDL_SCANCODE_A)) {
                 playerSpeed += glm::vec2(-player_movement_speed, 0.0f);
             } 
-            if (input.GetKey(SDL_SCANCODE_RIGHT)) {
+            if (input.GetKey(SDL_SCANCODE_RIGHT) || input.GetKey(SDL_SCANCODE_D)) {
                 playerSpeed += glm::vec2(player_movement_speed, 0.0f);
             }
             if (playerSpeed != glm::vec2(0.0f, 0.0f)){

@@ -112,8 +112,8 @@ public:
     std::string contact_scene;
    
 
-	Actor(std::string actor_name, int id, glm::ivec2 _transform_position,
-        glm::ivec2 _velocity, bool _blocking,
+	Actor(std::string actor_name, int id, glm::vec2 _transform_position,
+        glm::vec2 _velocity, bool _blocking,
         std::string _view_image, glm::vec2 _transform_scale, 
         float _transform_rotation_degrees, glm::vec2 _view_pivot_offset, int _render_order,
         std::string _nearby_dialogue , std::string _contact_dialogue) : 

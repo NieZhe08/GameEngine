@@ -144,8 +144,8 @@ public:
                 if (y>max_y) max_y = y;
                 //char view = (!view_str.empty()) ? view_str[0] : '?';
 
-                sceneActors->emplace_back(actor_name, id_counter++, glm::ivec2(x,y), 
-                    glm::ivec2(vel_x, vel_y), blocking,
+                sceneActors->emplace_back(actor_name, id_counter++, glm::vec2(x,y), 
+                    glm::vec2(vel_x, vel_y), blocking,
                     view_str,
                     glm::vec2(transform_scale_x, transform_scale_y), transform_rotation_degrees, 
                     glm::vec2(view_pivot_offset_x, view_pivot_offset_y), render_order,
