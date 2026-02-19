@@ -691,7 +691,7 @@ public:
         if (imageDB && !images_to_render.empty()) {
             for (const ImageRenderConfig& config : images_to_render) {
                 if (!config.image_path.empty()) {
-                    imageDB->renderImage(config.image_path, config.dst);
+                    imageDB->renderImage(config.image_path, config.dst); 
                 }
                 //std::cout<<"rendering image "<<config.image_path<<" at position "<<config.dst.x<<","<<config.dst.y<<"\n";
             }
