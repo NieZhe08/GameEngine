@@ -122,7 +122,7 @@ public:
     }
 
     void renderImageEx (const Actor* actor,
-        glm::vec2 cam) {
+        glm::vec2 cam, float zoom_factor = 1.0f) {
         if (image_index_map.find(actor->view_image) == image_index_map.end()){
             if (!loadImage(actor->view_image)) return;
         }
@@ -139,10 +139,10 @@ public:
         float tex_w = 0.0f, tex_h = 0.0f;
         Helper::SDL_QueryTexture(tex, &tex_w, &tex_h);
         SDL_FRect dst_rect = {
-                            (actor->transform_position.x) * 50 + cam.x - (actor->view_pivot_offset.x * actor->transform_scale.x)*0.5f, 
-                            (actor->transform_position.y) * 50 + cam.y - (actor->view_pivot_offset.y * actor->transform_scale.y)*0.5f,
-                            (tex_w * actor->transform_scale.x)*0.5f,
-                            (tex_h * actor->transform_scale.y)*0.5f
+                            (actor->transform_position.x) * 100 * zoom_factor + cam.x - (actor->view_pivot_offset.x * actor->transform_scale.x)*zoom_factor, 
+                            (actor->transform_position.y) * 100 * zoom_factor + cam.y - (actor->view_pivot_offset.y * actor->transform_scale.y)*zoom_factor,
+                            (tex_w * actor->transform_scale.x)*zoom_factor,
+                            (tex_h * actor->transform_scale.y)*zoom_factor
                         };
         
         SDL_RendererFlip f;
@@ -155,7 +155,7 @@ public:
                         } else {
                             f = SDL_FLIP_NONE;
                         }
-        SDL_FPoint pivot = {  actor->view_pivot_offset.x* 0.5f,  actor->view_pivot_offset.y*0.5f };
+        SDL_FPoint pivot = {  actor->view_pivot_offset.x * zoom_factor,  actor->view_pivot_offset.y * zoom_factor };
         Helper::SDL_RenderCopyEx(actor->id, actor->actor_name, renderer_, tex, NULL, &dst_rect,
             actor->transform_rotation_degrees, &pivot, f);
     }

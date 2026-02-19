@@ -57,6 +57,7 @@ public:
     std::unique_ptr<std::vector<std::string>> intro_text;
     std::vector<ImageRenderConfig> images_to_render; // Queue of images to render each frame
     std::vector<TextRenderConfig> text_to_render; // Queue of text to render each frame
+    float zoom_factor = 1.0f; // Default zoom factor
 
     AudioDB audioDB;
     Mix_Chunk* intro_bgm_chunk; // Intro Animation BGM chunk
@@ -113,6 +114,7 @@ public:
             game_title = parser.getGameTitle();
             window_size = parser.getResolution();
             clear_color = parser.getClearColor();
+            zoom_factor = parser.getZoomFactor();
             //std::cout<<"window_size: "<<window_size.x<<" "<<window_size.y<<"\n";
 
             SDL_Init(SDL_INIT_VIDEO);
@@ -316,9 +318,9 @@ public:
         }
         updateActorPositions(action);
         if (mainActor){
-            glm::vec offset = glm::vec2((mainActor->transform_position.x) * 50 , 
-                            (mainActor->transform_position.y) * 50 );
-            camera = -offset  + glm::vec2(window_size.x /2.0f, window_size.y /2.0f) - camera_lift*0.5f;
+            glm::vec offset = glm::vec2((mainActor->transform_position.x) * 100 * zoom_factor, 
+                            (mainActor->transform_position.y) * 100 * zoom_factor);
+            camera = -offset  + glm::vec2(window_size.x /2.0f, window_size.y /2.0f) - camera_lift * zoom_factor; // Update camera to follow the main actor, apply zoom factor to camera lift as well
         }
         //std::cout<<"Camera Position: ("<<camera.x<<", "<<camera.y<<")\n";
         std::vector<GameIncident> incidents;
@@ -683,7 +685,7 @@ public:
                     const Actor* renderActor = renderQueue.top();
                     renderQueue.pop();
                     imageDB->renderImageEx(
-                        renderActor, camera
+                        renderActor, camera, zoom_factor
                     );
                 }
             }

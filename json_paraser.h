@@ -110,6 +110,12 @@ public:
         return glm::vec2(0.0f, 0.0f); // default camera offset
     }
 
+    float getZoomFactor(){
+        if (rendering.IsObject() && rendering.HasMember("zoom_factor")){
+            return rendering["zoom_factor"].GetFloat();
+        } 
+        return 1.0f; // default zoom factor
+    }
     
 };
 
