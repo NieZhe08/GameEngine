@@ -123,6 +123,13 @@ public:
         } 
         return 0.02f; // default player movement speed
     }
+
+    float getCamEaseFactor(){
+        if (rendering.IsObject() && rendering.HasMember("cam_ease_factor")){
+            return rendering["cam_ease_factor"].GetFloat();
+        } 
+        return 1.0f; // default camera easing factor
+    }
 };
 
 #endif

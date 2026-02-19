@@ -89,6 +89,7 @@ public:
     bool endingFlag = false; // Flag to indicate if the game is in the ending sequence after winning or losing
     GameState endingState = GameState::Ongoing; // Store whether the ending sequence is for winning or losing
     float player_movement_speed = 0.02f;
+    float cam_ease_factor = 1.0f;
 
     //Ending Game Stage variables
     AudioState gamewin_bgm_states = AudioState::Not_Started;
@@ -121,6 +122,7 @@ public:
             clear_color = parser.getClearColor();
             zoom_factor = parser.getZoomFactor();
             player_movement_speed = parser.getPlayerMovementSpeed();
+            cam_ease_factor = parser.getCamEaseFactor();
             //std::cout<<"window_size: "<<window_size.x<<" "<<window_size.y<<"\n";
 
             SDL_Init(SDL_INIT_VIDEO);
@@ -186,6 +188,10 @@ public:
         int mainIndex = sceneDB.getMainActorIndex();
         if (mainIndex >= 0 && actorList && !actorList->empty() && mainIndex < static_cast<int>(actorList->size())){
             mainActor = &(*actorList)[mainIndex];
+            // initialize camera to center on main actor, apply camera offset and zoom factor
+            glm::vec offset = glm::vec2((mainActor->transform_position.x) * 100 * zoom_factor, 
+                            (mainActor->transform_position.y) * 100 * zoom_factor);
+            camera = -offset  + glm::vec2(window_size.x /2.0f, window_size.y /2.0f) - camera_lift * zoom_factor; 
         } else {
             mainActor = nullptr;
         }
@@ -313,7 +319,8 @@ public:
         if (mainActor){
             glm::vec offset = glm::vec2((mainActor->transform_position.x) * 100 * zoom_factor, 
                             (mainActor->transform_position.y) * 100 * zoom_factor);
-            camera = -offset  + glm::vec2(window_size.x /2.0f, window_size.y /2.0f) - camera_lift * zoom_factor; // Update camera to follow the main actor, apply zoom factor to camera lift as well
+            glm::vec2 instant_camera = -offset  + glm::vec2(window_size.x /2.0f, window_size.y /2.0f) - camera_lift * zoom_factor; // Update camera to follow the main actor, apply zoom factor to camera lift as well
+            camera = glm::mix(camera, instant_camera, cam_ease_factor); // Smoothly ease camera towards the target position for a more polished feel
         }
         //std::cout<<"Camera Position: ("<<camera.x<<", "<<camera.y<<")\n";
         std::vector<GameIncident> incidents;
