@@ -316,9 +316,9 @@ public:
         }
         updateActorPositions(action);
         if (mainActor){
-            glm::vec offset = glm::vec2((mainActor->transform_position.x) * 100 , 
-                            (mainActor->transform_position.y) * 100 );
-            camera = -offset  + glm::vec2(window_size.x /2.0f, window_size.y /2.0f) - camera_lift;
+            glm::vec offset = glm::vec2((mainActor->transform_position.x) * 50 , 
+                            (mainActor->transform_position.y) * 50 );
+            camera = -offset  + glm::vec2(window_size.x /2.0f, window_size.y /2.0f) - camera_lift*0.5f;
         }
         //std::cout<<"Camera Position: ("<<camera.x<<", "<<camera.y<<")\n";
         std::vector<GameIncident> incidents;

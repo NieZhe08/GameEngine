@@ -139,10 +139,10 @@ public:
         float tex_w = 0.0f, tex_h = 0.0f;
         Helper::SDL_QueryTexture(tex, &tex_w, &tex_h);
         SDL_FRect dst_rect = {
-                            (actor->transform_position.x) * 100 + cam.x - actor->view_pivot_offset.x * actor->transform_scale.x, 
-                            (actor->transform_position.y) * 100 + cam.y - actor->view_pivot_offset.y * actor->transform_scale.y,
-                            tex_w * actor->transform_scale.x,
-                            tex_h * actor->transform_scale.y
+                            (actor->transform_position.x) * 50 + cam.x - (actor->view_pivot_offset.x * actor->transform_scale.x)*0.5f, 
+                            (actor->transform_position.y) * 50 + cam.y - (actor->view_pivot_offset.y * actor->transform_scale.y)*0.5f,
+                            (tex_w * actor->transform_scale.x)*0.5f,
+                            (tex_h * actor->transform_scale.y)*0.5f
                         };
         
         SDL_RendererFlip f;
@@ -155,7 +155,7 @@ public:
                         } else {
                             f = SDL_FLIP_NONE;
                         }
-        SDL_FPoint pivot = { actor->view_pivot_offset.x, actor->view_pivot_offset.y };
+        SDL_FPoint pivot = {  actor->view_pivot_offset.x* 0.5f,  actor->view_pivot_offset.y*0.5f };
         Helper::SDL_RenderCopyEx(actor->id, actor->actor_name, renderer_, tex, NULL, &dst_rect,
             actor->transform_rotation_degrees, &pivot, f);
     }
