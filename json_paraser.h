@@ -117,6 +117,12 @@ public:
         return 1.0f; // default zoom factor
     }
     
+    float getPlayerMovementSpeed(){
+        if (game.IsObject() && game.HasMember("player_movement_speed")){
+            return game["player_movement_speed"].GetFloat();
+        } 
+        return 0.02f; // default player movement speed
+    }
 };
 
 #endif

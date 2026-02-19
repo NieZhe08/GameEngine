@@ -19,6 +19,7 @@
 #include "AudioHelper.h"
 #include <queue>
 #include <deque>
+#include "input_manager.h"
 
 class GameEngine {
 public:
@@ -27,13 +28,14 @@ public:
     //Point camera; // Camera following the main actor
     glm::ivec2 mapSize; // x_resolution and y_resolution of the map
     glm::ivec2 viewSize;
+    Input input;
     // VIEWSIZE: here viewsize refers to viewSize (row, col)
     //std::string _game_start_message;
     //int health;
     //int score;
     //std::string input_query_message = std::string("Your options are \"n\", \"e\", \"s\", \"w\", \"quit\"\n");// TODO
     
-    std::unordered_map<std::uint64_t, std::vector<int>> mapHash;
+    std::unordered_map<std::uint64_t, std::vector<int>> mapHash; // TODO would be deleted
     //std::stringstream render_ss;
     //std::stringstream dialogue_ss;
     GameState states;
@@ -86,6 +88,7 @@ public:
     int coolDownTriggerFrame = -180;
     bool endingFlag = false; // Flag to indicate if the game is in the ending sequence after winning or losing
     GameState endingState = GameState::Ongoing; // Store whether the ending sequence is for winning or losing
+    float player_movement_speed = 0.02f;
 
     //Ending Game Stage variables
     AudioState gamewin_bgm_states = AudioState::Not_Started;
@@ -110,11 +113,14 @@ public:
         if (isInitialLoad){
             next_scene_name = parser.getInitialScene();
 
+            input.Init(); // Initialize input states
+
             //SDL
             game_title = parser.getGameTitle();
             window_size = parser.getResolution();
             clear_color = parser.getClearColor();
             zoom_factor = parser.getZoomFactor();
+            player_movement_speed = parser.getPlayerMovementSpeed();
             //std::cout<<"window_size: "<<window_size.x<<" "<<window_size.y<<"\n";
 
             SDL_Init(SDL_INIT_VIDEO);
@@ -231,26 +237,19 @@ public:
         /* below is a FRAME-WISE update for Intro Animation Stage*/
         images_to_render.clear();
         text_to_render.clear();
-        while (Helper::SDL_PollEvent(&event)) {
-            if (event.type == SDL_QUIT) {
-                //states = GameState::Lost;
-                endingFlag = true;
-                endingState = GameState::Quit;
-                break; // exit the Intro Animation Stage
-            }
-            if (intro_image && !intro_image->empty()) {
-                if (event.type == SDL_KEYDOWN) {
-                    SDL_Keycode key_press = event.key.keysym.scancode;
-                    if (key_press == SDL_SCANCODE_SPACE || key_press == SDL_SCANCODE_RETURN) {
-                        image_idx++;
-                        text_idx++;
-                    }
-                } else if (event.type == SDL_MOUSEBUTTONDOWN && event.button.button == SDL_BUTTON_LEFT) {
-                    image_idx++;
-                    text_idx++;
-                }
+        // Update Based on user input
+        if (input.GetQuit()) {
+            //states = GameState::Lost;
+            endingFlag = true;
+            endingState = GameState::Quit; // exit the Intro Animation Stage
+        }
+        if (intro_image && !intro_image->empty()) {
+            if (input.GetKeyDown(SDL_SCANCODE_SPACE) || input.GetKeyDown(SDL_SCANCODE_RETURN)) {
+                image_idx++;
+                text_idx++;
             }
         }
+        
         if (intro_image && !intro_image->empty() && (image_idx < intro_image->size() || (intro_text && !intro_text->empty() && text_idx < intro_text->size()))) {
             size_t img_idx = (image_idx >= intro_image->size()) ? intro_image->size()-1 : image_idx;
             if (img_idx < intro_image->size()) {
@@ -290,13 +289,10 @@ public:
         text_to_render.clear();
         images_to_render.emplace_back(end_image, SDL_FRect{0, 0, static_cast<float>(window_size.x), static_cast<float>(window_size.y)});
 
-        while (Helper::SDL_PollEvent(&event)) {
-            if (event.type == SDL_QUIT) {
-                //states = GameState::Lost;
-                endingFlag = true;
-                endingState = GameState::Quit;
-                break; // exit the GameEnd Stage
-            }
+        if (input.GetQuit()) {
+            //states = GameState::Lost;
+            endingFlag = true;
+            endingState = GameState::Quit; // exit the Intro Animation Stage
         }
         
     }
@@ -312,10 +308,7 @@ public:
         images_to_render.clear();
         text_to_render.clear();
 
-        PlayerAction action = PlayerAction::Invalid;
-        while (Helper::SDL_PollEvent(&event)) {
-            action = updateGameState(event);
-        }
+        PlayerAction action = updateGameState();
         updateActorPositions(action);
         if (mainActor){
             glm::vec offset = glm::vec2((mainActor->transform_position.x) * 100 * zoom_factor, 
@@ -385,37 +378,26 @@ public:
     }
 
 
-    PlayerAction updateGameState(SDL_Event evt) { // update main
-        if (evt.type == SDL_QUIT) {
+    PlayerAction updateGameState() { // update main
+        if (input.GetQuit()) {
             //states = GameState::Lost;
             endingFlag = true;
             endingState = GameState::Quit;
             return PlayerAction::Invalid;
-        } else if (evt.type == SDL_KEYDOWN ) { // Only consider non-repeated keydown events for player actions
-            SDL_Keycode key_press = evt.key.keysym.scancode;
-            PlayerAction action = PlayerAction::Invalid;
-            switch (key_press) {
-                case SDL_SCANCODE_UP:
-                    action = PlayerAction::MoveUp;
-                    break;
-                case SDL_SCANCODE_DOWN:
-                    action = PlayerAction::MoveDown;
-                    break;
-                case SDL_SCANCODE_LEFT:
-                    action = PlayerAction::MoveLeft;
-                    break;
-                case SDL_SCANCODE_RIGHT:
-                    action = PlayerAction::MoveRight;
-                    break;
-                default:
-                    break;
+        } else { // Only consider non-repeated keydown events for player actions
+            //SDL_Keycode key_press = evt.key.keysym.scancode;
+            //PlayerAction action = PlayerAction::Invalid;
+            if (input.GetKeyDown(SDL_SCANCODE_UP)) {
+                return PlayerAction::MoveUp;
+            } else if (input.GetKeyDown(SDL_SCANCODE_DOWN)) {
+                return PlayerAction::MoveDown;
+            } else if (input.GetKeyDown(SDL_SCANCODE_LEFT)) {
+                return PlayerAction::MoveLeft;
+            } else if (input.GetKeyDown(SDL_SCANCODE_RIGHT)) {
+                return PlayerAction::MoveRight;
             }
-            //Update game state based on player action
-            //std::cout<<"Player Action: "<<(action != PlayerAction::Invalid ? std::to_string(static_cast<int>(action)) : "Invalid")<<"\n";
-            //updateActorPositions(action);
-            return action;
+            return PlayerAction::Invalid;
         }
-        return PlayerAction::Invalid;
     }
 
     bool collisionDetected(glm::ivec2 position, Actor* actor_ptr) {
@@ -630,6 +612,9 @@ public:
     void gameLoop() {
         //initializeGame();
         while (states != GameState::Quit) {
+            while (Helper::SDL_PollEvent(&event)){
+                input.ProcessEvent(event); // Update Input Manager states based on the event
+            }
             if (states == GameState::NextScene){
                 initializeGame(false); // re-initialize game with next scene
             }
@@ -647,6 +632,7 @@ public:
             }
             //std::cout<<"state"<<(static_cast<int>(states))<<"\n";
             endingFlag = false;
+            input.LateUpdate();
         }
         //finalRender();
         imageDB->clearCache();
