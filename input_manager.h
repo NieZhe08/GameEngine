@@ -43,7 +43,7 @@ inline void Input::ProcessEvent(const SDL_Event & e) {
 		should_quit = true;
 		return;
 	}
-	if (e.type == SDL_KEYDOWN && !e.key.repeat) {
+	if (e.type == SDL_KEYDOWN ) {
 		SDL_Scancode scancode = e.key.keysym.scancode;
 		auto it = keyboard_states.find(scancode);
 		INPUT_STATE current_state = (it != keyboard_states.end()) ? it->second : INPUT_STATE_UP;
