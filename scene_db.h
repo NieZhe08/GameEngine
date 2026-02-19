@@ -56,10 +56,10 @@ public:
                 std::string actor_name = "";
                 //std::string nearby_dialogue = "";
                 //std::string contact_dialogue = "";
-                int x = 0; 
-                int y = 0;
-                int vel_x = 0;
-                int vel_y = 0;
+                float x = 0.0f; 
+                float y = 0.0f;
+                float vel_x = 0.0f;
+                float vel_y = 0.0f;
                 bool blocking = false;
                 std::string view_str = "";
                 float transform_scale_x = 1.0f;
@@ -100,13 +100,13 @@ public:
                     }
                 }
                 if (actor.HasMember("transform_position_x"))
-                    x = actor["transform_position_x"].GetInt();
+                    x = actor["transform_position_x"].GetFloat();
                 if (actor.HasMember("transform_position_y"))
-                    y = actor["transform_position_y"].GetInt();
+                    y = actor["transform_position_y"].GetFloat();
                 if (actor.HasMember("vel_x"))
-                    vel_x = actor["vel_x"].GetInt();
+                    vel_x = actor["vel_x"].GetFloat();
                 if (actor.HasMember("vel_y"))
-                    vel_y = actor["vel_y"].GetInt();
+                    vel_y = actor["vel_y"].GetFloat();
                 if (actor.HasMember("blocking"))
                     blocking = actor["blocking"].GetBool() ;
                 if (actor.HasMember("transform_scale_x"))

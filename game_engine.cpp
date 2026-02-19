@@ -308,8 +308,8 @@ public:
         images_to_render.clear();
         text_to_render.clear();
 
-        PlayerAction action = updateGameState();
-        updateActorPositions(action);
+        glm::vec playerSpeed = updateGameState();
+        updateActorPositions(playerSpeed);
         if (mainActor){
             glm::vec offset = glm::vec2((mainActor->transform_position.x) * 100 * zoom_factor, 
                             (mainActor->transform_position.y) * 100 * zoom_factor);
@@ -328,75 +328,75 @@ public:
         }
     }
 
-    void updateActorPositions(PlayerAction playerAction) {
+    void updateActorPositions(glm::vec2 playerSpeed) {
         // Update NPC positions based on their velocities
         if (!actorList) return;
-        bool hasMainPlayer = false;
-        bool nonPlayerUpdate = (Helper::GetFrameNumber() &&Helper::GetFrameNumber() % 60 == 0); 
+        //bool nonPlayerUpdate = (Helper::GetFrameNumber() &&Helper::GetFrameNumber() % 60 == 0); 
         for (Actor& actor : *actorList){
-            glm::ivec2 nextPosition;
+            glm::vec2 nextPosition;
             bool hasMoved = false;
             if (&actor == mainActor) {
-                if (hasMainPlayer){
-                    //std::cout<<"Multiple main actors\n";
-                }
-                hasMainPlayer = true;
-                auto result = updatePlayerPosition(playerAction);
+                auto result = updatePlayerPosition(playerSpeed);
                 nextPosition = result.first;
                 hasMoved = result.second;
-                if (hasMoved) {
-                    glm::ivec2 delta = nextPosition - actor.transform_position;
-                    //std::cout<<"Frame Number:"<<Helper::GetFrameNumber() << ", Player Moved:("<<delta.x<<", "<<delta.y<<")\n";
-                }
             } else {
-                if (!nonPlayerUpdate) continue; // Only update non-player actors every 60 frames to slow down their movement
-                if (actor.velocity != glm::ivec2(0,0)){
+                //if (!nonPlayerUpdate) continue; // Only update non-player actors every 60 frames to slow down their movement
+                // Now we update non-player actors every frame
+                if (actor.velocity != glm::vec2(0.0f,0.0f)){
                     hasMoved = true;
                 }
                 nextPosition = actor.transform_position + actor.velocity;
             }
             if (!hasMoved) continue; // skip the following steps if the actor has not moved
             // collision detection only worry about whether collision happens between actor itself and others
+            /*
             if (!collisionDetected(nextPosition, & actor)){// need to update mapHash
                 // remove the actor's index from its old cell
                 auto vectorIt = mapHash.find(hashPosition(actor.transform_position));
                 if (vectorIt != mapHash.end()) {
-                    //int idx = static_cast<int>(&actor - &(*actorList)[0]);// TODO
                     int idx = actor.id;
                     auto removeIt = std::remove(vectorIt->second.begin(), vectorIt->second.end(), idx);
                     vectorIt->second.erase(removeIt, vectorIt->second.end());
                 }
                 // push actor index into new cell
-                //int new_idx = static_cast<int>(&actor - &(*actorList)[0]);
                 int new_idx = actor.id;
                 mapHash[hashPosition(nextPosition)].push_back(new_idx);
                 actor.transform_position = nextPosition;
             } else {
                 actor.velocity = -actor.velocity; // Reverse direction on collision
             }
+            */ // disable collision for test
+            actor.transform_position = nextPosition; // Directly update position without collision for test
         }
     }
 
 
-    PlayerAction updateGameState() { // update main
+    glm::vec2 updateGameState() { // update main
         if (input.GetQuit()) {
             //states = GameState::Lost;
             endingFlag = true;
             endingState = GameState::Quit;
-            return PlayerAction::Invalid;
+            return glm::vec2(0.0f, 0.0f);
         } else { // Only consider non-repeated keydown events for player actions
             //SDL_Keycode key_press = evt.key.keysym.scancode;
             //PlayerAction action = PlayerAction::Invalid;
-            if (input.GetKeyDown(SDL_SCANCODE_UP)) {
-                return PlayerAction::MoveUp;
-            } else if (input.GetKeyDown(SDL_SCANCODE_DOWN)) {
-                return PlayerAction::MoveDown;
-            } else if (input.GetKeyDown(SDL_SCANCODE_LEFT)) {
-                return PlayerAction::MoveLeft;
-            } else if (input.GetKeyDown(SDL_SCANCODE_RIGHT)) {
-                return PlayerAction::MoveRight;
+            glm::vec2 playerSpeed = glm::vec2(0.0f, 0.0f);
+            if (input.GetKey(SDL_SCANCODE_UP)) {
+                playerSpeed += glm::vec2(0.0f, -player_movement_speed);
+            } 
+            if (input.GetKey(SDL_SCANCODE_DOWN)) {
+                playerSpeed += glm::vec2(0.0f, player_movement_speed);
+            } 
+            if (input.GetKey(SDL_SCANCODE_LEFT)) {
+                playerSpeed += glm::vec2(-player_movement_speed, 0.0f);
+            } 
+            if (input.GetKey(SDL_SCANCODE_RIGHT)) {
+                playerSpeed += glm::vec2(player_movement_speed, 0.0f);
             }
-            return PlayerAction::Invalid;
+            if (playerSpeed != glm::vec2(0.0f, 0.0f)){
+                playerSpeed = glm::normalize(playerSpeed) * player_movement_speed; // Normalize diagonal movement to maintain consistent speed
+            }
+            return playerSpeed;
         }
     }
 
@@ -422,28 +422,11 @@ public:
         return false;
     }
 
-    std::pair<glm::ivec2, bool> updatePlayerPosition(PlayerAction action) {
+    std::pair<glm::vec2, bool> updatePlayerPosition(glm::vec2 playerSpeed) {
         // Update player position based on action
         if (!mainActor) return std::make_pair(glm::ivec2(0,0), false);
-        glm::ivec2 nextPosition = mainActor->transform_position;
-        bool hasMoved = true;
-        switch (action) {
-            case PlayerAction::MoveUp:
-                nextPosition.y -= 1;
-                break;
-            case PlayerAction::MoveDown:
-                nextPosition.y += 1;
-                break;
-            case PlayerAction::MoveLeft:
-                nextPosition.x -= 1;
-                break;
-            case PlayerAction::MoveRight:
-                nextPosition.x += 1;
-                break;
-            default:
-                hasMoved = false;
-                break;
-        }
+        bool hasMoved = !(playerSpeed == glm::vec2(0.0f, 0.0f));
+        glm::vec2 nextPosition = mainActor->transform_position + playerSpeed;
         return std::make_pair(nextPosition, hasMoved);
         /*
         //std::cout<<"collision"<<(collisionDetected(nextPosition) ? " detected\n" : " not detected\n");

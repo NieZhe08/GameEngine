@@ -89,8 +89,8 @@ private:
 public:
 	std::string actor_name;
     int id;
-	glm::ivec2 transform_position;
-	glm::ivec2 velocity;
+	glm::vec2 transform_position;
+	glm::vec2 velocity;
 	bool blocking;
 
     // SDL stuff
