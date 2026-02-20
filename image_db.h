@@ -154,7 +154,7 @@ public:
         Helper::SDL_QueryTexture(tex, &tex_w, &tex_h);
 
         glm::vec2 bouncing_offset = (actor->movement_bounce_enabled && actor->velocity != glm::vec2(0,0)) ? 
-            glm::vec2(0.0f, 10.0f * - std::abs(std::sin(frame_number * 0.15f))) : glm::vec2(0.0f, 0.0f);
+            glm::vec2(0.0f, 10.0f * - abs(std::sin(frame_number * 0.15f))) : glm::vec2(0.0f, 0.0f);
         SDL_FRect dst_rect = {
                             (actor->transform_position.x) * 100 * zoom_factor + cam.x - (actor->view_pivot_offset.x * actor->transform_scale.x)*zoom_factor + bouncing_offset.x, 
                             (actor->transform_position.y) * 100 * zoom_factor + cam.y - (actor->view_pivot_offset.y * actor->transform_scale.y)*zoom_factor + bouncing_offset.y,
