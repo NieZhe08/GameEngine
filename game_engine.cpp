@@ -17,14 +17,17 @@
 #include "text_db.h"
 #include "audio_db.h"
 #include "AudioHelper.h"
-#include <queue>
 #include <deque>
+#include <queue>
 #include "input_manager.h"
+#include <unordered_set>
+#include <functional>
 
 class GameEngine {
 public:
     Actor* mainActor;
     std::unique_ptr<std::vector<Actor>> actorList;
+    std::vector<std::unordered_set<Actor*>> collision_sets;
     //Point camera; // Camera following the main actor
     glm::ivec2 mapSize; // x_resolution and y_resolution of the map
     glm::ivec2 viewSize;
@@ -180,6 +183,7 @@ public:
         // load scene module
         SceneDB sceneDB(next_scene_name, mapHash, imageDB);
         actorList = sceneDB.getSceneActors();
+        collision_sets.resize(actorList->size()); // Initialize collision sets for the new scene
         if (sceneDB.hasMainActor()){
             hp_image = parser.getHPimage();
             SDL_Texture* hp_tex = imageDB->loadImage(hp_image);
@@ -326,8 +330,14 @@ public:
             camera = glm::mix(camera, instant_camera, cam_ease_factor); // Smoothly ease camera towards the target position for a more polished feel
         }
         //std::cout<<"Camera Position: ("<<camera.x<<", "<<camera.y<<")\n";
+        std::vector<std::string> dialogue_queue;
         std::vector<GameIncident> incidents;
-        updateDialogues(incidents);
+        updateDialoguesCollision(incidents, &dialogue_queue);
+        updateDialoguesTrigger(incidents, &dialogue_queue);
+        // render diaglogues in dialogue_queue 
+        for (size_t i=0; i<dialogue_queue.size(); i++){
+            text_to_render.emplace_back( dialogue_queue[i], 25, window_size.y - 50 - 50* (dialogue_queue.size()-1 -i));
+        }
         updateGameIncidents(incidents);
         if (health <= 0){
             //states = GameState::Lost;
@@ -344,39 +354,51 @@ public:
         //bool nonPlayerUpdate = (Helper::GetFrameNumber() &&Helper::GetFrameNumber() % 60 == 0); 
         for (Actor& actor : *actorList){
             glm::vec2 nextPosition;
+            glm::vec2 vel;
             bool hasMoved = false;
             if (&actor == mainActor) {
-                auto result = updatePlayerPosition(playerSpeed);
-                nextPosition = result.first;
-                hasMoved = result.second;
+                vel = playerSpeed;
+                nextPosition = actor.transform_position + playerSpeed;
+                hasMoved = (playerSpeed != glm::vec2(0.0f, 0.0f));
             } else {
                 //if (!nonPlayerUpdate) continue; // Only update non-player actors every 60 frames to slow down their movement
                 // Now we update non-player actors every frame
                 if (actor.velocity != glm::vec2(0.0f,0.0f)){
                     hasMoved = true;
                 }
+                vel = actor.velocity;
                 nextPosition = actor.transform_position + actor.velocity;
             }
-            if (!hasMoved) continue; // skip the following steps if the actor has not moved
+            //if (!hasMoved) continue; // skip the following steps if the actor has not moved
             // collision detection only worry about whether collision happens between actor itself and others
-            /*
-            if (!collisionDetected(nextPosition, & actor)){// need to update mapHash
+            updateActorRenderDirection(vel, &actor);
+            if (!collisionDetected(nextPosition, &actor)){// need to update mapHash
                 // remove the actor's index from its old cell
-                auto vectorIt = mapHash.find(hashPosition(actor.transform_position));
-                if (vectorIt != mapHash.end()) {
-                    int idx = actor.id;
-                    auto removeIt = std::remove(vectorIt->second.begin(), vectorIt->second.end(), idx);
-                    vectorIt->second.erase(removeIt, vectorIt->second.end());
-                }
-                // push actor index into new cell
-                int new_idx = actor.id;
-                mapHash[hashPosition(nextPosition)].push_back(new_idx);
                 actor.transform_position = nextPosition;
+                //std::cout<<"Actor "<<actor.actor_name<<" moves to ("<<actor.transform_position.x<<", "<<actor.transform_position.y<<")"<<std::endl;
             } else {
                 actor.velocity = -actor.velocity; // Reverse direction on collision
+                // would be a problem for main actor
             }
-            */ // disable collision for test
-            actor.transform_position = nextPosition; // Directly update position without collision for test
+            //actor.transform_position = nextPosition; // Directly update position without collision for test
+        }
+    }
+
+    void updateActorRenderDirection (glm::vec2 playerSpeed, Actor* actor_ptr){
+        if (!actor_ptr) return;
+        if (actor_ptr->has_view_image_back){
+            if (playerSpeed.y > 0) {
+                actor_ptr->view_dir_down = true;
+            } else if (playerSpeed.y < 0) {
+                actor_ptr->view_dir_down = false;
+            }
+        }
+        if (x_scale_actor_flipping_on_movement){
+            if (playerSpeed.x > 0) {
+                actor_ptr->view_dir_right = true;
+            } else if (playerSpeed.x < 0) {
+                actor_ptr->view_dir_right = false;
+            }
         }
     }
 
@@ -410,46 +432,28 @@ public:
         }
     }
 
-    bool collisionDetected(glm::ivec2 position, Actor* actor_ptr) {
-        //assert (true);// do check of index
-        /*
-        if (position.x<0 || position.x>=mapSize.x || position.y<0 || position.y>=mapSize.y){
-            return true;
-        }
-        */
-        std::uint64_t key = hashPosition(position);
-        auto it = mapHash.find(key);
-        if (it != mapHash.end()){
-            for (int idx : it->second){
-                Actor* actor = &(*actorList)[idx];
-                //std::cout<<"Actor name:"<<actor->actor_name<<",blocking:"<<actor->blocking<<"\n";
-                if (actor->blocking && actor != actor_ptr){
-                    
-                    return true;
-                }
+    bool collisionDetected(glm::vec2 pos, Actor* actor_ptr) {
+        if (actor_ptr->has_box_collider == false) return false; // If the actor itself doesn't have a box collider, skip collision detection
+        bool have_collision = false;
+        if (collision_sets[actor_ptr->id].empty() == false) have_collision = true; // If this actor has already been detected to collide with others in this frame, skip further collision detection to optimize performance
+        for (Actor& other_actor : *actorList){
+            if (&other_actor == actor_ptr) continue; // Skip self
+            if (other_actor.has_box_collider == false) continue; // If the other actor doesn't have a box collider, skip collision detection
+            if (checkAABB(pos, actor_ptr->box_collider, 
+                other_actor.transform_position, other_actor.box_collider, ren, camera, zoom_factor, false)
+                ){ // Visualize collision boxes for debugging
+                // Add the collided actor to the collision set of the current actor
+                collision_sets[actor_ptr->id].insert(&other_actor);
+                collision_sets[other_actor.id].insert(actor_ptr);
+                have_collision = true;
             }
         }
-        return false;
+        return have_collision;
     }
 
-    std::pair<glm::vec2, bool> updatePlayerPosition(glm::vec2 playerSpeed) {
-        // Update player position based on action
-        if (!mainActor) return std::make_pair(glm::ivec2(0,0), false);
-        bool hasMoved = !(playerSpeed == glm::vec2(0.0f, 0.0f));
-        glm::vec2 nextPosition = mainActor->transform_position + playerSpeed;
-        return std::make_pair(nextPosition, hasMoved);
-        /*
-        //std::cout<<"collision"<<(collisionDetected(nextPosition) ? " detected\n" : " not detected\n");
-        if (!collisionDetected(nextPosition, mainActor->actor_name)){
-            mainActor->position = nextPosition;
-            return nextPosition;
-        }
-        return mainActor->position;
-        */
-        
-    }
-
-    std::vector<GameIncident> updateDialogues(std::vector<GameIncident>& allIncidents) {
+    
+    std::vector<GameIncident> updateDialoguesCollision(std::vector<GameIncident>& allIncidents,
+    std::vector<std::string>* dialogue_queue) {
         if (!mainActor) return allIncidents;
         // Update dialogues based on proximity to other actors
         // Use min-heap (std::greater) so that smaller actor IDs are processed first
@@ -485,32 +489,43 @@ public:
         //        }
         //}
         
-        std::vector<std::string> dialogue_queue; // To store dialogues in the order they are processed
-        for (Actor& actor : *actorList){
-            if (actor.transform_position.x == mainActor->transform_position.x && actor.transform_position.y == mainActor->transform_position.y){
-                if (&actor == mainActor) continue;
-                if (actor.contact_dialogue.empty()) continue;
-                checkGameIncidents(&actor, allIncidents, ContactType::Overlap);
-                //dialogue_ss<<actor.contact_dialogue<<"\n";
-                if (actor.contact_dialogue != "" && actor.contact_incident != GameIncident::NextScene){
-                    //std::cout<<actor.nearby_dialogue<<"\n";
-                    dialogue_queue.push_back(actor.contact_dialogue);
-                }
-                
-            } else if (glm::abs(actor.transform_position.x - mainActor->transform_position.x) <=1 && glm::abs(actor.transform_position.y - mainActor->transform_position.y) <=1){
-                if (actor.nearby_dialogue.empty()) continue;
-                checkGameIncidents(&actor, allIncidents, ContactType::Nearby);
-                //dialogue_ss<<actor.nearby_dialogue<<"\n";
-                if (actor.nearby_dialogue != ""&& actor.nearby_incident != GameIncident::NextScene) {
-                    //std::cout<<actor.nearby_dialogue<<"\n";
-                    dialogue_queue.push_back(actor.nearby_dialogue);
-                }
-                
+        //std::vector<std::string> dialogue_queue; // To store dialogues in the order they are processed
+        //for (Actor& actor : *actorList){
+        //    if (actor.transform_position.x == mainActor->transform_position.x && actor.transform_position.y == mainActor->transform_position.y){
+        //        if (&actor == mainActor) continue;
+        //        if (actor.contact_dialogue.empty()) continue;
+        //        checkGameIncidents(&actor, allIncidents, ContactType::Overlap);
+        //        //dialogue_ss<<actor.contact_dialogue<<"\n";
+        //        if (actor.contact_dialogue != "" && actor.contact_incident != GameIncident::NextScene){
+        //            //std::cout<<actor.nearby_dialogue<<"\n";
+        //            dialogue_queue.push_back(actor.contact_dialogue);
+        //        }
+        //        
+        //    } else if (glm::abs(actor.transform_position.x - mainActor->transform_position.x) <=1 && glm::abs(actor.transform_position.y - mainActor->transform_position.y) <=1){
+        //        if (actor.nearby_dialogue.empty()) continue;
+        //        checkGameIncidents(&actor, allIncidents, ContactType::Nearby);
+        //        //dialogue_ss<<actor.nearby_dialogue<<"\n";
+        //        if (actor.nearby_dialogue != ""&& actor.nearby_incident != GameIncident::NextScene) {
+        //            //std::cout<<actor.nearby_dialogue<<"\n";
+        //            dialogue_queue.push_back(actor.nearby_dialogue);
+        //        }
+        //        
+        //    }
+        //}
+        for (Actor* actor: collision_sets[mainActor->id]){
+            if (actor == mainActor) continue;
+            if (actor->contact_dialogue.empty()) continue;
+            checkGameIncidents(actor, allIncidents, ContactType::Overlap);
+            if (actor->contact_dialogue != "" && actor->contact_incident != GameIncident::NextScene){
+                //std::cout<<actor.nearby_dialogue<<"\n";
+                //dialogue_queue.push_back(actor->contact_dialogue);
             }
         }
-        for (size_t i=0; i<dialogue_queue.size(); i++){
-            text_to_render.emplace_back( dialogue_queue[i], 25, window_size.y - 50 - 50* (dialogue_queue.size()-1 -i));
-        }
+        // SPEC SAYS NO CONTACT DIALOGUE!
+        // I BELIEVE THIS WILL BE BACK IN FUTURE
+        //for (size_t i=0; i<dialogue_queue.size(); i++){
+        //    text_to_render.emplace_back( dialogue_queue[i], 25, window_size.y - 50 - 50* (dialogue_queue.size()-1 -i));
+        //}
         
         return allIncidents;
     }
@@ -584,6 +599,22 @@ public:
         return;
     }
 
+    void updateDialoguesTrigger(std::vector<GameIncident>& allIncidents, std::vector<std::string>* dialogue_queue){ 
+        for (Actor& actor : *actorList){
+            if (actor.has_box_trigger == false) continue; // If the actor doesn't have a box trigger, skip
+            if (checkAABB(mainActor->transform_position, mainActor->box_trigger, 
+                actor.transform_position, actor.box_trigger, ren, camera, zoom_factor, false))
+            { 
+                if (actor.nearby_dialogue.empty()) continue;
+                checkGameIncidents(&actor, allIncidents, ContactType::Nearby);
+                if (actor.nearby_dialogue != "" && actor.nearby_incident != GameIncident::NextScene){
+                    dialogue_queue->push_back(actor.nearby_dialogue);
+                }
+                
+            }
+        }
+    }
+
     //void dialogueRender(){
     //    std::cout<<dialogue_ss.str();
     //    //render_ss<<dialogue_ss.str();
@@ -601,6 +632,13 @@ public:
     //    std::cout<<"Please make a decision...\n";
     //    std::cout<<input_query_message;
     //}
+
+    void postUpdate() {
+        // Clear collision sets after processing collisions for the current frame
+        for (auto& collision_set : collision_sets) {
+            collision_set.clear();
+        }
+    }
 
     void gameLoop() {
         //initializeGame();
@@ -626,6 +664,7 @@ public:
             //std::cout<<"state"<<(static_cast<int>(states))<<"\n";
             endingFlag = false;
             input.LateUpdate();
+            postUpdate();
         }
         //finalRender();
         imageDB->clearCache();
@@ -666,6 +705,9 @@ public:
                     imageDB->renderImageEx(
                         renderActor, camera, zoom_factor, Helper::GetFrameNumber()
                     );
+                    // Visualize box collider if actor has one
+                    visualizeBox(ren, renderActor->transform_position, renderActor->box_collider, camera, zoom_factor);
+                    visualizeBox(ren, renderActor->transform_position, renderActor->box_trigger, camera, zoom_factor, SDL_Color{0, 255, 0, 255});
                 }
             }
         }
@@ -684,6 +726,7 @@ public:
                 }
             }
         }
+
         
         Helper::SDL_RenderPresent(ren);
         //mapRender();

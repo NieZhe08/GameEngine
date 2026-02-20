@@ -123,21 +123,14 @@ public:
         Helper::SDL_RenderCopy(renderer_, tex, NULL, &dst);
     }
 
-    void renderImageEx (Actor* actor,
+    void renderImageEx (const Actor* actor,
         glm::vec2 cam, float zoom_factor, int frame_number = 0) {
         if (image_index_map.find(actor->view_image) == image_index_map.end()){
             if (!loadImage(actor->view_image)) return;
         }
 
-        // Determine which image to render based on actor state and available images
-        if (actor->has_view_image_back){
-            if (actor->velocity.y < 0){
-                actor->using_view_back = true;
-            } else if (actor->velocity.y > 0){
-                actor->using_view_back = false;
-            }
-        }
-        std::string image_to_render = (actor->has_view_image_back && actor->using_view_back)? 
+        // Determine which image to render based on actor state (normal vs back view)
+        std::string image_to_render = (actor->has_view_image_back && ! actor->view_dir_down)? 
             actor->view_image_back : actor->view_image;
 
         int idx = image_index_map[image_to_render];
@@ -167,9 +160,7 @@ public:
         bool flip_y = actor->flip_y;
         if (x_scale_actor_flipping_on_movement) {
             // do something!
-            if (actor->velocity.x < 0) flip_x = true;
-            else if (actor->velocity.x > 0) flip_x = false;
-            actor->flip_x = flip_x; // update the actor's flip_x state based on movement direction
+            flip_x = (actor->view_dir_right) ? flip_x : !flip_x;
         }
         if (flip_x && flip_y) {
             f = static_cast<SDL_RendererFlip>(SDL_FLIP_HORIZONTAL | SDL_FLIP_VERTICAL);
