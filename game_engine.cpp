@@ -664,7 +664,7 @@ public:
                     Actor* renderActor = renderQueue.top();
                     renderQueue.pop();
                     imageDB->renderImageEx(
-                        renderActor, camera, zoom_factor
+                        renderActor, camera, zoom_factor, Helper::GetFrameNumber()
                     );
                 }
             }

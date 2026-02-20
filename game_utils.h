@@ -113,13 +113,16 @@ public:
     
     std::string nearby_scene;
     std::string contact_scene;
+
+    bool  movement_bounce_enabled;
    
 
 	Actor(std::string actor_name, int id, glm::vec2 _transform_position,
         glm::vec2 _velocity, bool _blocking,
         std::string _view_image, std::string _view_image_back, glm::vec2 _transform_scale, 
         float _transform_rotation_degrees, glm::vec2 _view_pivot_offset, int _render_order,
-        std::string _nearby_dialogue , std::string _contact_dialogue) : 
+        std::string _nearby_dialogue , std::string _contact_dialogue,
+        bool _movement_bounce_enabled ) : 
 
         actor_name(actor_name), id(id), transform_position(_transform_position),
         velocity(_velocity), blocking(_blocking),
@@ -130,7 +133,8 @@ public:
         flip_x(_transform_scale.x <0), flip_y(_transform_scale.y <0),
         transform_rotation_degrees(_transform_rotation_degrees), view_pivot_offset(_view_pivot_offset),
         triggered_scoreUp(false), render_order(_render_order),
-        nearby_dialogue(_nearby_dialogue), contact_dialogue(_contact_dialogue) {
+        nearby_dialogue(_nearby_dialogue), contact_dialogue(_contact_dialogue),
+        movement_bounce_enabled(_movement_bounce_enabled){
             nearby_incident = checkGameIncidents(nearby_dialogue);
             contact_incident = checkGameIncidents(contact_dialogue);
             
