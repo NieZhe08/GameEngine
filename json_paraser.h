@@ -130,6 +130,13 @@ public:
         } 
         return 1.0f; // default camera easing factor
     }
+
+    bool getXScaleActorFlippingOnMovement(){
+        if (rendering.IsObject() && rendering.HasMember("x_scale_actor_flipping_on_movement")){
+            return rendering["x_scale_actor_flipping_on_movement"].GetBool();
+        } 
+        return false; // default to no flipping
+    }
 };
 
 #endif

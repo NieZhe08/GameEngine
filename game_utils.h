@@ -96,6 +96,9 @@ public:
     // SDL stuff
     std::string view_image;
     bool has_view_image;
+    std::string view_image_back;
+    bool has_view_image_back;
+    bool using_view_back;
     glm::vec2 transform_scale;
     bool flip_x ;
     bool flip_y ;
@@ -114,13 +117,16 @@ public:
 
 	Actor(std::string actor_name, int id, glm::vec2 _transform_position,
         glm::vec2 _velocity, bool _blocking,
-        std::string _view_image, glm::vec2 _transform_scale, 
+        std::string _view_image, std::string _view_image_back, glm::vec2 _transform_scale, 
         float _transform_rotation_degrees, glm::vec2 _view_pivot_offset, int _render_order,
         std::string _nearby_dialogue , std::string _contact_dialogue) : 
 
         actor_name(actor_name), id(id), transform_position(_transform_position),
         velocity(_velocity), blocking(_blocking),
-        view_image(_view_image), has_view_image(!_view_image.empty()), transform_scale(glm::abs(_transform_scale)),
+        view_image(_view_image), has_view_image(!_view_image.empty()), 
+        view_image_back(_view_image_back), has_view_image_back(!_view_image_back.empty()),
+        using_view_back(false),
+        transform_scale(glm::abs(_transform_scale)),
         flip_x(_transform_scale.x <0), flip_y(_transform_scale.y <0),
         transform_rotation_degrees(_transform_rotation_degrees), view_pivot_offset(_view_pivot_offset),
         triggered_scoreUp(false), render_order(_render_order),

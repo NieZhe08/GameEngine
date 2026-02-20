@@ -62,6 +62,7 @@ public:
                 float vel_y = 0.0f;
                 bool blocking = false;
                 std::string view_str = "";
+                std::string view_back_str = "";
                 float transform_scale_x = 1.0f;
                 float transform_scale_y = 1.0f;
                 float transform_rotation_degrees = 0.0f;
@@ -97,6 +98,12 @@ public:
                         Helper::SDL_QueryTexture(tex,  &tex_width, &tex_height);
                         view_pivot_offset_x = (tex_width) / 2.0f; // default pivot at center of the image
                         view_pivot_offset_y = (tex_height) / 2.0f;
+                    }
+                }
+                if (actor.HasMember("view_image_back")){
+                    view_back_str = actor["view_image_back"].GetString();
+                    if (view_back_str.length() > 0){
+                       imageDB->loadImage(view_back_str);
                     }
                 }
                 if (actor.HasMember("transform_position_x"))
@@ -146,7 +153,7 @@ public:
 
                 sceneActors->emplace_back(actor_name, id_counter++, glm::vec2(x,y), 
                     glm::vec2(vel_x, vel_y), blocking,
-                    view_str,
+                    view_str, view_back_str,
                     glm::vec2(transform_scale_x, transform_scale_y), transform_rotation_degrees, 
                     glm::vec2(view_pivot_offset_x, view_pivot_offset_y), render_order,
                     nearby_dialogue, contact_dialogue);

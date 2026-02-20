@@ -90,6 +90,7 @@ public:
     GameState endingState = GameState::Ongoing; // Store whether the ending sequence is for winning or losing
     float player_movement_speed = 0.02f;
     float cam_ease_factor = 1.0f;
+    bool x_scale_actor_flipping_on_movement = false; // Whether to flip actor's x scale when moving in opposite horizontal direction, can be set in config
 
     //Ending Game Stage variables
     AudioState gamewin_bgm_states = AudioState::Not_Started;
@@ -123,13 +124,14 @@ public:
             zoom_factor = parser.getZoomFactor();
             player_movement_speed = parser.getPlayerMovementSpeed();
             cam_ease_factor = parser.getCamEaseFactor();
+            x_scale_actor_flipping_on_movement = parser.getXScaleActorFlippingOnMovement();
             //std::cout<<"window_size: "<<window_size.x<<" "<<window_size.y<<"\n";
 
             SDL_Init(SDL_INIT_VIDEO);
             TTF_Init();
             win = helper.SDL_CreateWindow(game_title.c_str(), 100, 100, window_size.x, window_size.y, SDL_WINDOW_SHOWN);
             ren = Helper::SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
-            imageDB = new ImageDB(ren);
+            imageDB = new ImageDB(ren, x_scale_actor_flipping_on_movement);
             imageDB->readIntroImage();
             intro_image = imageDB->getIntroImageVector();
 
@@ -315,6 +317,7 @@ public:
         text_to_render.clear();
 
         glm::vec playerSpeed = updateGameState();
+        mainActor->velocity = playerSpeed; // Update main actor's velocity based on player input
         updateActorPositions(playerSpeed);
         if (mainActor){
             glm::vec offset = glm::vec2((mainActor->transform_position.x) * 100 * zoom_factor, 
@@ -650,15 +653,15 @@ public:
             // Render game scene based on actor positions and map
             
             if (actorList) {
-                std::priority_queue<const Actor*, std::vector<const Actor*>, ActorRenderComparator> renderQueue;
-                for (const Actor& actor : *actorList) {
+                std::priority_queue<Actor*, std::vector<Actor*>, ActorRenderComparator> renderQueue;
+                for (Actor& actor : *actorList) {
                     if (actor.has_view_image) {// TODO more effecient way to do 
                         renderQueue.push(&actor);
                         //std::cout<<"rendering actor "<<actor.actor_name<<" at position "<<actor.transform_position.x<<","<<actor.transform_position.y<<"\n";
                     }   
                 }
                 while (!renderQueue.empty()){
-                    const Actor* renderActor = renderQueue.top();
+                    Actor* renderActor = renderQueue.top();
                     renderQueue.pop();
                     imageDB->renderImageEx(
                         renderActor, camera, zoom_factor
