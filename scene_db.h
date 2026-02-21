@@ -57,19 +57,15 @@ public:
                     std::string actor_name = "";
                     //std::string nearby_dialogue = "";
                     //std::string contact_dialogue = "";
-                    float x = 0.0f; 
-                    float y = 0.0f;
-                    float vel_x = 0.0f;
-                    float vel_y = 0.0f;
+                    glm::vec2 transform_position = glm::vec2(0.0f, 0.0f);
+                    glm::vec2 vel = glm::vec2(0.0f, 0.0f);
                     std::string view_str = "";
                     std::string view_back_str = "";
                     std::string view_image_damage_str = "";
                     std::string view_image_attack_str = "";
-                    float transform_scale_x = 1.0f;
-                    float transform_scale_y = 1.0f;
+                    glm::vec2 transform_scale = glm::vec2(1.0f, 1.0f);
                     float transform_rotation_degrees = 0.0f;
-                    float view_pivot_offset_x = 0.0f;
-                    float view_pivot_offset_y = 0.0f;
+                    glm::vec2 view_pivot_offset = glm::vec2(0.0f, 0.0f);
                     int render_order = 0;
                     std::string nearby_dialogue = "";
                     std::string contact_dialogue = "";
@@ -87,16 +83,17 @@ public:
                         TemplateDB& actorTemplate = getOrCreateTemplate(templateName);
                         actor_name = actorTemplate.getName();
                         view_str = actorTemplate.getViewImage();
+                        view_pivot_offset = setDefaultPivotForValidTexture(view_str);
                         view_back_str = actorTemplate.getViewImageBack();
-                        x = actorTemplate.getTransformPositionX();
-                        y = actorTemplate.getTransformPositionY();
-                        vel_x = actorTemplate.getVelX();
-                        vel_y = actorTemplate.getVelY();
-                        transform_scale_x = actorTemplate.getTransformScaleX();
-                        transform_scale_y = actorTemplate.getTransformScaleY();
+                        transform_position.x = actorTemplate.getTransformPositionX();
+                        transform_position.y = actorTemplate.getTransformPositionY();
+                        vel.x = actorTemplate.getVelX();
+                        vel.y = actorTemplate.getVelY();
+                        transform_scale.x = actorTemplate.getTransformScaleX();
+                        transform_scale.y = actorTemplate.getTransformScaleY();
                         transform_rotation_degrees = actorTemplate.getTransformRotationDegrees();
-                        view_pivot_offset_x = actorTemplate.getViewPivotOffsetX();
-                        view_pivot_offset_y = actorTemplate.getViewPivotOffsetY();
+                        view_pivot_offset.x = (actorTemplate.getViewPivotOffsetX()==0.0f) ? view_pivot_offset.x : actorTemplate.getViewPivotOffsetX();
+                        view_pivot_offset.y = (actorTemplate.getViewPivotOffsetY()==0.0f) ? view_pivot_offset.y : actorTemplate.getViewPivotOffsetY();
                         render_order = actorTemplate.getRenderOrder();
                         nearby_dialogue = actorTemplate.getNearbyDialogue();
                         contact_dialogue = actorTemplate.getContactDialogue();
@@ -106,15 +103,7 @@ public:
                         box_trigger_width = actorTemplate.getBoxTriggerWidth();
                         box_trigger_height = actorTemplate.getBoxTriggerHeight();
 
-                        if (!view_str.empty()){
-                            SDL_Texture* tex = imageDB->loadImage(view_str);
-                            float tex_width = 0.0f, tex_height = 0.0f;
-                            Helper::SDL_QueryTexture(tex,  &tex_width, &tex_height);
-                            if (view_pivot_offset_x == 0.0f && view_pivot_offset_y == 0.0f){
-                                view_pivot_offset_x = (tex_width) / 2.0f;
-                                view_pivot_offset_y = (tex_height) / 2.0f;
-                            }
-                        }
+                        
                         if (!view_back_str.empty()){
                             imageDB->loadImage(view_back_str);
                         }
@@ -127,8 +116,8 @@ public:
                             SDL_Texture* tex = imageDB->loadImage(view_str);
                             float tex_width = 0.0f, tex_height = 0.0f;
                             Helper::SDL_QueryTexture(tex,  &tex_width, &tex_height);
-                            view_pivot_offset_x = (tex_width) / 2.0f; // default pivot at center of the image
-                            view_pivot_offset_y = (tex_height) / 2.0f;
+                            view_pivot_offset.x = (tex_width) / 2.0f; // default pivot at center of the image
+                            view_pivot_offset.y = (tex_height) / 2.0f;
                         }
                     }
                     if (actor.HasMember("view_image_back")){
@@ -138,24 +127,24 @@ public:
                         }
                     }
                     if (actor.HasMember("transform_position_x"))
-                        x = actor["transform_position_x"].GetFloat();
+                        transform_position.x = actor["transform_position_x"].GetFloat();
                     if (actor.HasMember("transform_position_y"))
-                        y = actor["transform_position_y"].GetFloat();
+                        transform_position.y = actor["transform_position_y"].GetFloat();
                     if (actor.HasMember("vel_x"))
-                        vel_x = actor["vel_x"].GetFloat();
+                        vel.x = actor["vel_x"].GetFloat();
                     if (actor.HasMember("vel_y"))
-                        vel_y = actor["vel_y"].GetFloat();
+                        vel.y = actor["vel_y"].GetFloat();
                     if (actor.HasMember("transform_scale_x"))
-                        transform_scale_x = actor["transform_scale_x"].GetFloat();
+                        transform_scale.x = actor["transform_scale_x"].GetFloat();
                     if (actor.HasMember("transform_scale_y"))
-                        transform_scale_y = actor["transform_scale_y"].GetFloat();
+                        transform_scale.y = actor["transform_scale_y"].GetFloat();
                     if (actor.HasMember("transform_rotation_degrees"))
                         transform_rotation_degrees = actor["transform_rotation_degrees"].GetFloat();
                     if (actor.HasMember("view_pivot_offset_x")){
-                        view_pivot_offset_x = actor["view_pivot_offset_x"].GetFloat();
+                        view_pivot_offset.x = actor["view_pivot_offset_x"].GetFloat();
                     }
                     if (actor.HasMember("view_pivot_offset_y")){
-                        view_pivot_offset_y = actor["view_pivot_offset_y"].GetFloat();
+                        view_pivot_offset.y = actor["view_pivot_offset_y"].GetFloat();
                     }
                     if (actor.HasMember("render_order")){
                         render_order = actor["render_order"].GetInt();
@@ -194,16 +183,16 @@ public:
                     //if (actor.HasMember("contact_dialogue"))
                     //    contact_dialogue = actor["contact_dialogue"].GetString();
 
-                    if (x>max_x) max_x = x;
-                    if (y>max_y) max_y = y;
+                    if (transform_position.x > max_x) max_x = transform_position.x;
+                    if (transform_position.y > max_y) max_y = transform_position.y;
                     //char view = (!view_str.empty()) ? view_str[0] : '?';
 
-                    sceneActors->emplace_back(actor_name, id_counter++, glm::vec2(x,y), 
-                        glm::vec2(vel_x, vel_y), 
+                    sceneActors->emplace_back(actor_name, id_counter++, transform_position, 
+                        vel, 
                         view_str, view_back_str,
                         view_image_damage_str, view_image_attack_str,
-                        glm::vec2(transform_scale_x, transform_scale_y), transform_rotation_degrees, 
-                        glm::vec2(view_pivot_offset_x, view_pivot_offset_y), render_order,
+                        transform_scale, transform_rotation_degrees, 
+                        view_pivot_offset, render_order,
                         nearby_dialogue, contact_dialogue,
                         movement_bounce_enabled,
                         box_collider_width, box_collider_height,
@@ -211,7 +200,7 @@ public:
 
                     // store the index of the just-emplaced actor into mapHash
                     int actor_index = static_cast<int>(sceneActors->size()) - 1;
-                    mapHash[hashPosition(glm::vec2(x,y))].push_back(actor_index);
+                    mapHash[hashPosition(transform_position)].push_back(actor_index);
 
                     if (actor_name == "player"){
                         //mainActor = &sceneActors->back(); 
@@ -248,6 +237,18 @@ private:
         }
         template_cache.emplace_back(templateName);
         return template_cache.back();
+    }
+
+    glm::vec2 setDefaultPivotForValidTexture(const std::string& view_str){
+        glm::vec2 pivot_offset(0.0f, 0.0f);
+        if (view_str.length() > 0){
+            SDL_Texture* tex = imageDB->loadImage(view_str);
+            float tex_width = 0.0f, tex_height = 0.0f;
+            Helper::SDL_QueryTexture(tex,  &tex_width, &tex_height);
+            pivot_offset.x = (tex_width) / 2.0f; // default pivot at center of the image
+            pivot_offset.y = (tex_height) / 2.0f;
+        }
+        return pivot_offset;
     }
 
     //getMapHash() : mapHash is passed by reference in constructor
