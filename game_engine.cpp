@@ -22,6 +22,7 @@
 #include "input_manager.h"
 #include <unordered_set>
 #include <functional>
+#include "AudioManager.h"
 
 class GameEngine {
 public:
@@ -54,15 +55,22 @@ public:
     ImageDB* imageDB;
     TextDB* textDB;
     // Audio Helper
-    AudioDB audioDB;
-    Mix_Chunk* intro_bgm_chunk; // Intro Animation BGM chunk
-    Mix_Chunk* scene_bgm_chunk; // Game Scene BGM chunk
-    Mix_Chunk* gamewin_bgm_chunk; // Game Win BGM chunk
-    Mix_Chunk* gamelose_bgm_chunk; // Game Lose BGM chunk
-    AudioState intro_bgm_states = AudioState::Not_Started;
-    AudioState scene_bgm_states = AudioState::Not_Started;
-    AudioState gamewin_bgm_states = AudioState::Not_Started;
-    AudioState gamelose_bgm_states = AudioState::Not_Started;
+    //AudioDB audioDB;
+    //Mix_Chunk* intro_bgm_chunk; // Intro Animation BGM chunk
+    //Mix_Chunk* scene_bgm_chunk; // Game Scene BGM chunk
+    //Mix_Chunk* gamewin_bgm_chunk; // Game Win BGM chunk
+    //Mix_Chunk* gamelose_bgm_chunk; // Game Lose BGM chunk
+    //AudioState intro_bgm_states = AudioState::Not_Started;
+    //AudioState scene_bgm_states = AudioState::Not_Started;
+    //AudioState gamewin_bgm_states = AudioState::Not_Started;
+    //AudioState gamelose_bgm_states = AudioState::Not_Started;
+
+    // New Version of Audio Management using AudioManager class
+    AudioManager audioManager;
+    AudioInfo intro_bgm_info;
+    AudioInfo scene_bgm_info;
+    AudioInfo gamewin_bgm_info;
+    AudioInfo gamelose_bgm_info;
 
     // Intro Animation Stage variables
     size_t image_idx = 0;
@@ -137,12 +145,12 @@ public:
             textDB->readIntroText();
             intro_text = textDB->getIntroTextVector();
 
-            intro_bgm_chunk = audioDB.readBGM("intro_bgm");
-            intro_bgm_states  = audioDB.hasIntroBGM();
+            audioManager.Init();
+            intro_bgm_info.setByInfo(parser.getIntroBGM(), 0, true, &audioManager);
 
             states = GameState::IntroAnimation;
             if (!intro_image || intro_image->empty()){
-            states = GameState::Ongoing; // Skip intro animation if no intro image
+                states = GameState::Ongoing; // Skip intro animation if no intro image
             }
 
             // game ending 
@@ -155,17 +163,14 @@ public:
                 imageDB -> loadImage(gamelose_image);
             }
             has_gameend_stage = !gamewin_image.empty() || !gamelose_image.empty();
-            gamewin_bgm_chunk = audioDB.readBGM("game_over_good_audio");
-            gamelose_bgm_chunk = audioDB.readBGM("game_over_bad_audio");
-            gamewin_bgm_states = audioDB.hasGameWinBGM();
-            gamelose_bgm_states = audioDB.hasGameLoseBGM();
+            gamewin_bgm_info.setByInfo(parser.getGameWinBGM(), 0, true, &audioManager);
+            gamelose_bgm_info.setByInfo(parser.getGameLoseBGM(), 0, true, &audioManager);
 
         } else {
             states = GameState::Ongoing; // Load next scene directly without intro animation
         }
         
-        scene_bgm_chunk = audioDB.readBGM("gameplay_audio");
-        scene_bgm_states = audioDB.hasGameplayBGM();
+        scene_bgm_info.setByInfo(parser.getGamePlayBGM(), 0, true, &audioManager);
 
         camera_lift = parser.getCameraOffset() * 100.0f; // Apply camera offset from config, scaled by 100 to convert from tile units to pixel units
         camera = glm::vec2(window_size.x /2.0f, window_size.y /2.0f) + 
@@ -236,10 +241,11 @@ public:
 
     void updateIntroAnimation() {
         //if (states != GameState::IntroAnimation) return;
-        if (intro_bgm_states == AudioState::Not_Started){
-            AudioHelper::Mix_PlayChannel(0, intro_bgm_chunk, -1); // Play intro BGM in a loop
-            intro_bgm_states = AudioState::Playing;
-        } 
+        //if (intro_bgm_states == AudioState::Not_Started){
+        //    AudioHelper::Mix_PlayChannel(0, intro_bgm_chunk, -1); // Play intro BGM in a loop
+        //    intro_bgm_states = AudioState::Playing;
+        //} 
+        intro_bgm_info.play(&audioManager);
 
         /* below is a FRAME-WISE update for Intro Animation Stage*/
         images_to_render.clear();
@@ -270,26 +276,33 @@ public:
             }
         } else {// exit the Intro Animation Stage when all intro images and texts have been shown
             states = GameState::Ongoing;
-            if (intro_bgm_states == AudioState::Playing){ 
-                AudioHelper::Mix_HaltChannel(0);
-            }
+            //if (intro_bgm_states == AudioState::Playing){ 
+            //    AudioHelper::Mix_HaltChannel(0);
+            //}
+            intro_bgm_info.halt(&audioManager);
         }
     }
 
     void updateGameEnd(bool win) {
         //if (states != GameState::IntroAnimation) return;
-        if (scene_bgm_states == AudioState::Playing){ 
-                AudioHelper::Mix_HaltChannel(0);
-                scene_bgm_states = AudioState::Stopped;
-        }
+        //if (scene_bgm_states == AudioState::Playing){ 
+        //        AudioHelper::Mix_HaltChannel(0);
+        //        scene_bgm_states = AudioState::Stopped;
+        //}
+        scene_bgm_info.halt(&audioManager);
 
-        AudioState& bgm_state = win ? gamewin_bgm_states : gamelose_bgm_states;
-        Mix_Chunk* bgm_chunk = win ? gamewin_bgm_chunk : gamelose_bgm_chunk;
+        //AudioState& bgm_state = win ? gamewin_bgm_states : gamelose_bgm_states;
+        //Mix_Chunk* bgm_chunk = win ? gamewin_bgm_chunk : gamelose_bgm_chunk;
         std::string end_image = win ? gamewin_image : gamelose_image;
-        if (bgm_state == AudioState::Not_Started){
-            AudioHelper::Mix_PlayChannel(0, bgm_chunk, 0); // Play intro BGM in a loop
-            bgm_state = AudioState::Playing;
-        } 
+        //if (bgm_state == AudioState::Not_Started){
+        //    AudioHelper::Mix_PlayChannel(0, bgm_chunk, 0); // Play intro BGM in a loop
+        //    bgm_state = AudioState::Playing;
+        //} 
+        if (win){
+            gamewin_bgm_info.play(&audioManager);
+        } else {
+            gamelose_bgm_info.play(&audioManager);
+        }
 
         /* below is a FRAME-WISE update for Intro Animation Stage*/
         images_to_render.clear();
@@ -307,10 +320,11 @@ public:
     void updateOngoing(){
         if (states != GameState::Ongoing) return;
 
-        if (scene_bgm_states == AudioState::Not_Started){
-            AudioHelper::Mix_PlayChannel(0, scene_bgm_chunk, -1); // Play gameplay BGM in a loop
-            scene_bgm_states = AudioState::Playing;
-        }
+        //if (scene_bgm_states == AudioState::Not_Started){
+        //    AudioHelper::Mix_PlayChannel(0, scene_bgm_chunk, -1); // Play gameplay BGM in a loop
+        //    scene_bgm_states = AudioState::Playing;
+        //}
+        scene_bgm_info.play(&audioManager);
 
         images_to_render.clear();
         text_to_render.clear();

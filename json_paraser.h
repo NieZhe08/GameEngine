@@ -137,6 +137,34 @@ public:
         } 
         return false; // default to no flipping
     }
+
+    std::string getIntroBGM(){
+        if (game.IsObject() && game.HasMember("intro_bgm")){
+            return game["intro_bgm"].GetString();
+        } 
+        return ""; // default to no intro bgm
+    }
+
+    std::string getGamePlayBGM(){
+        if (game.IsObject() && game.HasMember("gameplay_audio")){
+            return game["gameplay_audio"].GetString();
+        } 
+        return ""; // default to no gameplay bgm
+    }
+
+    std::string getGameWinBGM(){
+        if (game.IsObject() && game.HasMember("game_over_good_audio")){
+            return game["game_over_good_audio"].GetString();
+        } 
+        return ""; // default to no game win bgm
+    }
+
+    std::string getGameLoseBGM(){
+        if (game.IsObject() && game.HasMember("game_over_bad_audio")){
+            return game["game_over_bad_audio"].GetString();
+        } 
+        return ""; // default to no game lose bgm
+    }
 };
 
 #endif

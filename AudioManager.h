@@ -30,8 +30,8 @@ public:
         
         for (std::string afterfix : {".wav",  ".ogg"}){
             std::string fullpath = "resources/audio/" + path + afterfix;
-            if (std::filesystem::exists(path)){
-                Mix_Chunk* chunk = AudioHelper::Mix_LoadWAV(path.c_str());
+            if (std::filesystem::exists(fullpath)){
+                Mix_Chunk* chunk = AudioHelper::Mix_LoadWAV(fullpath.c_str());
                 if (!chunk) {
                     std::cout << "error: AudioHelper::Mix_LoadWAV failed for " << path << ": " << Mix_GetError() << "\n";
                     return -1;
@@ -45,6 +45,7 @@ public:
         return -1; // audio file not found
     }
     static int PlayChannel(int channel, int audio_number, bool does_loop){
+        if (audio_number == -1) return -1; // invalid audio number
         if (audio_cache.find(audio_number) == audio_cache.end()) {
             std::cout << "error: PlayChannel failed, audio number " << audio_number << " not found in cache\n";
             return -1;
@@ -72,19 +73,9 @@ class AudioInfo{
             setAsDefault();
         }
 
-        AudioInfo(std::string path, int channel, bool does_loop, AudioManager* manager):
-        channel(channel), audio_number(-1), audio_path(path),
-        does_loop(does_loop), audio_state(AudioState::Not_Started){
-            if (path.empty()){
-                setAsDefault();
-            } else {
-                audio_number = manager->loadAudio(path);
-                if (audio_number == -1){
-                    std::cout << "error: failed to load audio for path " << path << "\n";
-                    setAsDefault();
-                }
-            }        
-        };
+        AudioInfo(std::string path, int channel, bool does_loop, AudioManager* manager){
+            setByInfo(path, channel, does_loop, manager);
+        }
 
         void setAsDefault(){
             channel = 0;
@@ -92,6 +83,47 @@ class AudioInfo{
             audio_path = "";
             does_loop = false;
             audio_state = AudioState::None;
+        }
+
+        void setByInfo(std::string path, int channel, bool does_loop, AudioManager* manager){
+            audio_path = path;
+            this->channel = channel;
+            this->does_loop = does_loop;
+            if (path.empty()){
+                setAsDefault();
+            } else {
+                audio_number = manager->loadAudio(path);
+                audio_state = AudioState::Not_Started;
+                if (audio_number == -1){
+                    std::cout << "error: failed to load audio for path " << path << "\n";
+                    setAsDefault();
+                }
+            } 
+        }
+
+        void play(AudioManager* manager){
+            if (audio_number == -1) {
+                return;
+            }
+            if (audio_state == AudioState::Playing) return; // already playing
+            int result = manager->PlayChannel(channel, audio_number, does_loop);
+            if (result == -1){
+                std::cout << "error: failed to play audio for path " << audio_path << "\n";
+            } else {
+                audio_state = AudioState::Playing;
+            }
+        }
+
+        void halt(AudioManager* manager){
+            if (audio_number == -1) {
+                return;
+            }
+            int result = manager->HaltChannel(channel);
+            if (result == -1){
+                std::cout << "error: failed to halt audio for path " << audio_path << "\n";
+            } else {
+                audio_state = AudioState::Stopped;
+            }
         }
 };
 
