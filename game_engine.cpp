@@ -30,25 +30,13 @@ public:
     std::vector<std::unordered_set<Actor*>> collision_sets;
     std::unordered_set<Actor*> attack_on_this_frame_set; // actor in this frame that triggers attack
     std::unordered_set<Actor*> rendering_attack_actors_set; // actor that triggered attack and need update management
-    //Point camera; // Camera following the main actor
     glm::ivec2 mapSize; // x_resolution and y_resolution of the map
     glm::ivec2 viewSize;
     Input input;
     // VIEWSIZE: here viewsize refers to viewSize (row, col)
-    //std::string _game_start_message;
-    //int health;
-    //int score;
-    //std::string input_query_message = std::string("Your options are \"n\", \"e\", \"s\", \"w\", \"quit\"\n");// TODO
     
     std::unordered_map<std::uint64_t, std::vector<int>> mapHash; // TODO would be deleted
-    //std::stringstream render_ss;
-    //std::stringstream dialogue_ss;
     GameState states;
-    //std::vector<std::string> scored_actors; //TODO
-
-    //std::string game_start_message;
-    //std::string game_over_good_message;
-    //std::string game_over_bad_message;
 
     // SDL rendering stuff
     Helper helper;
@@ -58,26 +46,28 @@ public:
     SDL_Event event;
     SDL_Window* win;
     SDL_Renderer* ren;
+
+    float zoom_factor = 1.0f; // Default zoom factor
+    std::string next_scene_name;
+
+    // Image and Text Helper
     ImageDB* imageDB;
     TextDB* textDB;
-    std::unique_ptr<std::vector<std::string>> intro_image;
-    std::unique_ptr<std::vector<std::string>> intro_text;
-    std::vector<ImageRenderConfig> images_to_render; // Queue of images to render each frame
-    std::vector<TextRenderConfig> text_to_render; // Queue of text to render each frame
-    float zoom_factor = 1.0f; // Default zoom factor
-
+    // Audio Helper
     AudioDB audioDB;
     Mix_Chunk* intro_bgm_chunk; // Intro Animation BGM chunk
     Mix_Chunk* scene_bgm_chunk; // Game Scene BGM chunk
     Mix_Chunk* gamewin_bgm_chunk; // Game Win BGM chunk
     Mix_Chunk* gamelose_bgm_chunk; // Game Lose BGM chunk
     
-    std::string next_scene_name;
-    
     // Intro Animation Stage variables
     size_t image_idx = 0;
     size_t text_idx = 0;
     AudioState intro_bgm_states = AudioState::Not_Started;
+    std::unique_ptr<std::vector<std::string>> intro_image;
+    std::unique_ptr<std::vector<std::string>> intro_text;
+    std::vector<ImageRenderConfig> images_to_render; // Queue of images to render each frame
+    std::vector<TextRenderConfig> text_to_render; // Queue of text to render each frame
 
     // Game Scene Wise Variables
     // Call when states == GameState::Ongoing, update when GameState::NextScene
@@ -626,19 +616,30 @@ public:
         }
     }
 
-    void updateHurtAndAttackView(){
+     void updateHurtAndAttackView(){
+        if (!mainActor) return;
+
         bool mainActorHurted = false;
         if (mainActor->has_view_image_damage && mainActor->damage_view_duration_frames > 0){
             mainActor->damage_view_duration_frames -= 1;
         }
-        for (Actor* actor: rendering_attack_actors_set){
+
+        for (auto it = rendering_attack_actors_set.begin(); it != rendering_attack_actors_set.end(); ){
+            Actor* actor = *it;
+            if (!actor){
+                it = rendering_attack_actors_set.erase(it);
+                continue;
+            }
             actor->attack_view_duration_frames -= 1;
             if (actor->attack_view_duration_frames <= 0){
-                rendering_attack_actors_set.erase(actor);
+                it = rendering_attack_actors_set.erase(it);
+            } else {
+                ++it;
             }
         }
+
         for (Actor* actor: attack_on_this_frame_set){
-            // TODO update actor view to hurt image
+            if (!actor) continue;
             if (actor->canSetAttackView()){
                 actor->setAttackViewDuration();
                 rendering_attack_actors_set.insert(actor);
@@ -648,7 +649,6 @@ public:
         if (mainActorHurted && mainActor->canSetDamageView()){
             mainActor->setDamageViewDuration();
         }
-
     }
 
     //void dialogueRender(){
@@ -721,7 +721,7 @@ public:
                     SDL_FRect dst = {5.0f + i * (hp_image_width + 5.0f), 25.0f, hp_image_width, hp_image_height};
                     images_to_render.emplace_back(hp_image, dst);
                 }
-                text_to_render.push_back(TextRenderConfig("Score : " + std::to_string(score), 5, 5));
+                text_to_render.push_back(TextRenderConfig("score : " + std::to_string(score), 5, 5));
                 }   
             
         }
