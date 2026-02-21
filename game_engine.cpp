@@ -28,7 +28,7 @@ public:
     Actor* mainActor;
     std::unique_ptr<std::vector<Actor>> actorList;
     std::vector<std::unordered_set<Actor*>> collision_sets;
-    std::unordered_set<Actor*> trigger_attack_set; // actor in this frame that triggers attack
+    std::unordered_set<Actor*> attack_on_this_frame_set; // actor in this frame that triggers attack
     std::unordered_set<Actor*> rendering_attack_actors_set; // actor that triggered attack and need update management
     //Point camera; // Camera following the main actor
     glm::ivec2 mapSize; // x_resolution and y_resolution of the map
@@ -523,6 +523,9 @@ public:
                 //std::cout<<actor.nearby_dialogue<<"\n";
                 //dialogue_queue.push_back(actor->contact_dialogue);
             }
+            if (actor->contact_incident == GameIncident::HealthDown){
+                attack_on_this_frame_set.insert(actor);
+            }
         }
         // SPEC SAYS NO CONTACT DIALOGUE!
         // I BELIEVE THIS WILL BE BACK IN FUTURE
@@ -616,7 +619,7 @@ public:
                     dialogue_queue->push_back(actor.nearby_dialogue);
                 }
                 if (actor.nearby_incident == GameIncident::HealthDown){
-                    trigger_attack_set.insert(&actor);
+                    attack_on_this_frame_set.insert(&actor);
                 }
                 
             }
@@ -634,25 +637,13 @@ public:
                 rendering_attack_actors_set.erase(actor);
             }
         }
-        for (Actor* actor: collision_sets[mainActor->id]){
-            if (actor->contact_incident == GameIncident::HealthDown){
-                // TODO update actor view to hurt image
-                if (actor->canSetAttackView()){
-                    actor->setAttackViewDuration();
-                    rendering_attack_actors_set.insert(actor);
-                }
-                mainActorHurted = true;
+        for (Actor* actor: attack_on_this_frame_set){
+            // TODO update actor view to hurt image
+            if (actor->canSetAttackView()){
+                actor->setAttackViewDuration();
+                rendering_attack_actors_set.insert(actor);
             }
-        }
-        for (Actor* actor: trigger_attack_set){
-            if (actor->nearby_incident == GameIncident::HealthDown){
-                // TODO update actor view to hurt image
-                if (actor->canSetAttackView()){
-                    actor->setAttackViewDuration();
-                    rendering_attack_actors_set.insert(actor);
-                }
-                mainActorHurted = true;
-            }
+            mainActorHurted = true;
         }
         if (mainActorHurted && mainActor->canSetDamageView()){
             mainActor->setDamageViewDuration();
@@ -684,7 +675,7 @@ public:
             collision_set.clear();
         }
         // clear trigger sets
-        trigger_attack_set.clear();
+        attack_on_this_frame_set.clear();
     }
 
     void gameLoop() {
