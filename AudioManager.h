@@ -6,7 +6,13 @@
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
-#include "game_utils.h"
+
+enum class AudioState {
+    Not_Started,
+    Playing,
+    Stopped,
+    None
+};
 
 class AudioManager {
     static inline std::unordered_map<int, Mix_Chunk*> audio_cache; // Map from audio path hash to loaded Mix_Chunk*
@@ -61,6 +67,39 @@ public:
 };
 
 class AudioInfo{
+    private:
+        bool channelBaseOnFrame = false; // swould not change
+        bool hasNotLoaded = false; // change after loading
+
+        void setAsDefault(){
+            channel = 0;
+            audio_number = -1;
+            audio_path = "";
+            does_loop = false;
+            audio_state = AudioState::None;
+        }
+
+        void setByInfo(std::string path, int channel, bool does_loop, AudioManager* manager, 
+            bool channelBaseOnFrame = false){
+            audio_path = path;
+            this->channel = channel;
+            this->does_loop = does_loop;
+            if (path.empty()){
+                setAsDefault();
+            } else {
+                if (manager){
+                    audio_number = manager->loadAudio(path);
+                    if (audio_number == -1){
+                        std::cout << "error: failed to load audio for path " << path << "\n";
+                        setAsDefault();
+                    }
+                } else {
+                    hasNotLoaded = true;
+                }
+                audio_state = AudioState::Not_Started;
+            } 
+        }
+
     public:
         int channel;
         int audio_number;
@@ -73,39 +112,27 @@ class AudioInfo{
             setAsDefault();
         }
 
-        AudioInfo(std::string path, int channel, bool does_loop, AudioManager* manager){
-            setByInfo(path, channel, does_loop, manager);
+        // AudioInfo constructor with channel fixed
+        AudioInfo(std::string _path, bool _does_loop, 
+            AudioManager* manager = nullptr, int _channel = -1) : 
+            channelBaseOnFrame(_channel == -1), 
+            hasNotLoaded(manager == nullptr){
+            setByInfo(_path, _channel, _does_loop, manager, channelBaseOnFrame);
         }
-
-        void setAsDefault(){
-            channel = 0;
-            audio_number = -1;
-            audio_path = "";
-            does_loop = false;
-            audio_state = AudioState::None;
-        }
-
-        void setByInfo(std::string path, int channel, bool does_loop, AudioManager* manager){
-            audio_path = path;
-            this->channel = channel;
-            this->does_loop = does_loop;
-            if (path.empty()){
-                setAsDefault();
-            } else {
-                audio_number = manager->loadAudio(path);
-                audio_state = AudioState::Not_Started;
-                if (audio_number == -1){
-                    std::cout << "error: failed to load audio for path " << path << "\n";
-                    setAsDefault();
-                }
-            } 
-        }
-
+        
         void play(AudioManager* manager){
+            if (hasNotLoaded){
+                setByInfo(audio_path, channel, does_loop, manager, channelBaseOnFrame);
+                hasNotLoaded = false;
+            }
             if (audio_number == -1) {
                 return;
             }
             if (audio_state == AudioState::Playing) return; // already playing
+
+            if (channelBaseOnFrame){
+                channel = Helper::GetFrameNumber() % 48 + 2;
+            }
             int result = manager->PlayChannel(channel, audio_number, does_loop);
             if (result == -1){
                 std::cout << "error: failed to play audio for path " << audio_path << "\n";
@@ -125,6 +152,7 @@ class AudioInfo{
                 audio_state = AudioState::Stopped;
             }
         }
+
 };
 
 #endif

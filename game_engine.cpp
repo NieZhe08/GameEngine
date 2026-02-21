@@ -71,6 +71,9 @@ public:
     AudioInfo scene_bgm_info;
     AudioInfo gamewin_bgm_info;
     AudioInfo gamelose_bgm_info;
+    AudioInfo score_sfx;
+    AudioInfo damage_sfx;
+    AudioInfo step_sfx;
 
     // Intro Animation Stage variables
     size_t image_idx = 0;
@@ -112,11 +115,6 @@ public:
     }
 
     void initializeGame(bool isInitialLoad = true) {
-            
-        //game_start_message = parser.getGameStartMessage();
-        //game_over_good_message = parser.getGameOverGoodMessage();
-        //game_over_bad_message = parser.getGameOverBadMessage();
-        ////viewSize = parser.getResolution();
         JsonParser parser;
         if (isInitialLoad){
             next_scene_name = parser.getInitialScene();
@@ -146,7 +144,11 @@ public:
             intro_text = textDB->getIntroTextVector();
 
             audioManager.Init();
-            intro_bgm_info.setByInfo(parser.getIntroBGM(), 0, true, &audioManager);
+            intro_bgm_info = AudioInfo(parser.getIntroBGM(), true, &audioManager, 0);
+            score_sfx = AudioInfo(parser.getScoreSFX(), false, &audioManager);
+            damage_sfx = AudioInfo(parser.getDamageSFX(), false, &audioManager);
+            //step_sfx = AudioInfo(parser.getStepSfx(), false, &
+
 
             states = GameState::IntroAnimation;
             if (!intro_image || intro_image->empty()){
@@ -163,14 +165,14 @@ public:
                 imageDB -> loadImage(gamelose_image);
             }
             has_gameend_stage = !gamewin_image.empty() || !gamelose_image.empty();
-            gamewin_bgm_info.setByInfo(parser.getGameWinBGM(), 0, true, &audioManager);
-            gamelose_bgm_info.setByInfo(parser.getGameLoseBGM(), 0, true, &audioManager);
+            gamewin_bgm_info = AudioInfo(parser.getGameWinBGM(), true, &audioManager, 0);
+            gamelose_bgm_info = AudioInfo(parser.getGameLoseBGM(), true, &audioManager, 0);
 
         } else {
             states = GameState::Ongoing; // Load next scene directly without intro animation
         }
         
-        scene_bgm_info.setByInfo(parser.getGamePlayBGM(), 0, true, &audioManager);
+        scene_bgm_info = AudioInfo(parser.getGamePlayBGM(), true, &audioManager, 0);
 
         camera_lift = parser.getCameraOffset() * 100.0f; // Apply camera offset from config, scaled by 100 to convert from tile units to pixel units
         camera = glm::vec2(window_size.x /2.0f, window_size.y /2.0f) + 
@@ -202,6 +204,8 @@ public:
             mainActor = nullptr;
         }
         mapSize = sceneDB.getMapSize();
+
+        step_sfx = AudioInfo(sceneDB.getStepSfx(), false, &audioManager);
 
         //if (isInitialLoad){
         //    health = 3;
@@ -324,7 +328,6 @@ public:
         //    AudioHelper::Mix_PlayChannel(0, scene_bgm_chunk, -1); // Play gameplay BGM in a loop
         //    scene_bgm_states = AudioState::Playing;
         //}
-        scene_bgm_info.play(&audioManager);
 
         images_to_render.clear();
         text_to_render.clear();
@@ -332,6 +335,14 @@ public:
         glm::vec playerSpeed = updateGameState();
         mainActor->velocity = playerSpeed; // Update main actor's velocity based on player input
         updateActorPositions(playerSpeed);
+
+        scene_bgm_info.play(&audioManager);
+        if (Helper::GetFrameNumber() % 20 == 0){ // Play step sound effect every 20 frames if the main actor is moving
+            if (mainActor && mainActor->velocity != glm::vec2(0.0f, 0.0f)){
+                step_sfx.play(&audioManager);
+            }
+        }
+
         if (mainActor){
             glm::vec offset = glm::vec2((mainActor->transform_position.x) * 100 * zoom_factor, 
                             (mainActor->transform_position.y) * 100 * zoom_factor);
@@ -385,6 +396,7 @@ public:
             if (!collisionDetected(nextPosition, &actor)){// need to update mapHash
                 // remove the actor's index from its old cell
                 actor.transform_position = nextPosition;
+                actor.velocity = vel; // Update velocity to the new velocity after collision check, so that the actor will stop immediately when colliding with others instead of going through them for one more frame
                 //std::cout<<"Actor "<<actor.actor_name<<" moves to ("<<actor.transform_position.x<<", "<<actor.transform_position.y<<")"<<std::endl;
             } else {
                 actor.velocity = -actor.velocity; // Reverse direction on collision
@@ -551,10 +563,12 @@ public:
                     if (Helper::GetFrameNumber() - coolDownTriggerFrame >= 180){ // Cool down period of 3 seconds at 60 FPS 
                         health -= 1;
                         coolDownTriggerFrame = Helper::GetFrameNumber();
+                        damage_sfx.play(&audioManager);
                     }
                     break;
                 case GameIncident::ScoreUp:
                     score += 1;
+                    score_sfx.play(&audioManager);
                     break;
                 case GameIncident::YouWin:
                     states = GameState::Won;
@@ -621,6 +635,7 @@ public:
                 actor.transform_position, actor.box_trigger, ren, camera, zoom_factor, false))
             { 
                 if (actor.nearby_dialogue.empty()) continue;
+                actor.dialogue_info.play(&audioManager);
                 checkGameIncidents(&actor, allIncidents, ContactType::Nearby);
                 if (actor.nearby_dialogue != "" && actor.nearby_incident != GameIncident::NextScene){
                     dialogue_queue->push_back(actor.nearby_dialogue);

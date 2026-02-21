@@ -4,7 +4,7 @@
 #include "glm/glm.hpp"
 #include <optional>
 #include "SDL2/SDL.h"
-
+#include "AudioManager.h"
 enum class PlayerAction {
     MoveUp,
     MoveDown,
@@ -37,12 +37,6 @@ enum class ContactType {
     Overlap
 };
 
-enum class AudioState {
-    Not_Started,
-    Playing,
-    Stopped,
-    None
-};
 
 #include <regex>
 #include <optional>
@@ -129,6 +123,8 @@ public:
     bool has_box_trigger;
 
     bool view_dir_down = true; // down is default
+
+    AudioInfo dialogue_info;
    
 
 	Actor(std::string actor_name, int id, glm::vec2 _transform_position,
@@ -140,7 +136,8 @@ public:
         std::string _nearby_dialogue , std::string _contact_dialogue,
         bool _movement_bounce_enabled, 
         float bcw, float bch, 
-        float btw, float bth) : 
+        float btw, float bth,
+        std::string dialogue_audio_path) : 
 
         actor_name(actor_name), id(id), transform_position(_transform_position),
         velocity(_velocity), 
@@ -155,7 +152,8 @@ public:
         nearby_dialogue(_nearby_dialogue), contact_dialogue(_contact_dialogue),
         movement_bounce_enabled(_movement_bounce_enabled),
         box_collider(bcw, bch), box_trigger(btw, bth),
-        has_box_collider(bcw > 0 && bch > 0), has_box_trigger(btw > 0 && bth > 0)
+        has_box_collider(bcw > 0 && bch > 0), has_box_trigger(btw > 0 && bth > 0),
+        dialogue_info(dialogue_audio_path, false)
         {
             nearby_incident = checkGameIncidents(nearby_dialogue);
             contact_incident = checkGameIncidents(contact_dialogue);

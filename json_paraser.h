@@ -165,6 +165,21 @@ public:
         } 
         return ""; // default to no game lose bgm
     }
+
+    std::string getScoreSFX(){
+        if (game.IsObject() && game.HasMember("score_sfx")){
+            return game["score_sfx"].GetString();
+        } 
+        return ""; // default to no score sfx
+    }
+
+    std::string getDamageSFX(){
+        if (game.IsObject() && game.HasMember("damage_sfx")){
+            return game["damage_sfx"].GetString();
+        } 
+        return ""; // default to no damage sfx
+    }
+
 };
 
 #endif

@@ -149,6 +149,12 @@ public:
             return templates["view_image_attack"].GetString();
         return "";
     }
+
+    std::string getNearbyDialogueSFX() {
+        if (templates.HasMember("nearby_dialogue_sfx"))
+            return templates["nearby_dialogue_sfx"].GetString();
+        return "";
+    }
 };
 
 #endif // TEMPLATE_DB_H

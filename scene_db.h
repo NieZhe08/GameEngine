@@ -21,6 +21,8 @@ public:
     ImageDB* imageDB;
     std::vector<TemplateDB> template_cache;
 
+    std::string stepSfx = "";
+
     SceneDB (std::string sceneName, 
                 std::unordered_map<std::uint64_t, std::vector<int>>& mapHash,
             ImageDB* _imageDB) : sceneName(sceneName), imageDB(_imageDB) {
@@ -74,6 +76,7 @@ public:
                     float box_collider_height = 0.0f;
                     float box_trigger_width = 0.0f;
                     float box_trigger_height = 0.0f;
+                    std::string nearby_dialogue_sfx = "";
                     //int vel_x = 0;
                     //int vel_y = 0;
                     //bool blocking = false;
@@ -102,7 +105,7 @@ public:
                         box_collider_height = actorTemplate.getBoxColliderHeight();
                         box_trigger_width = actorTemplate.getBoxTriggerWidth();
                         box_trigger_height = actorTemplate.getBoxTriggerHeight();
-
+                        nearby_dialogue_sfx = actorTemplate.getNearbyDialogueSFX();
                         
                         if (!view_back_str.empty()){
                             imageDB->loadImage(view_back_str);
@@ -172,6 +175,9 @@ public:
                         view_image_attack_str = actor["view_image_attack"].GetString();
                         imageDB->loadImage(view_image_attack_str);
                     }
+                    if (actor.HasMember("nearby_dialogue_sfx")){
+                        nearby_dialogue_sfx = actor["nearby_dialogue_sfx"].GetString();
+                    }
                     //if (actor.HasMember("vel_x"))
                     //    vel_x = actor["vel_x"].GetInt();
                     //if (actor.HasMember("vel_y"))
@@ -196,7 +202,9 @@ public:
                         nearby_dialogue, contact_dialogue,
                         movement_bounce_enabled,
                         box_collider_width, box_collider_height,
-                        box_trigger_width, box_trigger_height);
+                        box_trigger_width, box_trigger_height,
+                        nearby_dialogue_sfx
+                        );
 
                     // store the index of the just-emplaced actor into mapHash
                     int actor_index = static_cast<int>(sceneActors->size()) - 1;
@@ -205,6 +213,9 @@ public:
                     if (actor_name == "player"){
                         //mainActor = &sceneActors->back(); 
                         mainActorIndex = actor_index;
+                        if (actor.HasMember("step_sfx")){
+                            stepSfx = actor["step_sfx"].GetString();
+                        }
                     }
             }
         }
@@ -226,6 +237,10 @@ public:
 
     glm::ivec2 getMapSize() {
         return mapSize;
+    }
+
+    std::string getStepSfx() {
+        return stepSfx;
     }
 
 private:
