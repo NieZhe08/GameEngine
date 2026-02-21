@@ -130,8 +130,15 @@ public:
         }
 
         // Determine which image to render based on actor state (normal vs back view)
-        std::string image_to_render = (actor->has_view_image_back && ! actor->view_dir_down)? 
-            actor->view_image_back : actor->view_image;
+        std::string image_to_render = actor->view_image;
+        if (actor->has_view_image_back && ! actor->view_dir_down){
+            image_to_render = actor->view_image_back;
+        }
+        if (actor->has_view_image_damage && actor->damage_view_duration_frames > 0){
+            image_to_render = actor->view_image_damage;
+        } else if (actor->has_view_image_attack && actor->attack_view_duration_frames > 0){
+            image_to_render = actor->view_image_attack;
+        }
 
         int idx = image_index_map[image_to_render];
         if (idx < 0 || idx >= (int)cache.size()) {

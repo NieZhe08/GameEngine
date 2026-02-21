@@ -100,8 +100,10 @@ public:
     std::string view_image_back;
     bool has_view_image_back;
     std::string view_image_damage;
+    bool has_view_image_damage;
     int damage_view_duration_frames; // valid 1-30 (<31)
     std::string view_image_attack;
+    bool has_view_image_attack;
     int attack_view_duration_frames; // valid 1-30 (<31)
     glm::vec2 transform_scale;
     bool flip_x ;
@@ -144,8 +146,8 @@ public:
         velocity(_velocity), 
         view_image(_view_image), has_view_image(!_view_image.empty()), 
         view_image_back(_view_image_back), has_view_image_back(!_view_image_back.empty()),
-        view_image_damage(_view_image_damage), damage_view_duration_frames(0),
-        view_image_attack(_view_image_attack), attack_view_duration_frames(0),
+        view_image_damage(_view_image_damage), damage_view_duration_frames(0), has_view_image_damage(!_view_image_damage.empty()),
+        view_image_attack(_view_image_attack), attack_view_duration_frames(0), has_view_image_attack(!_view_image_attack.empty()),
         transform_scale(glm::abs(_transform_scale)),
         flip_x(_transform_scale.x <0), flip_y(_transform_scale.y <0),
         transform_rotation_degrees(_transform_rotation_degrees), view_pivot_offset(_view_pivot_offset),
@@ -191,6 +193,26 @@ public:
            }
 
 	    }
+
+    void setDamageViewDuration(){
+        if (has_view_image_damage){
+            damage_view_duration_frames = 30;
+        }
+    }
+
+    void setAttackViewDuration(){
+        if (has_view_image_attack){
+            attack_view_duration_frames = 30;
+        }
+    }
+
+    bool canSetDamageView(){
+        return has_view_image_damage && damage_view_duration_frames == 0;
+    }
+
+    bool canSetAttackView(){
+        return has_view_image_attack && attack_view_duration_frames == 0;
+    }
 };
 
 

@@ -28,6 +28,8 @@ public:
     Actor* mainActor;
     std::unique_ptr<std::vector<Actor>> actorList;
     std::vector<std::unordered_set<Actor*>> collision_sets;
+    std::unordered_set<Actor*> trigger_attack_set; // actor in this frame that triggers attack
+    std::unordered_set<Actor*> rendering_attack_actors_set; // actor that triggered attack and need update management
     //Point camera; // Camera following the main actor
     glm::ivec2 mapSize; // x_resolution and y_resolution of the map
     glm::ivec2 viewSize;
@@ -334,6 +336,7 @@ public:
         std::vector<GameIncident> incidents;
         updateDialoguesCollision(incidents, &dialogue_queue);
         updateDialoguesTrigger(incidents, &dialogue_queue);
+        updateHurtAndAttackView();
         // render diaglogues in dialogue_queue 
         for (size_t i=0; i<dialogue_queue.size(); i++){
             text_to_render.emplace_back( dialogue_queue[i], 25, window_size.y - 50 - 50* (dialogue_queue.size()-1 -i));
@@ -579,6 +582,8 @@ public:
                     } else if (actor->nearby_incident == GameIncident::NextScene){
                         next_scene_name = actor->nearby_scene;
                     } 
+
+                    // TODO deal with hurt renderer
                     //dialogue_ss<<actor->nearby_dialogue<<"\n";
                 }
                 break;
@@ -610,9 +615,49 @@ public:
                 if (actor.nearby_dialogue != "" && actor.nearby_incident != GameIncident::NextScene){
                     dialogue_queue->push_back(actor.nearby_dialogue);
                 }
+                if (actor.nearby_incident == GameIncident::HealthDown){
+                    trigger_attack_set.insert(&actor);
+                }
                 
             }
         }
+    }
+
+    void updateHurtAndAttackView(){
+        bool mainActorHurted = false;
+        if (mainActor->has_view_image_damage && mainActor->damage_view_duration_frames > 0){
+            mainActor->damage_view_duration_frames -= 1;
+        }
+        for (Actor* actor: rendering_attack_actors_set){
+            actor->attack_view_duration_frames -= 1;
+            if (actor->attack_view_duration_frames <= 0){
+                rendering_attack_actors_set.erase(actor);
+            }
+        }
+        for (Actor* actor: collision_sets[mainActor->id]){
+            if (actor->contact_incident == GameIncident::HealthDown){
+                // TODO update actor view to hurt image
+                if (actor->canSetAttackView()){
+                    actor->setAttackViewDuration();
+                    rendering_attack_actors_set.insert(actor);
+                }
+                mainActorHurted = true;
+            }
+        }
+        for (Actor* actor: trigger_attack_set){
+            if (actor->nearby_incident == GameIncident::HealthDown){
+                // TODO update actor view to hurt image
+                if (actor->canSetAttackView()){
+                    actor->setAttackViewDuration();
+                    rendering_attack_actors_set.insert(actor);
+                }
+                mainActorHurted = true;
+            }
+        }
+        if (mainActorHurted && mainActor->canSetDamageView()){
+            mainActor->setDamageViewDuration();
+        }
+
     }
 
     //void dialogueRender(){
@@ -638,6 +683,8 @@ public:
         for (auto& collision_set : collision_sets) {
             collision_set.clear();
         }
+        // clear trigger sets
+        trigger_attack_set.clear();
     }
 
     void gameLoop() {
@@ -706,8 +753,8 @@ public:
                         renderActor, camera, zoom_factor, Helper::GetFrameNumber()
                     );
                     // Visualize box collider if actor has one
-                    visualizeBox(ren, renderActor->transform_position, renderActor->box_collider, camera, zoom_factor);
-                    visualizeBox(ren, renderActor->transform_position, renderActor->box_trigger, camera, zoom_factor, SDL_Color{0, 255, 0, 255});
+                    //visualizeBox(ren, renderActor->transform_position, renderActor->box_collider, camera, zoom_factor);
+                    //visualizeBox(ren, renderActor->transform_position, renderActor->box_trigger, camera, zoom_factor, SDL_Color{0, 255, 0, 255});
                 }
             }
         }
