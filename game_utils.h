@@ -40,7 +40,8 @@ enum class ContactType {
 enum class AudioState {
     Not_Started,
     Playing,
-    Stopped
+    Stopped,
+    None
 };
 
 #include <regex>
@@ -127,7 +128,6 @@ public:
     bool has_box_collider;
     bool has_box_trigger;
 
-    bool view_dir_right = true; // right is default
     bool view_dir_down = true; // down is default
    
 

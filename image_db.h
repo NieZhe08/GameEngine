@@ -167,7 +167,7 @@ public:
         bool flip_y = actor->flip_y;
         if (x_scale_actor_flipping_on_movement) {
             // do something!
-            flip_x = (!actor->view_dir_right);
+            // do nothing, we have already change flip_x inplace.
         }
         if (flip_x && flip_y) {
             f = static_cast<SDL_RendererFlip>(SDL_FLIP_HORIZONTAL | SDL_FLIP_VERTICAL);

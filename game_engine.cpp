@@ -59,11 +59,15 @@ public:
     Mix_Chunk* scene_bgm_chunk; // Game Scene BGM chunk
     Mix_Chunk* gamewin_bgm_chunk; // Game Win BGM chunk
     Mix_Chunk* gamelose_bgm_chunk; // Game Lose BGM chunk
-    
+    AudioState intro_bgm_states = AudioState::Not_Started;
+    AudioState scene_bgm_states = AudioState::Not_Started;
+    AudioState gamewin_bgm_states = AudioState::Not_Started;
+    AudioState gamelose_bgm_states = AudioState::Not_Started;
+
     // Intro Animation Stage variables
     size_t image_idx = 0;
     size_t text_idx = 0;
-    AudioState intro_bgm_states = AudioState::Not_Started;
+    
     std::unique_ptr<std::vector<std::string>> intro_image;
     std::unique_ptr<std::vector<std::string>> intro_text;
     std::vector<ImageRenderConfig> images_to_render; // Queue of images to render each frame
@@ -71,7 +75,7 @@ public:
 
     // Game Scene Wise Variables
     // Call when states == GameState::Ongoing, update when GameState::NextScene
-    AudioState scene_bgm_states = AudioState::Not_Started;
+    
     glm::vec2 camera = glm::vec2(0,0); // Camera following the main actor
     // HUD and decisive game variables
     int health = 3;
@@ -88,8 +92,7 @@ public:
     bool x_scale_actor_flipping_on_movement = false; // Whether to flip actor's x scale when moving in opposite horizontal direction, can be set in config
 
     //Ending Game Stage variables
-    AudioState gamewin_bgm_states = AudioState::Not_Started;
-    AudioState gamelose_bgm_states = AudioState::Not_Started;
+    
     std::string gamewin_image = "";
     std::string gamelose_image = "";
     bool has_gameend_stage = false; // Flag to indicate if there is a separate game end stage (with its own image and BGM) after winning or losing
@@ -388,9 +391,9 @@ public:
         }
         if (x_scale_actor_flipping_on_movement){
             if (playerSpeed.x > 0) {
-                actor_ptr->view_dir_right = true;
+                actor_ptr->flip_x = false;
             } else if (playerSpeed.x < 0) {
-                actor_ptr->view_dir_right = false;
+                actor_ptr->flip_x = true;
             }
         }
     }
