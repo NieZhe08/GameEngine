@@ -153,13 +153,16 @@ public:
             return;
         }
 
+        float tex_width = 0.0f, tex_height = 0.0f;
+        Helper::SDL_QueryTexture(tex,  &tex_width, &tex_height);
+
         glm::vec2 bouncing_offset = (actor->movement_bounce_enabled && actor->velocity != glm::vec2(0,0)) ? 
             glm::vec2(0.0f, 10.0f * - glm::abs(std::sin(frame_number * 0.15f))) : glm::vec2(0.0f, 0.0f);
         SDL_FRect dst_rect = {
                             (actor->transform_position.x) * 100 * zoom_factor + cam.x - (actor->view_pivot_offset.x * actor->transform_scale.x)*zoom_factor + bouncing_offset.x, 
                             (actor->transform_position.y) * 100 * zoom_factor + cam.y - (actor->view_pivot_offset.y * actor->transform_scale.y)*zoom_factor + bouncing_offset.y,
-                            (actor->tex_size.x * actor->transform_scale.x)*zoom_factor,
-                            (actor->tex_size.y * actor->transform_scale.y)*zoom_factor
+                            (tex_width * actor->transform_scale.x)*zoom_factor,
+                            (tex_height * actor->transform_scale.y)*zoom_factor
                         };
         
         SDL_RendererFlip f;
