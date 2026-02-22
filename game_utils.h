@@ -127,7 +127,7 @@ public:
     AudioInfo dialogue_info;
 
     // for optimization
-    glm::vec2 tex_size;
+    glm::vec2 tex_size; 
    
 
 	Actor(std::string actor_name, int id, glm::vec2 _transform_position,
