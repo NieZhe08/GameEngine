@@ -637,7 +637,7 @@ public:
                 actor.transform_position, actor.box_trigger, ren, camera, zoom_factor, false))
             { 
                 if (actor.nearby_dialogue.empty()) continue;
-                actor.dialogue_info.play(&audioManager);
+                if (actor.dialogue_info.audio_state == AudioState::Not_Started) actor.dialogue_info.play(&audioManager);
                 checkGameIncidents(&actor, allIncidents, ContactType::Nearby);
                 if (actor.nearby_dialogue != "" && actor.nearby_incident != GameIncident::NextScene){
                     dialogue_queue->push_back(actor.nearby_dialogue);

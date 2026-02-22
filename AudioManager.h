@@ -130,11 +130,7 @@ class AudioInfo{
             }
             
             if (audio_state == AudioState::Playing) {
-                if (!::Mix_Playing(channel)){
-                    audio_state = AudioState::Stopped;
-                } else {
-                    return; // already playing
-                }
+                return;
             }
 
             if (channelBaseOnFrame){
