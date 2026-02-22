@@ -125,6 +125,9 @@ public:
     bool view_dir_down = true; // down is default
 
     AudioInfo dialogue_info;
+
+    // for optimization
+    glm::vec2 tex_size;
    
 
 	Actor(std::string actor_name, int id, glm::vec2 _transform_position,
@@ -137,7 +140,8 @@ public:
         bool _movement_bounce_enabled, 
         float bcw, float bch, 
         float btw, float bth,
-        std::string dialogue_audio_path) : 
+        std::string dialogue_audio_path,
+        glm::vec2 _tex_size) : 
 
         actor_name(actor_name), id(id), transform_position(_transform_position),
         velocity(_velocity), 
@@ -153,7 +157,8 @@ public:
         movement_bounce_enabled(_movement_bounce_enabled),
         box_collider(bcw, bch), box_trigger(btw, bth),
         has_box_collider(bcw > 0 && bch > 0), has_box_trigger(btw > 0 && bth > 0),
-        dialogue_info(dialogue_audio_path, false)
+        dialogue_info(dialogue_audio_path, false),
+        tex_size(_tex_size)
         {
             nearby_incident = checkGameIncidents(nearby_dialogue);
             contact_incident = checkGameIncidents(contact_dialogue);
@@ -260,8 +265,7 @@ static inline void visualizeBox (SDL_Renderer* renderer, glm::vec2 center, glm::
     SDL_RenderDrawRectF(renderer, &rect); // Draw outline
 }
 
-inline bool checkAABB(glm::vec2 ctr1, glm::vec2 box1, glm::vec2 ctr2, glm::vec2 box2,
-    SDL_Renderer* renderer = nullptr, glm::vec2 camera = glm::vec2(0,0), float zoom_factor = 1.0f, bool visualize = false) {
+inline bool checkAABB(glm::vec2 ctr1, glm::vec2 box1, glm::vec2 ctr2, glm::vec2 box2) {
     // box1 and box2 are width and height, not half-width and half-height
     // Perform collision detection in world space (no transform) to avoid precision loss
     

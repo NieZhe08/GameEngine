@@ -464,7 +464,7 @@ public:
             if (&other_actor == actor_ptr) continue; // Skip self
             if (other_actor.has_box_collider == false) continue; // If the other actor doesn't have a box collider, skip collision detection
             if (checkAABB(pos, actor_ptr->box_collider, 
-                other_actor.transform_position, other_actor.box_collider, ren, camera, zoom_factor, false)
+                other_actor.transform_position, other_actor.box_collider)
                 ){ // Visualize collision boxes for debugging
                 // Add the collided actor to the collision set of the current actor
                 collision_sets[actor_ptr->id].insert(&other_actor);
@@ -634,7 +634,7 @@ public:
         for (Actor& actor : *actorList){
             if (actor.has_box_trigger == false) continue; // If the actor doesn't have a box trigger, skip
             if (checkAABB(mainActor->transform_position, mainActor->box_trigger, 
-                actor.transform_position, actor.box_trigger, ren, camera, zoom_factor, false))
+                actor.transform_position, actor.box_trigger))
             { 
                 if (actor.nearby_dialogue.empty()) continue;
                 if (actor.dialogue_info.audio_state == AudioState::Not_Started) actor.dialogue_info.play(&audioManager);
@@ -765,9 +765,12 @@ public:
             
             if (actorList) {
                 std::priority_queue<Actor*, std::vector<Actor*>, ActorRenderComparator> renderQueue;
+                SDL_FRect window = {0, 0, static_cast<float>(window_size.x), static_cast<float>(window_size.y)};
                 for (Actor& actor : *actorList) {
                     if (actor.has_view_image) {// TODO more effecient way to do 
-                        renderQueue.push(&actor);
+                        if (imageDB->isInScreen(&actor, window, camera, zoom_factor)){
+                            renderQueue.push(&actor);
+                        }
                         //std::cout<<"rendering actor "<<actor.actor_name<<" at position "<<actor.transform_position.x<<","<<actor.transform_position.y<<"\n";
                     }   
                 }
@@ -778,8 +781,8 @@ public:
                         renderActor, camera, zoom_factor, Helper::GetFrameNumber()
                     );
                     // Visualize box collider if actor has one
-                    visualizeBox(ren, renderActor->transform_position, renderActor->box_collider, camera, zoom_factor);
-                    visualizeBox(ren, renderActor->transform_position, renderActor->box_trigger, camera, zoom_factor, SDL_Color{0, 255, 0, 255});
+                    //visualizeBox(ren, renderActor->transform_position, renderActor->box_collider, camera, zoom_factor);
+                    //visualizeBox(ren, renderActor->transform_position, renderActor->box_trigger, camera, zoom_factor, SDL_Color{0, 255, 0, 255});
                 }
             }
         }

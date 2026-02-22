@@ -12,6 +12,8 @@
 #include "rapidjson/document.h"
 #include "glm/glm.hpp"
 #include "unordered_map"
+#include "game_utils.h"
+#include "Helper.h"
 
 class ImageDB {
     rapidjson::Document game;
@@ -150,16 +152,14 @@ public:
             std::cout << "error: renderImageEx cache texture is null for " << image_to_render << "\n";
             return;
         }
-        float tex_w = 0.0f, tex_h = 0.0f;
-        Helper::SDL_QueryTexture(tex, &tex_w, &tex_h);
 
         glm::vec2 bouncing_offset = (actor->movement_bounce_enabled && actor->velocity != glm::vec2(0,0)) ? 
             glm::vec2(0.0f, 10.0f * - glm::abs(std::sin(frame_number * 0.15f))) : glm::vec2(0.0f, 0.0f);
         SDL_FRect dst_rect = {
                             (actor->transform_position.x) * 100 * zoom_factor + cam.x - (actor->view_pivot_offset.x * actor->transform_scale.x)*zoom_factor + bouncing_offset.x, 
                             (actor->transform_position.y) * 100 * zoom_factor + cam.y - (actor->view_pivot_offset.y * actor->transform_scale.y)*zoom_factor + bouncing_offset.y,
-                            (tex_w * actor->transform_scale.x)*zoom_factor,
-                            (tex_h * actor->transform_scale.y)*zoom_factor
+                            (actor->tex_size.x * actor->transform_scale.x)*zoom_factor,
+                            (actor->tex_size.y * actor->transform_scale.y)*zoom_factor
                         };
         
         SDL_RendererFlip f;
@@ -189,6 +189,19 @@ public:
         }
         cache.clear();
         image_index_map.clear();
+    }
+
+    bool isInScreen(Actor* actor, SDL_FRect window_rect, glm::vec2 cam, float zoom_factor) {
+        glm::vec2 bouncing_offset = (actor->movement_bounce_enabled && actor->velocity != glm::vec2(0,0)) ? 
+            glm::vec2(0.0f, 10.0f * - glm::abs(std::sin(Helper::GetFrameNumber() * 0.15f))) : glm::vec2(0.0f, 0.0f);
+        SDL_FRect dst_rect = {
+                            (actor->transform_position.x) * 100 * zoom_factor + cam.x - (actor->view_pivot_offset.x * actor->transform_scale.x)*zoom_factor + bouncing_offset.x, 
+                            (actor->transform_position.y) * 100 * zoom_factor + cam.y - (actor->view_pivot_offset.y * actor->transform_scale.y)*zoom_factor + bouncing_offset.y,
+                            (actor->tex_size.x * actor->transform_scale.x)*zoom_factor,
+                            (actor->tex_size.y * actor->transform_scale.y)*zoom_factor
+                        };
+        return checkAABB(glm::vec2(dst_rect.x + dst_rect.w/2, dst_rect.y + dst_rect.h/2), glm::vec2(dst_rect.w, dst_rect.h), 
+        glm::vec2(window_rect.x + window_rect.w/2, window_rect.y + window_rect.h/2), glm::vec2(window_rect.w, window_rect.h));
     }
 
 };

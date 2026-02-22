@@ -91,6 +91,7 @@ public:
                     float box_trigger_width = 0.0f;
                     float box_trigger_height = 0.0f;
                     std::string nearby_dialogue_sfx = "";
+                    glm::vec2 tex_size = glm::vec2(0.0f, 0.0f);
                     //int vel_x = 0;
                     //int vel_y = 0;
                     //bool blocking = false;
@@ -103,6 +104,7 @@ public:
                         actor_name = actorTemplate.getName();
                         view_str = actorTemplate.getViewImage();
                         view_pivot_offset = setDefaultPivotForValidTexture(view_str);
+                        tex_size =  view_pivot_offset *glm::vec2(2,2); // default collider size based on texture size, can be overridden by template or scene
                         view_back_str = actorTemplate.getViewImageBack();
                         transform_position.x = actorTemplate.getTransformPositionX();
                         transform_position.y = actorTemplate.getTransformPositionY();
@@ -144,6 +146,7 @@ public:
                             view_pivot_offset.x = (tex_width) / 2.0f; // default pivot at center of the image
                             view_pivot_offset.y = (tex_height) / 2.0f;
                             //updateLargestTextureSize(tex_width * transform_scale.x, tex_height * transform_scale.y);
+                            tex_size = glm::vec2(tex_width, tex_height);
                         }
                     }
                     if (actor.HasMember("view_image_back")){
@@ -220,7 +223,8 @@ public:
                         movement_bounce_enabled,
                         box_collider_width, box_collider_height,
                         box_trigger_width, box_trigger_height,
-                        nearby_dialogue_sfx
+                        nearby_dialogue_sfx,
+                        tex_size
                         );
 
                     // store the index of the just-emplaced actor into mapHash
