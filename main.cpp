@@ -5,14 +5,14 @@
 #include <iostream>
 
 int main(int argc, char* argv[]) {
-    //auto start = std::chrono::high_resolution_clock::now();
+    auto start = std::chrono::high_resolution_clock::now();
     
     GameEngine game;
     game.gameLoop();
     
-    //auto end = std::chrono::high_resolution_clock::now();
-    //auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-    //std::cout << "Game runtime: " << duration.count() << " ms (" << duration.count() / 1000.0 << " s)" << std::endl;
+    auto end = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    std::cout << "Game runtime: " << duration.count() << " ms (" << duration.count() / 1000.0 << " s)" << std::endl;
     
     return 0;
 }

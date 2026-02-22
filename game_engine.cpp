@@ -319,13 +319,13 @@
             }
             // collision detection only worry about whether collision happens between actor itself and others
             updateActorRenderDirection(vel, &actor);
-            if (!hasMoved) continue; // skip the following steps if the actor has not moved
+            //if (!hasMoved) continue; // skip the following steps if the actor has not moved
             if (!collisionDetected(nextPosition, &actor)){// need to update mapHash
                 // remove the actor's index from its old cell
+                moveActorToNewSpatialHash(&actor, nextPosition);
                 actor.transform_position = nextPosition;
                 actor.velocity = vel; // Update velocity to the new velocity after collision check, so that the actor will stop immediately when colliding with others instead of going through them for one more frame
                 //std::cout<<"Actor "<<actor.actor_name<<" moves to ("<<actor.transform_position.x<<", "<<actor.transform_position.y<<")"<<std::endl;
-                moveActorToNewSpatialHash(&actor, nextPosition);
             } else {
                 actor.velocity = -actor.velocity; // Reverse direction on collision
                 // would be a problem for main actor
@@ -398,6 +398,9 @@
             //    have_collision = true;
             //}
         glm::ivec2 center_cell = worldToCell(pos, spatial_hash_cell_size);
+        //if (Helper::GetFrameNumber() % 60 == 0 || true){
+        //    std::cout<<"Checking collision for Actor "<<actor_ptr->actor_name<<" at cell ("<<center_cell.x<<", "<<center_cell.y<<") in spatial hash cell ("<<center_cell.x<<", "<<center_cell.y<<") with "<<collision_sets[actor_ptr->id].size()<<" collisions already detected this frame.\n";
+        //}
         for (int i = -1; i <= 1; i++) {
             for (int j = -1; j <= 1; j++) {
                 glm::ivec2 check_cell = center_cell + glm::ivec2(i, j);
@@ -595,8 +598,41 @@
                     attack_on_this_frame_set.insert(&actor);
                 }
                 
-            }
+           }
         }
+
+        //for (Actor& actor : *actorList){
+        //    if (actor.has_box_trigger == false) continue; 
+        //    glm::ivec2 center_cell = worldToCell(actor.transform_position, spatial_hash_cell_size);
+        //    for (int i = -1; i <= 1; i++) {
+        //        for (int j = -1; j <= 1; j++) {
+        //            glm::ivec2 check_cell = center_cell + glm::ivec2(i, j);
+        //            auto it = spatial_hash.find(check_cell);
+        //            if (it != spatial_hash.end()) {
+        //                for (Actor* other_actor_ptr : it->second) {
+        //                    //std::cout<<"spatial hash cell contents"<<it->second.size()<<"\n";
+        //                    if (!other_actor_ptr) continue;
+        //                    if (other_actor_ptr == &actor) continue; // Skip self
+        //                    if (other_actor_ptr->has_box_collider == false) continue; // If the other actor doesn't have a box collider, skip collision detection
+        //                    if (checkAABB(actor.transform_position, actor.box_trigger, 
+        //                        other_actor_ptr->transform_position, other_actor_ptr->box_trigger)
+        //                        ){ 
+        //                            if (actor.nearby_dialogue.empty()) continue;
+        //                            if (actor.dialogue_info.audio_state == AudioState::Not_Started) actor.dialogue_info.play(&audioManager);
+        //                            checkGameIncidents(&actor, allIncidents, ContactType::Nearby);
+        //                            if (actor.nearby_dialogue != "" && actor.nearby_incident != GameIncident::NextScene){
+        //                                dialogue_queue->push_back(actor.nearby_dialogue);
+        //                            }
+        //                            if (actor.nearby_incident == GameIncident::HealthDown){
+        //                                attack_on_this_frame_set.insert(&actor);
+        //                            }
+        //                        }
+        //                }
+        //            }
+        //        }
+        //    }
+        //}
+
     }
 
     void GameEngine::updateHurtAndAttackView(){
