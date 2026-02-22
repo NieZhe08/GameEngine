@@ -137,7 +137,8 @@ class AudioInfo{
             if (result == -1){
                 std::cout << "error: failed to play audio for path " << audio_path << "\n";
             } else {
-                audio_state = AudioState::Playing;
+                if (does_loop) audio_state = AudioState::Playing;
+                else audio_state = AudioState::Stopped; // if not looping, consider it stopped after play
             }
         }
 
@@ -145,7 +146,8 @@ class AudioInfo{
             if (audio_number == -1) {
                 return;
             }
-            int result = manager->HaltChannel(channel);
+            int result = 0;
+            if (audio_state == AudioState::Playing) int result = manager->HaltChannel(channel);
             if (result == -1){
                 std::cout << "error: failed to halt audio for path " << audio_path << "\n";
             } else {

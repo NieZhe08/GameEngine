@@ -165,8 +165,8 @@ public:
                 imageDB -> loadImage(gamelose_image);
             }
             has_gameend_stage = !gamewin_image.empty() || !gamelose_image.empty();
-            gamewin_bgm_info = AudioInfo(parser.getGameWinBGM(), true, &audioManager, 0);
-            gamelose_bgm_info = AudioInfo(parser.getGameLoseBGM(), true, &audioManager, 0);
+            gamewin_bgm_info = AudioInfo(parser.getGameWinBGM(), false, &audioManager, 0);
+            gamelose_bgm_info = AudioInfo(parser.getGameLoseBGM(), false, &audioManager, 0);
 
         } else {
             states = GameState::Ongoing; // Load next scene directly without intro animation
@@ -303,9 +303,11 @@ public:
         //    bgm_state = AudioState::Playing;
         //} 
         if (win){
-            gamewin_bgm_info.play(&audioManager);
+            if (gamewin_bgm_info.audio_state == AudioState::Not_Started)
+                gamewin_bgm_info.play(&audioManager);
         } else {
-            gamelose_bgm_info.play(&audioManager);
+            if (gamelose_bgm_info.audio_state == AudioState::Not_Started)
+                gamelose_bgm_info.play(&audioManager);
         }
 
         /* below is a FRAME-WISE update for Intro Animation Stage*/
