@@ -22,6 +22,7 @@ public:
     std::vector<TemplateDB> template_cache;
 
     std::string stepSfx = "";
+    std::string damageSfx = "";
 
     SceneDB (std::string sceneName, 
                 std::unordered_map<std::uint64_t, std::vector<int>>& mapHash,
@@ -216,6 +217,9 @@ public:
                         if (actor.HasMember("step_sfx")){
                             stepSfx = actor["step_sfx"].GetString();
                         }
+                        if (actor.HasMember("damage_sfx")){
+                            damageSfx = actor["damage_sfx"].GetString();
+                        }
                     }
             }
         }
@@ -239,8 +243,12 @@ public:
         return mapSize;
     }
 
-    std::string getStepSfx() {
+    std::string getStepSFX() {
         return stepSfx;
+    }
+
+    std::string getDamageSFX() {
+        return damageSfx;
     }
 
 private:

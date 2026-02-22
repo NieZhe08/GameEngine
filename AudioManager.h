@@ -128,7 +128,14 @@ class AudioInfo{
             if (audio_number == -1) {
                 return;
             }
-            if (audio_state == AudioState::Playing) return; // already playing
+            
+            if (audio_state == AudioState::Playing) {
+                if (!::Mix_Playing(channel)){
+                    audio_state = AudioState::Stopped;
+                } else {
+                    return; // already playing
+                }
+            }
 
             if (channelBaseOnFrame){
                 channel = Helper::GetFrameNumber() % 48 + 2;

@@ -145,8 +145,7 @@ public:
 
             audioManager.Init();
             intro_bgm_info = AudioInfo(parser.getIntroBGM(), true, &audioManager, 0);
-            score_sfx = AudioInfo(parser.getScoreSFX(), false, &audioManager);
-            damage_sfx = AudioInfo(parser.getDamageSFX(), false, &audioManager);
+            score_sfx = AudioInfo(parser.getScoreSFX(), false, &audioManager, 1);
             //step_sfx = AudioInfo(parser.getStepSfx(), false, &
 
 
@@ -205,7 +204,8 @@ public:
         }
         mapSize = sceneDB.getMapSize();
 
-        step_sfx = AudioInfo(sceneDB.getStepSfx(), false, &audioManager);
+        step_sfx = AudioInfo(sceneDB.getStepSFX(), false, &audioManager);
+        damage_sfx = AudioInfo(sceneDB.getDamageSFX(), false, &audioManager);
 
         //if (isInitialLoad){
         //    health = 3;

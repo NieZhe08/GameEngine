@@ -173,13 +173,6 @@ public:
         return ""; // default to no score sfx
     }
 
-    std::string getDamageSFX(){
-        if (game.IsObject() && game.HasMember("damage_sfx")){
-            return game["damage_sfx"].GetString();
-        } 
-        return ""; // default to no damage sfx
-    }
-
 };
 
 #endif
