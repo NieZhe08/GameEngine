@@ -80,6 +80,9 @@ public:
     glm::vec2 spatial_hash_cell_size;
     std::unordered_map<glm::ivec2, std::vector<Actor*>, Ivec2Hash> spatial_hash;
 
+    glm::vec2 spatial_hash_cell_size_trigger;
+    std::unordered_map<glm::ivec2, std::vector<Actor*>, Ivec2HashTrigger> spatial_hash_trigger;
+
     // Constructor and public methods
     GameEngine();
     
@@ -105,6 +108,11 @@ public:
     void removeActorFromSpatialHash(Actor* actor, glm::vec2 worldPos);
     void moveActorToNewSpatialHash(Actor* actor, glm::vec2 newWorldPos);
     void initializeSpatialHash();
+
+    void initializeSpatialHashTrigger();
+    void addActorToSpatialHashTrigger(Actor* actor, glm::vec2 worldPos);
+    void removeActorFromSpatialHashTrigger(Actor* actor, glm::vec2 worldPos);
+    void moveActorToNewSpatialHashTrigger(Actor* actor, glm::vec2 newWorldPos);
 };
 
 #endif // GAME_ENGINE_H

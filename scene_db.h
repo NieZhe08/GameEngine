@@ -24,12 +24,18 @@ public:
     std::string stepSfx = "";
     std::string damageSfx = "";
 
-    glm::vec2 largestTextureSize = glm::vec2(0.0f, 0.0f);
+   
     glm::vec2 largestColliderSize = glm::vec2(0.0f, 0.0f);
+     glm::vec2 largestTriggerSize = glm::vec2(0.0f, 0.0f);
 
     void updateLargestColliderSize(float x, float y){
         if (x > largestColliderSize.x) largestColliderSize.x = x;
         if (y > largestColliderSize.y) largestColliderSize.y = y;
+    }
+
+    void updateLargestTriggerSize(float x, float y){
+        if (x > largestTriggerSize.x) largestTriggerSize.x = x;
+        if (y > largestTriggerSize.y) largestTriggerSize.y = y;
     }
 
     SceneDB (std::string sceneName, 
@@ -205,6 +211,7 @@ public:
                     if (transform_position.x > max_x) max_x = transform_position.x;
                     if (transform_position.y > max_y) max_y = transform_position.y;
                     updateLargestColliderSize(box_collider_width, box_collider_height);
+                    updateLargestTriggerSize(box_trigger_width, box_trigger_height);
                     //char view = (!view_str.empty()) ? view_str[0] : '?';
 
                     sceneActors->emplace_back(actor_name, id_counter++, transform_position, 
@@ -266,6 +273,10 @@ public:
 
     glm::vec2 getLargestColliderSize() {
         return largestColliderSize;
+    }
+
+    glm::vec2 getLargestTriggerSize() {
+        return largestTriggerSize;
     }
 
 private:

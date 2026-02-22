@@ -127,6 +127,9 @@
         spatial_hash_cell_size = sceneDB.getLargestColliderSize();
         //std::cout<<"Spatial Hash Cell Size: "<<spatial_hash_cell_size.x<<" "<<spatial_hash_cell_size.y<<"\n";
         Ivec2Hash::cell_size = spatial_hash_cell_size; // Configure hash function with runtime cell size
+        
+        spatial_hash_cell_size_trigger = sceneDB.getLargestTriggerSize();
+        Ivec2HashTrigger::cell_size = spatial_hash_cell_size_trigger; // Configure hash function for triggers
 
         initializeSpatialHash();
 
@@ -323,6 +326,7 @@
             if (!collisionDetected(nextPosition, &actor)){// need to update mapHash
                 // remove the actor's index from its old cell
                 moveActorToNewSpatialHash(&actor, nextPosition);
+                moveActorToNewSpatialHashTrigger(&actor, nextPosition);
                 actor.transform_position = nextPosition;
                 actor.velocity = vel; // Update velocity to the new velocity after collision check, so that the actor will stop immediately when colliding with others instead of going through them for one more frame
                 //std::cout<<"Actor "<<actor.actor_name<<" moves to ("<<actor.transform_position.x<<", "<<actor.transform_position.y<<")"<<std::endl;
@@ -583,55 +587,55 @@
     }
 
     void GameEngine::updateDialoguesTrigger(std::vector<GameIncident>& allIncidents, std::vector<std::string>* dialogue_queue){ 
-        for (Actor& actor : *actorList){
-            if (actor.has_box_trigger == false) continue; // If the actor doesn't have a box trigger, skip
-            if (checkAABB(mainActor->transform_position, mainActor->box_trigger, 
-                actor.transform_position, actor.box_trigger))
-            { 
-                if (actor.nearby_dialogue.empty()) continue;
-                if (actor.dialogue_info.audio_state == AudioState::Not_Started) actor.dialogue_info.play(&audioManager);
-                checkGameIncidents(&actor, allIncidents, ContactType::Nearby);
-                if (actor.nearby_dialogue != "" && actor.nearby_incident != GameIncident::NextScene){
-                    dialogue_queue->push_back(actor.nearby_dialogue);
-                }
-                if (actor.nearby_incident == GameIncident::HealthDown){
-                    attack_on_this_frame_set.insert(&actor);
-                }
-                
-           }
-        }
-
         //for (Actor& actor : *actorList){
-        //    if (actor.has_box_trigger == false) continue; 
-        //    glm::ivec2 center_cell = worldToCell(actor.transform_position, spatial_hash_cell_size);
-        //    for (int i = -1; i <= 1; i++) {
-        //        for (int j = -1; j <= 1; j++) {
-        //            glm::ivec2 check_cell = center_cell + glm::ivec2(i, j);
-        //            auto it = spatial_hash.find(check_cell);
-        //            if (it != spatial_hash.end()) {
-        //                for (Actor* other_actor_ptr : it->second) {
-        //                    //std::cout<<"spatial hash cell contents"<<it->second.size()<<"\n";
-        //                    if (!other_actor_ptr) continue;
-        //                    if (other_actor_ptr == &actor) continue; // Skip self
-        //                    if (other_actor_ptr->has_box_collider == false) continue; // If the other actor doesn't have a box collider, skip collision detection
-        //                    if (checkAABB(actor.transform_position, actor.box_trigger, 
-        //                        other_actor_ptr->transform_position, other_actor_ptr->box_trigger)
-        //                        ){ 
-        //                            if (actor.nearby_dialogue.empty()) continue;
-        //                            if (actor.dialogue_info.audio_state == AudioState::Not_Started) actor.dialogue_info.play(&audioManager);
-        //                            checkGameIncidents(&actor, allIncidents, ContactType::Nearby);
-        //                            if (actor.nearby_dialogue != "" && actor.nearby_incident != GameIncident::NextScene){
-        //                                dialogue_queue->push_back(actor.nearby_dialogue);
-        //                            }
-        //                            if (actor.nearby_incident == GameIncident::HealthDown){
-        //                                attack_on_this_frame_set.insert(&actor);
-        //                            }
-        //                        }
-        //                }
-        //            }
+        //    if (actor.has_box_trigger == false) continue; // If the actor doesn't have a box trigger, skip
+        //    if (checkAABB(mainActor->transform_position, mainActor->box_trigger, 
+        //        actor.transform_position, actor.box_trigger))
+        //    { 
+        //        if (actor.nearby_dialogue.empty()) continue;
+        //        if (actor.dialogue_info.audio_state == AudioState::Not_Started) actor.dialogue_info.play(&audioManager);
+        //        checkGameIncidents(&actor, allIncidents, ContactType::Nearby);
+        //        if (actor.nearby_dialogue != "" && actor.nearby_incident != GameIncident::NextScene){
+        //            dialogue_queue->push_back(actor.nearby_dialogue);
         //        }
-        //    }
+        //        if (actor.nearby_incident == GameIncident::HealthDown){
+        //            attack_on_this_frame_set.insert(&actor);
+        //        }
+        //        
+        //   }
         //}
+
+        for (Actor& actor : *actorList){
+            if (actor.has_box_trigger == false) continue; 
+            glm::ivec2 center_cell = worldToCell(actor.transform_position, spatial_hash_cell_size_trigger);
+            for (int i = -1; i <= 1; i++) {
+                for (int j = -1; j <= 1; j++) {
+                    glm::ivec2 check_cell = center_cell + glm::ivec2(i, j);
+                    auto it = spatial_hash_trigger.find(check_cell);
+                    if (it != spatial_hash_trigger.end()) {
+                        for (Actor* other_actor_ptr : it->second) {
+                            //std::cout<<"spatial hash cell contents"<<it->second.size()<<"\n";
+                            if (!other_actor_ptr) continue;
+                            if (other_actor_ptr == &actor) continue; // Skip self
+                            if (other_actor_ptr->has_box_trigger == false) continue; // If the other actor doesn't have a box collider, skip collision detection
+                            if (checkAABB(actor.transform_position, actor.box_trigger, 
+                                other_actor_ptr->transform_position, other_actor_ptr->box_trigger)
+                                ){ 
+                                    if (actor.nearby_dialogue.empty()) continue;
+                                    if (actor.dialogue_info.audio_state == AudioState::Not_Started) actor.dialogue_info.play(&audioManager);
+                                    checkGameIncidents(&actor, allIncidents, ContactType::Nearby);
+                                    if (actor.nearby_dialogue != "" && actor.nearby_incident != GameIncident::NextScene){
+                                        dialogue_queue->push_back(actor.nearby_dialogue);
+                                    }
+                                    if (actor.nearby_incident == GameIncident::HealthDown){
+                                        attack_on_this_frame_set.insert(&actor);
+                                    }
+                                }
+                        }
+                    }
+                }
+            }
+        }
 
     }
 
@@ -871,4 +875,37 @@
                 addActorToSpatialHash(&actor, actor.transform_position);
             }
         }
+    }
+
+
+    void GameEngine::initializeSpatialHashTrigger() {
+        spatial_hash_trigger.clear();
+        if (!actorList) return;
+        for (Actor& actor : *actorList){
+            if (actor.has_box_trigger){
+                addActorToSpatialHashTrigger(&actor, actor.transform_position);
+            }
+        }
+    }
+
+    void GameEngine::addActorToSpatialHashTrigger(Actor* actor, glm::vec2 worldPos) {
+        if (!actor || !actorList) return;
+        spatial_hash_trigger[worldToCell(worldPos, spatial_hash_cell_size)].push_back(actor);
+    }
+
+    void GameEngine::removeActorFromSpatialHashTrigger(Actor* actor, glm::vec2 worldPos) {
+        if (!actor || !actorList) return;
+        glm::ivec2 cell = worldToCell(worldPos, spatial_hash_cell_size);
+        auto& cell_actors = spatial_hash_trigger[cell];
+        cell_actors.erase(std::remove(cell_actors.begin(), cell_actors.end(), actor), cell_actors.end());
+    }
+    
+    void GameEngine::moveActorToNewSpatialHashTrigger(Actor* actor, glm::vec2 newWorldPos){
+        if (!actor || !actorList) return;
+        glm::vec2 oldWorldPos = actor->transform_position;
+        if (worldToCell(oldWorldPos, spatial_hash_cell_size) == worldToCell(newWorldPos, spatial_hash_cell_size)){
+            return; // If the actor is still in the same cell, no need to update the spatial hash
+        }
+        removeActorFromSpatialHashTrigger(actor, oldWorldPos);
+        addActorToSpatialHashTrigger(actor, newWorldPos);
     }
