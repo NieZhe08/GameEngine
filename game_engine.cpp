@@ -778,8 +778,8 @@ public:
                         renderActor, camera, zoom_factor, Helper::GetFrameNumber()
                     );
                     // Visualize box collider if actor has one
-                    //visualizeBox(ren, renderActor->transform_position, renderActor->box_collider, camera, zoom_factor);
-                    //visualizeBox(ren, renderActor->transform_position, renderActor->box_trigger, camera, zoom_factor, SDL_Color{0, 255, 0, 255});
+                    visualizeBox(ren, renderActor->transform_position, renderActor->box_collider, camera, zoom_factor);
+                    visualizeBox(ren, renderActor->transform_position, renderActor->box_trigger, camera, zoom_factor, SDL_Color{0, 255, 0, 255});
                 }
             }
         }

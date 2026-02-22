@@ -24,6 +24,19 @@ public:
     std::string stepSfx = "";
     std::string damageSfx = "";
 
+    glm::vec2 largestTextureSize = glm::vec2(0.0f, 0.0f);
+    glm::vec2 largestColliderSize = glm::vec2(0.0f, 0.0f);
+
+    void updateLargestTextureSize(float x, float y){
+        if (x > largestTextureSize.x) largestTextureSize.x = x;
+        if (y > largestTextureSize.y) largestTextureSize.y = y;
+    }
+
+    void updateLargestColliderSize(float x, float y){
+        if (x > largestColliderSize.x) largestColliderSize.x = x;
+        if (y > largestColliderSize.y) largestColliderSize.y = y;
+    }
+
     SceneDB (std::string sceneName, 
                 std::unordered_map<std::uint64_t, std::vector<int>>& mapHash,
             ImageDB* _imageDB) : sceneName(sceneName), imageDB(_imageDB) {
@@ -85,6 +98,8 @@ public:
                     if (actor.HasMember("template")){
                         std::string templateName = actor["template"].GetString();
                         TemplateDB& actorTemplate = getOrCreateTemplate(templateName);
+                        transform_scale.x = actorTemplate.getTransformScaleX();
+                        transform_scale.y = actorTemplate.getTransformScaleY();
                         actor_name = actorTemplate.getName();
                         view_str = actorTemplate.getViewImage();
                         view_pivot_offset = setDefaultPivotForValidTexture(view_str);
@@ -93,8 +108,6 @@ public:
                         transform_position.y = actorTemplate.getTransformPositionY();
                         vel.x = actorTemplate.getVelX();
                         vel.y = actorTemplate.getVelY();
-                        transform_scale.x = actorTemplate.getTransformScaleX();
-                        transform_scale.y = actorTemplate.getTransformScaleY();
                         transform_rotation_degrees = actorTemplate.getTransformRotationDegrees();
                         view_pivot_offset.x = (actorTemplate.getViewPivotOffsetX()==0.0f) ? view_pivot_offset.x : actorTemplate.getViewPivotOffsetX();
                         view_pivot_offset.y = (actorTemplate.getViewPivotOffsetY()==0.0f) ? view_pivot_offset.y : actorTemplate.getViewPivotOffsetY();
@@ -114,6 +127,14 @@ public:
                     }
                     if (actor.HasMember("name")) 
                         actor_name = actor["name"].GetString();
+                    if (actor.HasMember("transform_position_x"))
+                        transform_position.x = actor["transform_position_x"].GetFloat();
+                    if (actor.HasMember("transform_position_y"))
+                        transform_position.y = actor["transform_position_y"].GetFloat();
+                    if (actor.HasMember("transform_scale_x"))
+                        transform_scale.x = actor["transform_scale_x"].GetFloat();
+                    if (actor.HasMember("transform_scale_y"))
+                        transform_scale.y = actor["transform_scale_y"].GetFloat();
                     if (actor.HasMember("view_image")){
                         view_str = actor["view_image"].GetString();
                         if (view_str.length() > 0){
@@ -122,26 +143,21 @@ public:
                             Helper::SDL_QueryTexture(tex,  &tex_width, &tex_height);
                             view_pivot_offset.x = (tex_width) / 2.0f; // default pivot at center of the image
                             view_pivot_offset.y = (tex_height) / 2.0f;
+                            //updateLargestTextureSize(tex_width * transform_scale.x, tex_height * transform_scale.y);
                         }
                     }
                     if (actor.HasMember("view_image_back")){
                         view_back_str = actor["view_image_back"].GetString();
                         if (view_back_str.length() > 0){
-                        imageDB->loadImage(view_back_str);
+                            imageDB->loadImage(view_back_str);
                         }
                     }
-                    if (actor.HasMember("transform_position_x"))
-                        transform_position.x = actor["transform_position_x"].GetFloat();
-                    if (actor.HasMember("transform_position_y"))
-                        transform_position.y = actor["transform_position_y"].GetFloat();
+                    
                     if (actor.HasMember("vel_x"))
                         vel.x = actor["vel_x"].GetFloat();
                     if (actor.HasMember("vel_y"))
                         vel.y = actor["vel_y"].GetFloat();
-                    if (actor.HasMember("transform_scale_x"))
-                        transform_scale.x = actor["transform_scale_x"].GetFloat();
-                    if (actor.HasMember("transform_scale_y"))
-                        transform_scale.y = actor["transform_scale_y"].GetFloat();
+                    
                     if (actor.HasMember("transform_rotation_degrees"))
                         transform_rotation_degrees = actor["transform_rotation_degrees"].GetFloat();
                     if (actor.HasMember("view_pivot_offset_x")){
@@ -262,7 +278,7 @@ private:
         return template_cache.back();
     }
 
-    glm::vec2 setDefaultPivotForValidTexture(const std::string& view_str){
+    glm::vec2 setDefaultPivotForValidTexture(const std::string& view_str, float transform_scale_x = 1.0f, float transform_scale_y = 1.0f) {
         glm::vec2 pivot_offset(0.0f, 0.0f);
         if (view_str.length() > 0){
             SDL_Texture* tex = imageDB->loadImage(view_str);
