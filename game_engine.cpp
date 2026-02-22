@@ -23,98 +23,16 @@
 #include <unordered_set>
 #include <functional>
 #include "AudioManager.h"
+#include "game_engine.h"
 
-class GameEngine {
-public:
-    Actor* mainActor;
-    std::unique_ptr<std::vector<Actor>> actorList;
-    std::vector<std::unordered_set<Actor*>> collision_sets;
-    std::unordered_set<Actor*> attack_on_this_frame_set; // actor in this frame that triggers attack
-    std::unordered_set<Actor*> rendering_attack_actors_set; // actor that triggered attack and need update management
-    glm::ivec2 mapSize; // x_resolution and y_resolution of the map
-    glm::ivec2 viewSize;
-    Input input;
-    // VIEWSIZE: here viewsize refers to viewSize (row, col)
-    
-    std::unordered_map<std::uint64_t, std::vector<int>> mapHash; // TODO would be deleted
-    GameState states;
 
-    // SDL rendering stuff
-    Helper helper;
-    std::string  game_title = "";
-    glm::ivec2 window_size;
-    glm::ivec3 clear_color;
-    SDL_Event event;
-    SDL_Window* win;
-    SDL_Renderer* ren;
 
-    float zoom_factor = 1.0f; // Default zoom factor
-    std::string next_scene_name;
-
-    // Image and Text Helper
-    ImageDB* imageDB;
-    TextDB* textDB;
-    // Audio Helper
-    //AudioDB audioDB;
-    //Mix_Chunk* intro_bgm_chunk; // Intro Animation BGM chunk
-    //Mix_Chunk* scene_bgm_chunk; // Game Scene BGM chunk
-    //Mix_Chunk* gamewin_bgm_chunk; // Game Win BGM chunk
-    //Mix_Chunk* gamelose_bgm_chunk; // Game Lose BGM chunk
-    //AudioState intro_bgm_states = AudioState::Not_Started;
-    //AudioState scene_bgm_states = AudioState::Not_Started;
-    //AudioState gamewin_bgm_states = AudioState::Not_Started;
-    //AudioState gamelose_bgm_states = AudioState::Not_Started;
-
-    // New Version of Audio Management using AudioManager class
-    AudioManager audioManager;
-    AudioInfo intro_bgm_info;
-    AudioInfo scene_bgm_info;
-    AudioInfo gamewin_bgm_info;
-    AudioInfo gamelose_bgm_info;
-    AudioInfo score_sfx;
-    AudioInfo damage_sfx;
-    AudioInfo step_sfx;
-
-    // Intro Animation Stage variables
-    size_t image_idx = 0;
-    size_t text_idx = 0;
-    
-    std::unique_ptr<std::vector<std::string>> intro_image;
-    std::unique_ptr<std::vector<std::string>> intro_text;
-    std::vector<ImageRenderConfig> images_to_render; // Queue of images to render each frame
-    std::vector<TextRenderConfig> text_to_render; // Queue of text to render each frame
-
-    // Game Scene Wise Variables
-    // Call when states == GameState::Ongoing, update when GameState::NextScene
-    
-    glm::vec2 camera = glm::vec2(0,0); // Camera following the main actor
-    // HUD and decisive game variables
-    int health = 3;
-    int score = 0;
-    std::string hp_image = "";
-    float hp_image_width = 0.0f;
-    float hp_image_height = 0.0f;
-    glm::vec2 camera_lift = glm::vec2(0,0); // Additional camera lift applied on top of main actor centering, can be used for effects
-    int coolDownTriggerFrame = -180;
-    bool endingFlag = false; // Flag to indicate if the game is in the ending sequence after winning or losing
-    GameState endingState = GameState::Ongoing; // Store whether the ending sequence is for winning or losing
-    float player_movement_speed = 0.02f;
-    float cam_ease_factor = 1.0f;
-    bool x_scale_actor_flipping_on_movement = false; // Whether to flip actor's x scale when moving in opposite horizontal direction, can be set in config
-
-    //Ending Game Stage variables
-    
-    std::string gamewin_image = "";
-    std::string gamelose_image = "";
-    bool has_gameend_stage = false; // Flag to indicate if there is a separate game end stage (with its own image and BGM) after winning or losing
-    bool gameEndFirstFrame = false;
-
-    GameEngine() {
+    GameEngine::GameEngine() {
         //next_scene_name = "";
         initializeGame();
     }
 
-    void initializeGame(bool isInitialLoad = true) {
+    void GameEngine::initializeGame(bool isInitialLoad) {
         JsonParser parser;
         if (isInitialLoad){
             next_scene_name = parser.getInitialScene();
@@ -177,12 +95,10 @@ public:
         camera = glm::vec2(window_size.x /2.0f, window_size.y /2.0f) + 
                 camera_lift; // Initialize camera to center of the window
 
-        // Clear mapHash before loading new scene to avoid stale actor indices
-        mapHash.clear();
 
         //std::cout<<"Loading scene: "<<next_scene_name<<"\n";
         // load scene module
-        SceneDB sceneDB(next_scene_name, mapHash, imageDB);
+        SceneDB sceneDB(next_scene_name, imageDB);
         actorList = sceneDB.getSceneActors();
         collision_sets.resize(actorList->size()); // Initialize collision sets for the new scene
         if (sceneDB.hasMainActor()){
@@ -207,6 +123,13 @@ public:
         step_sfx = AudioInfo(sceneDB.getStepSFX(), false, &audioManager);
         damage_sfx = AudioInfo(sceneDB.getDamageSFX(), false, &audioManager);
 
+        // Set spatial hash cell size based on largest collider size in the scene for better performance
+        spatial_hash_cell_size = sceneDB.getLargestColliderSize();
+        //std::cout<<"Spatial Hash Cell Size: "<<spatial_hash_cell_size.x<<" "<<spatial_hash_cell_size.y<<"\n";
+        Ivec2Hash::cell_size = spatial_hash_cell_size; // Configure hash function with runtime cell size
+
+        initializeSpatialHash();
+
         //if (isInitialLoad){
         //    health = 3;
         //    score = 0;
@@ -220,7 +143,7 @@ public:
         //frameRender(isInitialLoad);
     }
 
-    void update(){
+    void GameEngine::update(){
         switch (states) {
             case GameState::IntroAnimation:
                 updateIntroAnimation();
@@ -243,7 +166,7 @@ public:
         }
     }
 
-    void updateIntroAnimation() {
+    void GameEngine::updateIntroAnimation() {
         //if (states != GameState::IntroAnimation) return;
         //if (intro_bgm_states == AudioState::Not_Started){
         //    AudioHelper::Mix_PlayChannel(0, intro_bgm_chunk, -1); // Play intro BGM in a loop
@@ -287,7 +210,7 @@ public:
         }
     }
 
-    void updateGameEnd(bool win) {
+    void GameEngine::updateGameEnd(bool win) {
         //if (states != GameState::IntroAnimation) return;
         //if (scene_bgm_states == AudioState::Playing){ 
         //        AudioHelper::Mix_HaltChannel(0);
@@ -323,7 +246,7 @@ public:
         
     }
 
-    void updateOngoing(){
+    void GameEngine::updateOngoing(){
         if (states != GameState::Ongoing) return;
 
         //if (scene_bgm_states == AudioState::Not_Started){
@@ -371,7 +294,7 @@ public:
         }
     }
 
-    void updateActorPositions(glm::vec2 playerSpeed) {
+    void GameEngine::updateActorPositions(glm::vec2 playerSpeed) {
         // Update NPC positions based on their velocities
         if (!actorList) return;
         //bool nonPlayerUpdate = (Helper::GetFrameNumber() &&Helper::GetFrameNumber() % 60 == 0); 
@@ -382,7 +305,9 @@ public:
             if (&actor == mainActor) {
                 vel = playerSpeed;
                 nextPosition = actor.transform_position + playerSpeed;
-                hasMoved = (playerSpeed != glm::vec2(0.0f, 0.0f));
+                if (playerSpeed != glm::vec2(0.0f, 0.0f)){
+                    hasMoved = true;
+                }
             } else {
                 //if (!nonPlayerUpdate) continue; // Only update non-player actors every 60 frames to slow down their movement
                 // Now we update non-player actors every frame
@@ -392,14 +317,15 @@ public:
                 vel = actor.velocity;
                 nextPosition = actor.transform_position + actor.velocity;
             }
-            //if (!hasMoved) continue; // skip the following steps if the actor has not moved
             // collision detection only worry about whether collision happens between actor itself and others
             updateActorRenderDirection(vel, &actor);
+            if (!hasMoved) continue; // skip the following steps if the actor has not moved
             if (!collisionDetected(nextPosition, &actor)){// need to update mapHash
                 // remove the actor's index from its old cell
                 actor.transform_position = nextPosition;
                 actor.velocity = vel; // Update velocity to the new velocity after collision check, so that the actor will stop immediately when colliding with others instead of going through them for one more frame
                 //std::cout<<"Actor "<<actor.actor_name<<" moves to ("<<actor.transform_position.x<<", "<<actor.transform_position.y<<")"<<std::endl;
+                moveActorToNewSpatialHash(&actor, nextPosition);
             } else {
                 actor.velocity = -actor.velocity; // Reverse direction on collision
                 // would be a problem for main actor
@@ -408,7 +334,7 @@ public:
         }
     }
 
-    void updateActorRenderDirection (glm::vec2 playerSpeed, Actor* actor_ptr){
+    void GameEngine::updateActorRenderDirection (glm::vec2 playerSpeed, Actor* actor_ptr){
         if (!actor_ptr) return;
         if (actor_ptr->has_view_image_back){
             if (playerSpeed.y > 0) {
@@ -427,7 +353,7 @@ public:
     }
 
 
-    glm::vec2 updateGameState() { // update main
+    glm::vec2 GameEngine::updateGameState() { // update main
         if (input.GetQuit()) {
             //states = GameState::Lost;
             endingFlag = true;
@@ -456,28 +382,51 @@ public:
         }
     }
 
-    bool collisionDetected(glm::vec2 pos, Actor* actor_ptr) {
+    bool GameEngine::collisionDetected(glm::vec2 pos, Actor* actor_ptr) {
         if (actor_ptr->has_box_collider == false) return false; // If the actor itself doesn't have a box collider, skip collision detection
         bool have_collision = false;
         if (collision_sets[actor_ptr->id].empty() == false) have_collision = true; // If this actor has already been detected to collide with others in this frame, skip further collision detection to optimize performance
-        for (Actor& other_actor : *actorList){
-            if (&other_actor == actor_ptr) continue; // Skip self
-            if (other_actor.has_box_collider == false) continue; // If the other actor doesn't have a box collider, skip collision detection
-            if (checkAABB(pos, actor_ptr->box_collider, 
-                other_actor.transform_position, other_actor.box_collider)
-                ){ // Visualize collision boxes for debugging
-                // Add the collided actor to the collision set of the current actor
-                collision_sets[actor_ptr->id].insert(&other_actor);
-                collision_sets[other_actor.id].insert(actor_ptr);
-                have_collision = true;
+        
+            //if (&other_actor == actor_ptr) continue; // Skip self
+            //if (other_actor.has_box_collider == false) continue; // If the other actor doesn't have a box collider, skip collision detection
+            //if (checkAABB(pos, actor_ptr->box_collider, 
+            //    other_actor.transform_position, other_actor.box_collider)
+            //    ){ // Visualize collision boxes for debugging
+            //    // Add the collided actor to the collision set of the current actor
+            //    collision_sets[actor_ptr->id].insert(&other_actor);
+            //    collision_sets[other_actor.id].insert(actor_ptr);
+            //    have_collision = true;
+            //}
+        glm::ivec2 center_cell = worldToCell(pos, spatial_hash_cell_size);
+        for (int i = -1; i <= 1; i++) {
+            for (int j = -1; j <= 1; j++) {
+                glm::ivec2 check_cell = center_cell + glm::ivec2(i, j);
+                auto it = spatial_hash.find(check_cell);
+                if (it != spatial_hash.end()) {
+                    for (Actor* other_actor_ptr : it->second) {
+                        //std::cout<<"spatial hash cell contents"<<it->second.size()<<"\n";
+                        if (!other_actor_ptr) continue;
+                        if (other_actor_ptr == actor_ptr) continue; // Skip self
+                        if (other_actor_ptr->has_box_collider == false) continue; // If the other actor doesn't have a box collider, skip collision detection
+                        if (checkAABB(pos, actor_ptr->box_collider, 
+                            other_actor_ptr->transform_position, other_actor_ptr->box_collider)
+                            ){ // Visualize collision boxes for debugging
+                            // Add the collided actor to the collision set of the current actor
+                                collision_sets[actor_ptr->id].insert(other_actor_ptr);
+                                collision_sets[other_actor_ptr->id].insert(actor_ptr);
+                                have_collision = true;
+                            }
+                    }
+                }
             }
         }
+        //std::cout<<"has collision: "<<have_collision<<"\n";
         return have_collision;
     }
 
     
-    std::vector<GameIncident> updateDialoguesCollision(std::vector<GameIncident>& allIncidents,
-    std::vector<std::string>* dialogue_queue) {
+    std::vector<GameIncident> GameEngine::updateDialoguesCollision(std::vector<GameIncident>& allIncidents,
+        std::vector<std::string>* dialogue_queue) {
         if (!mainActor) return allIncidents;
         // Update dialogues based on proximity to other actors
         // Use min-heap (std::greater) so that smaller actor IDs are processed first
@@ -557,7 +506,7 @@ public:
         return allIncidents;
     }
 
-    void updateGameIncidents(std::vector<GameIncident>& incidents) {
+    void GameEngine::updateGameIncidents(std::vector<GameIncident>& incidents) {
         if (!mainActor) return;
         for (GameIncident& incident : incidents){
             switch (incident){
@@ -593,7 +542,7 @@ public:
     }
 
     //TO DO check when read in
-    void checkGameIncidents(Actor* actor, std::vector<GameIncident>& allIncidents, ContactType contactType) {
+    void GameEngine::checkGameIncidents(Actor* actor, std::vector<GameIncident>& allIncidents, ContactType contactType) {
         if (!mainActor) return;
         //if (Helper::GetFrameNumber() - coolDownTriggerFrame < 180){ // Cool down period of 3 seconds at 60 FPS to prevent rapid re-triggering of incidents
         //    return;
@@ -630,7 +579,7 @@ public:
         return;
     }
 
-    void updateDialoguesTrigger(std::vector<GameIncident>& allIncidents, std::vector<std::string>* dialogue_queue){ 
+    void GameEngine::updateDialoguesTrigger(std::vector<GameIncident>& allIncidents, std::vector<std::string>* dialogue_queue){ 
         for (Actor& actor : *actorList){
             if (actor.has_box_trigger == false) continue; // If the actor doesn't have a box trigger, skip
             if (checkAABB(mainActor->transform_position, mainActor->box_trigger, 
@@ -650,7 +599,7 @@ public:
         }
     }
 
-     void updateHurtAndAttackView(){
+    void GameEngine::updateHurtAndAttackView(){
         if (!mainActor) return;
 
         bool mainActorHurted = false;
@@ -703,7 +652,7 @@ public:
     //    std::cout<<input_query_message;
     //}
 
-    void postUpdate() {
+    void GameEngine::postUpdate() {
         // Clear collision sets after processing collisions for the current frame
         for (auto& collision_set : collision_sets) {
             collision_set.clear();
@@ -712,7 +661,7 @@ public:
         attack_on_this_frame_set.clear();
     }
 
-    void gameLoop() {
+    void GameEngine::gameLoop() {
         //initializeGame();
         while (states != GameState::Quit) {
             while (Helper::SDL_PollEvent(&event)){
@@ -742,7 +691,7 @@ public:
         imageDB->clearCache();
     }
 
-    void frameRender(bool isInitialRender = false) {// render main
+    void GameEngine::frameRender(bool isInitialRender) {// render main
         (void)isInitialRender;
         //std::cout << "clear color is "<< clear_color.x<< clear_color.y<< clear_color.z<< std::endl;
         SDL_SetRenderDrawColor(ren, clear_color.x, clear_color.y, clear_color.z, 255);
@@ -856,4 +805,34 @@ public:
     //    }
     //}
 
-};
+    void GameEngine::addActorToSpatialHash(Actor* actor, glm::vec2 worldPos) {
+        if (!actor || !actorList) return;
+        spatial_hash[worldToCell(worldPos, spatial_hash_cell_size)].push_back(actor);
+    }
+
+    void GameEngine::removeActorFromSpatialHash(Actor* actor, glm::vec2 worldPos) {
+        if (!actor || !actorList) return;
+        glm::ivec2 cell = worldToCell(worldPos, spatial_hash_cell_size);
+        auto& cell_actors = spatial_hash[cell];
+        cell_actors.erase(std::remove(cell_actors.begin(), cell_actors.end(), actor), cell_actors.end());
+    }
+
+    void GameEngine::moveActorToNewSpatialHash(Actor* actor, glm::vec2 newWorldPos){
+        if (!actor || !actorList) return;
+        glm::vec2 oldWorldPos = actor->transform_position;
+        if (worldToCell(oldWorldPos, spatial_hash_cell_size) == worldToCell(newWorldPos, spatial_hash_cell_size)){
+            return; // If the actor is still in the same cell, no need to update the spatial hash
+        }
+        removeActorFromSpatialHash(actor, oldWorldPos);
+        addActorToSpatialHash(actor, newWorldPos);
+    }
+
+    void GameEngine::initializeSpatialHash() {
+        spatial_hash.clear();
+        if (!actorList) return;
+        for (Actor& actor : *actorList){
+            if (actor.has_box_collider){
+                addActorToSpatialHash(&actor, actor.transform_position);
+            }
+        }
+    }

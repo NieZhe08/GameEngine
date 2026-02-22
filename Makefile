@@ -4,10 +4,10 @@ COMPILER_FLAGS = -O3 -std=c++17 -Wall -Wextra -Wno-deprecated-declarations
 INCLUDE_PATHS = -I./glm -I./SDL2 -I./SDL_image -I./SDL_mixer -I./SDL2_ttf -lSDL2 -lSDL2_image -lSDL2_mixer -lSDL2_ttf  
 
 # Source files
-SOURCE_FILES = main.cpp game_engine.cpp 
+SOURCE_FILES = main.cpp game_engine.cpp
 
 # Object files (automatically generated from source files)
-OBJECT_FILES = main.o game_engine.o 
+OBJECT_FILES = main.o game_engine.o
 
 # Executable name
 EXECUTABLE = game_engine_linux

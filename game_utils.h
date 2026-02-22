@@ -279,8 +279,24 @@ inline bool checkAABB(glm::vec2 ctr1, glm::vec2 box1, glm::vec2 ctr2, glm::vec2 
     return false;
 }
 
+// Hash function for glm::ivec2 to use in unordered_map
+struct Ivec2Hash {
+    // Runtime configurable cell size for spatial hashing
+    static inline glm::vec2 cell_size;
+    
+    std::size_t operator()(const glm::ivec2& v) const {
+        // Combine hash of x and y components using bit shifting and XOR
+        std::size_t h1 = std::hash<int>{}(v.x);
+        std::size_t h2 = std::hash<int>{}(v.y);
+        return h1 ^ (h2 << 1);
+    }
 
+};
 
+inline glm::ivec2 worldToCell(const glm::vec2& worldPos, const glm::vec2& cell_size) {
+        return glm::ivec2(std::floor(worldPos.x / cell_size.x), 
+                          std::floor(worldPos.y / cell_size.y));
+}
 
 
 #endif 

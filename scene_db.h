@@ -27,18 +27,12 @@ public:
     glm::vec2 largestTextureSize = glm::vec2(0.0f, 0.0f);
     glm::vec2 largestColliderSize = glm::vec2(0.0f, 0.0f);
 
-    void updateLargestTextureSize(float x, float y){
-        if (x > largestTextureSize.x) largestTextureSize.x = x;
-        if (y > largestTextureSize.y) largestTextureSize.y = y;
-    }
-
     void updateLargestColliderSize(float x, float y){
         if (x > largestColliderSize.x) largestColliderSize.x = x;
         if (y > largestColliderSize.y) largestColliderSize.y = y;
     }
 
     SceneDB (std::string sceneName, 
-                std::unordered_map<std::uint64_t, std::vector<int>>& mapHash,
             ImageDB* _imageDB) : sceneName(sceneName), imageDB(_imageDB) {
         if (!std::filesystem::exists("resources/scenes/" + sceneName + ".scene")){
             std::cout<<"error: scene "<<sceneName<<" is missing";
@@ -53,10 +47,10 @@ public:
         
         mainActorIndex = -1;
         sceneActors = std::make_unique<std::vector<Actor>>();
-        processSceneActors(mapHash);
+        processSceneActors();
     }
 
-    void processSceneActors(std::unordered_map<std::uint64_t, std::vector<int>>& mapHash) {
+    void processSceneActors() {
         sceneActors->clear();
         int max_x = 0; int max_y = 0;
         int id_counter = 0;
@@ -66,7 +60,6 @@ public:
                 // Reserve capacity to avoid reallocation while taking pointers to elements.
                 sceneActors->reserve(actors.Size());
                 // Reserve mapHash buckets to roughly avoid rehashing when many distinct positions exist.
-                mapHash.reserve(static_cast<size_t>(actors.Size()));
                 for (rapidjson::SizeType i = 0; i < actors.Size(); i++){
                     const rapidjson::Value& actor = actors[i];
                     // default values
@@ -211,6 +204,7 @@ public:
 
                     if (transform_position.x > max_x) max_x = transform_position.x;
                     if (transform_position.y > max_y) max_y = transform_position.y;
+                    updateLargestColliderSize(box_collider_width, box_collider_height);
                     //char view = (!view_str.empty()) ? view_str[0] : '?';
 
                     sceneActors->emplace_back(actor_name, id_counter++, transform_position, 
@@ -229,7 +223,6 @@ public:
 
                     // store the index of the just-emplaced actor into mapHash
                     int actor_index = static_cast<int>(sceneActors->size()) - 1;
-                    mapHash[hashPosition(transform_position)].push_back(actor_index);
 
                     if (actor_name == "player"){
                         //mainActor = &sceneActors->back(); 
@@ -269,6 +262,10 @@ public:
 
     std::string getDamageSFX() {
         return damageSfx;
+    }
+
+    glm::vec2 getLargestColliderSize() {
+        return largestColliderSize;
     }
 
 private:
