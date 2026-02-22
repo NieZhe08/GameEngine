@@ -129,9 +129,12 @@
         Ivec2Hash::cell_size = spatial_hash_cell_size; // Configure hash function with runtime cell size
         
         spatial_hash_cell_size_trigger = sceneDB.getLargestTriggerSize();
-        Ivec2HashTrigger::cell_size = spatial_hash_cell_size_trigger; // Configure hash function for triggers
+        Ivec2HashTrigger::cell_size = spatial_hash_cell_size_trigger; 
+        //std::cout<<"Spatial Hash Cell Size for Triggers: "<<spatial_hash_cell_size_trigger.x<<" "<<spatial_hash_cell_size_trigger.y<<"\n";
+        // Configure hash function for triggers
 
         initializeSpatialHash();
+        initializeSpatialHashTrigger();
 
         //if (isInitialLoad){
         //    health = 3;
@@ -608,16 +611,16 @@
         for (Actor& actor : *actorList){
             if (actor.has_box_trigger == false) continue; 
             glm::ivec2 center_cell = worldToCell(actor.transform_position, spatial_hash_cell_size_trigger);
-            for (int i = -1; i <= 1; i++) {
-                for (int j = -1; j <= 1; j++) {
+            for (int i = -2; i <= 2; i++) {
+                for (int j = -2; j <= 2; j++) {
                     glm::ivec2 check_cell = center_cell + glm::ivec2(i, j);
                     auto it = spatial_hash_trigger.find(check_cell);
                     if (it != spatial_hash_trigger.end()) {
                         for (Actor* other_actor_ptr : it->second) {
-                            //std::cout<<"spatial hash cell contents"<<it->second.size()<<"\n";
                             if (!other_actor_ptr) continue;
                             if (other_actor_ptr == &actor) continue; // Skip self
                             if (other_actor_ptr->has_box_trigger == false) continue; // If the other actor doesn't have a box collider, skip collision detection
+                            //std::cout<<"checking trigger between "<<actor.actor_name<<" and "<<other_actor_ptr->actor_name<<"\n";
                             if (checkAABB(actor.transform_position, actor.box_trigger, 
                                 other_actor_ptr->transform_position, other_actor_ptr->box_trigger)
                                 ){ 
@@ -890,12 +893,12 @@
 
     void GameEngine::addActorToSpatialHashTrigger(Actor* actor, glm::vec2 worldPos) {
         if (!actor || !actorList) return;
-        spatial_hash_trigger[worldToCell(worldPos, spatial_hash_cell_size)].push_back(actor);
+        spatial_hash_trigger[worldToCell(worldPos, spatial_hash_cell_size_trigger)].push_back(actor);
     }
 
     void GameEngine::removeActorFromSpatialHashTrigger(Actor* actor, glm::vec2 worldPos) {
         if (!actor || !actorList) return;
-        glm::ivec2 cell = worldToCell(worldPos, spatial_hash_cell_size);
+        glm::ivec2 cell = worldToCell(worldPos, spatial_hash_cell_size_trigger);
         auto& cell_actors = spatial_hash_trigger[cell];
         cell_actors.erase(std::remove(cell_actors.begin(), cell_actors.end(), actor), cell_actors.end());
     }
@@ -903,7 +906,7 @@
     void GameEngine::moveActorToNewSpatialHashTrigger(Actor* actor, glm::vec2 newWorldPos){
         if (!actor || !actorList) return;
         glm::vec2 oldWorldPos = actor->transform_position;
-        if (worldToCell(oldWorldPos, spatial_hash_cell_size) == worldToCell(newWorldPos, spatial_hash_cell_size)){
+        if (worldToCell(oldWorldPos, spatial_hash_cell_size_trigger) == worldToCell(newWorldPos, spatial_hash_cell_size_trigger)){
             return; // If the actor is still in the same cell, no need to update the spatial hash
         }
         removeActorFromSpatialHashTrigger(actor, oldWorldPos);
