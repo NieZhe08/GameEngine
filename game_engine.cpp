@@ -624,7 +624,8 @@
                                 other_actor_ptr->transform_position, other_actor_ptr->box_trigger)
                                 ){ 
                                     if (other_actor_ptr->nearby_dialogue.empty()) continue;
-                                    if (other_actor_ptr->dialogue_info.audio_state == AudioState::Not_Started) actor.dialogue_info.play(&audioManager);
+                                    if (other_actor_ptr->dialogue_info.audio_state == AudioState::Not_Started) 
+                                        other_actor_ptr->dialogue_info.play(&audioManager);
                                     //std::cout<<"checking trigger between "<<actor.actor_name<<" and "<<other_actor_ptr->actor_name<<"\n";
                                     //std::cout<<"Actor "<<other_actor_ptr->actor_name<<" trigger dialogue: "<<other_actor_ptr->nearby_dialogue<<"\n";
                                     checkGameIncidents(other_actor_ptr, allIncidents, ContactType::Nearby);
