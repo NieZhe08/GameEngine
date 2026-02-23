@@ -39,7 +39,7 @@ public:
 
 	/* The Helper.h function works differently (and thus your program works differently) */
 	/* Depending on whether or not an autograder is testing it. */
-	inline static bool _autograder_mode = true;
+	inline static bool _autograder_mode = false;
 
 	/* One way the autograder gauges success is by comparing your "frames" (renderings) to */
 	/* that of a staff solution program fed the exact same input. These are placed into a "frames" folder. */
