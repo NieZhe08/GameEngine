@@ -263,6 +263,7 @@
 
     void GameEngine::updateOngoing(){
         if (states != GameState::Ongoing) return;
+        static const glm::vec2 zero_vec(0.0f, 0.0f);
 
         //if (scene_bgm_states == AudioState::Not_Started){
         //    AudioHelper::Mix_PlayChannel(0, scene_bgm_chunk, -1); // Play gameplay BGM in a loop
@@ -278,7 +279,7 @@
 
         scene_bgm_info.play(&audioManager);
         if (Helper::GetFrameNumber() % 20 == 0){ // Play step sound effect every 20 frames if the main actor is moving
-            if (mainActor && mainActor->velocity != glm::vec2(0.0f, 0.0f)){
+            if (mainActor && mainActor->velocity != zero_vec){
                 step_sfx.play(&audioManager);
             }
         }
@@ -309,9 +310,10 @@
         }
     }
 
-    void GameEngine::updateActorPositions(glm::vec2 playerSpeed) {
+    void GameEngine::updateActorPositions(const glm::vec2& playerSpeed) {
         // Update NPC positions based on their velocities
         if (!actorList) return;
+        static const glm::vec2 zero_vec(0.0f, 0.0f);
         //bool nonPlayerUpdate = (Helper::GetFrameNumber() &&Helper::GetFrameNumber() % 60 == 0); 
         for (Actor& actor : *actorList){
             glm::vec2 nextPosition;
@@ -320,13 +322,13 @@
             if (&actor == mainActor) {
                 vel = playerSpeed;
                 nextPosition = actor.transform_position + playerSpeed;
-                if (playerSpeed != glm::vec2(0.0f, 0.0f)){
+                if (playerSpeed != zero_vec){
                     hasMoved = true;
                 }
             } else {
                 //if (!nonPlayerUpdate) continue; // Only update non-player actors every 60 frames to slow down their movement
                 // Now we update non-player actors every frame
-                if (actor.velocity != glm::vec2(0.0f,0.0f)){
+                if (actor.velocity != zero_vec){
                     hasMoved = true;
                 }
                 vel = actor.velocity;
@@ -351,7 +353,7 @@
         }
     }
 
-    void GameEngine::updateActorRenderDirection (glm::vec2 playerSpeed, Actor* actor_ptr){
+    void GameEngine::updateActorRenderDirection (const glm::vec2& playerSpeed, Actor* actor_ptr){
         if (!actor_ptr) return;
         if (actor_ptr->has_view_image_back){
             if (playerSpeed.y > 0) {
@@ -371,15 +373,16 @@
 
 
     glm::vec2 GameEngine::updateGameState() { // update main
+        static const glm::vec2 zero_vec(0.0f, 0.0f);
         if (input.GetQuit()) {
             //states = GameState::Lost;
             endingFlag = true;
             endingState = GameState::Quit;
-            return glm::vec2(0.0f, 0.0f);
+            return zero_vec;
         } else { // Only consider non-repeated keydown events for player actions
             //SDL_Keycode key_press = evt.key.keysym.scancode;
             //PlayerAction action = PlayerAction::Invalid;
-            glm::vec2 playerSpeed = glm::vec2(0.0f, 0.0f);
+            glm::vec2 playerSpeed = zero_vec;
             if (input.GetKey(SDL_SCANCODE_UP) || input.GetKey(SDL_SCANCODE_W)) {
                 playerSpeed += glm::vec2(0.0f, -player_movement_speed);
             } 
@@ -392,14 +395,14 @@
             if (input.GetKey(SDL_SCANCODE_RIGHT) || input.GetKey(SDL_SCANCODE_D)) {
                 playerSpeed += glm::vec2(player_movement_speed, 0.0f);
             }
-            if (playerSpeed != glm::vec2(0.0f, 0.0f)){
+            if (playerSpeed != zero_vec){
                 playerSpeed = glm::normalize(playerSpeed) * player_movement_speed; // Normalize diagonal movement to maintain consistent speed
             }
             return playerSpeed;
         }
     }
 
-    bool GameEngine::collisionDetected(glm::vec2 pos, Actor* actor_ptr) {
+    bool GameEngine::collisionDetected(const glm::vec2& pos, Actor* actor_ptr) {
         if (!hasCollision) return false;
         if (actor_ptr->has_box_collider == false) return false; // If the actor itself doesn't have a box collider, skip collision detection
         bool have_collision = false;
@@ -446,9 +449,9 @@
     }
 
     
-    std::vector<GameIncident> GameEngine::updateDialoguesCollision(std::vector<GameIncident>& allIncidents,
+    void GameEngine::updateDialoguesCollision(std::vector<GameIncident>& allIncidents,
         std::vector<std::string>* dialogue_queue) {
-        if (!mainActor) return allIncidents;
+        if (!mainActor) return;
         // Update dialogues based on proximity to other actors
         // Use min-heap (std::greater) so that smaller actor IDs are processed first
         //std::priority_queue<int, std::vector<int>, std::greater<int>> actorsToBeDealted;
@@ -523,8 +526,6 @@
         //for (size_t i=0; i<dialogue_queue.size(); i++){
         //    text_to_render.emplace_back( dialogue_queue[i], 25, window_size.y - 50 - 50* (dialogue_queue.size()-1 -i));
         //}
-        
-        return allIncidents;
     }
 
     void GameEngine::updateGameIncidents(std::vector<GameIncident>& incidents) {
@@ -784,8 +785,7 @@
                 // Add small buffer (±1 cell) to catch actors partially on screen
                 for (int i = window_top_left.x - 1; i <= window_bottom_right.x + 1; i++) {
                     for (int j = window_top_left.y - 1; j <= window_bottom_right.y + 1; j++) {
-                        glm::ivec2 check_cell = glm::ivec2(i, j);
-                        auto it = spatial_hash_window.find(check_cell);
+                        auto it = spatial_hash_window.find(glm::ivec2(i, j));
                         if (it != spatial_hash_window.end()) {
                             for (Actor* actor_ptr : it->second) {
                                 if (!actor_ptr) continue;
@@ -880,22 +880,22 @@
     //    }
     //}
 
-    void GameEngine::addActorToSpatialHash(Actor* actor, glm::vec2 worldPos) {
+    void GameEngine::addActorToSpatialHash(Actor* actor, const glm::vec2& worldPos) {
         if (!actor || !actorList) return;
         spatial_hash[worldToCell(worldPos, spatial_hash_cell_size)].push_back(actor);
     }
 
-    void GameEngine::removeActorFromSpatialHash(Actor* actor, glm::vec2 worldPos) {
+    void GameEngine::removeActorFromSpatialHash(Actor* actor, const glm::vec2& worldPos) {
         if (!actor || !actorList) return;
         glm::ivec2 cell = worldToCell(worldPos, spatial_hash_cell_size);
         auto& cell_actors = spatial_hash[cell];
         cell_actors.erase(std::remove(cell_actors.begin(), cell_actors.end(), actor), cell_actors.end());
     }
 
-    void GameEngine::moveActorToNewSpatialHash(Actor* actor, glm::vec2 newWorldPos){
+    void GameEngine::moveActorToNewSpatialHash(Actor* actor, const glm::vec2& newWorldPos){
         if (!hasCollision) return; // If collision detection is turned off, no need to update spatial hash
         if (!actor || !actorList) return;
-        glm::vec2 oldWorldPos = actor->transform_position;
+        const glm::vec2& oldWorldPos = actor->transform_position;
         if (worldToCell(oldWorldPos, spatial_hash_cell_size) == worldToCell(newWorldPos, spatial_hash_cell_size)){
             return; // If the actor is still in the same cell, no need to update the spatial hash
         }
@@ -922,22 +922,22 @@
         }
     }
 
-    void GameEngine::addActorToSpatialHashTrigger(Actor* actor, glm::vec2 worldPos) {
+    void GameEngine::addActorToSpatialHashTrigger(Actor* actor, const glm::vec2& worldPos) {
         if (!actor || !actorList) return;
         spatial_hash_trigger[worldToCell(worldPos, spatial_hash_cell_size_trigger)].push_back(actor);
     }
 
-    void GameEngine::removeActorFromSpatialHashTrigger(Actor* actor, glm::vec2 worldPos) {
+    void GameEngine::removeActorFromSpatialHashTrigger(Actor* actor, const glm::vec2& worldPos) {
         if (!actor || !actorList) return;
         glm::ivec2 cell = worldToCell(worldPos, spatial_hash_cell_size_trigger);
         auto& cell_actors = spatial_hash_trigger[cell];
         cell_actors.erase(std::remove(cell_actors.begin(), cell_actors.end(), actor), cell_actors.end());
     }
     
-    void GameEngine::moveActorToNewSpatialHashTrigger(Actor* actor, glm::vec2 newWorldPos){
+    void GameEngine::moveActorToNewSpatialHashTrigger(Actor* actor, const glm::vec2& newWorldPos){
         if (!hasNearbyDialogue) return; // If nearby dialogue is turned off, no need to update spatial hash for triggers
         if (!actor || !actorList) return;
-        glm::vec2 oldWorldPos = actor->transform_position;
+        const glm::vec2& oldWorldPos = actor->transform_position;
         if (worldToCell(oldWorldPos, spatial_hash_cell_size_trigger) == worldToCell(newWorldPos, spatial_hash_cell_size_trigger)){
             return; // If the actor is still in the same cell, no need to update the spatial hash
         }
@@ -955,22 +955,22 @@
         }
     }
 
-    void GameEngine::addActorToSpatialHashWindow(Actor* actor, glm::vec2 worldPos) {
+    void GameEngine::addActorToSpatialHashWindow(Actor* actor, const glm::vec2& worldPos) {
         if (!actor || !actorList) return;
         spatial_hash_window[worldToCell(worldPos, spatial_hash_cell_size_window)].push_back(actor);
     }
 
-    void GameEngine::removeActorFromSpatialHashWindow(Actor* actor, glm::vec2 worldPos) {
+    void GameEngine::removeActorFromSpatialHashWindow(Actor* actor, const glm::vec2& worldPos) {
         if (!actor || !actorList) return;
         glm::ivec2 cell = worldToCell(worldPos, spatial_hash_cell_size_window);
         auto& cell_actors = spatial_hash_window[cell];
         cell_actors.erase(std::remove(cell_actors.begin(), cell_actors.end(), actor), cell_actors.end());
     }
     
-    void GameEngine::moveActorToNewSpatialHashWindow(Actor* actor, glm::vec2 newWorldPos){
+    void GameEngine::moveActorToNewSpatialHashWindow(Actor* actor, const glm::vec2& newWorldPos){
         if (!actor || !actorList) return;
         if (!actor->has_view_image) return; // Only track actors with view images
-        glm::vec2 oldWorldPos = actor->transform_position;
+        const glm::vec2& oldWorldPos = actor->transform_position;
         if (worldToCell(oldWorldPos, spatial_hash_cell_size_window) == worldToCell(newWorldPos, spatial_hash_cell_size_window)){
             return; // If the actor is still in the same cell, no need to update the spatial hash
         }

@@ -213,8 +213,7 @@ public:
 
                     if (transform_position.x > max_x) max_x = transform_position.x;
                     if (transform_position.y > max_y) max_y = transform_position.y;
-                    updateLargestColliderSize(box_collider_width, box_collider_height);
-                    updateLargestTriggerSize(box_trigger_width, box_trigger_height);
+                    
 
                     if (box_collider_width > 0.0f && box_collider_height > 0.0f){
                         hasCollision = true;
@@ -223,6 +222,14 @@ public:
                         hasNearbyDialogue = true;
                     }
                     //char view = (!view_str.empty()) ? view_str[0] : '?';
+
+                    box_collider_width *= std::abs(transform_scale.x);
+                    box_collider_height *= std::abs(transform_scale.y);
+                    box_trigger_width *= std::abs(transform_scale.x);
+                    box_trigger_height *= std::abs(transform_scale.y);
+                    //std::cout<<"transform_scale: "<<transform_scale.x<<","<<transform_scale.y<<std::endl;
+                    updateLargestColliderSize(box_collider_width, box_collider_height);
+                    updateLargestTriggerSize(box_trigger_width, box_trigger_height);
 
                     sceneActors->emplace_back(actor_name, id_counter++, transform_position, 
                         vel, 

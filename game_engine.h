@@ -97,11 +97,11 @@ public:
     void updateIntroAnimation();
     void updateGameEnd(bool win);
     void updateOngoing();
-    void updateActorPositions(glm::vec2 playerSpeed);
-    void updateActorRenderDirection(glm::vec2 playerSpeed, Actor* actor_ptr);
+    void updateActorPositions(const glm::vec2& playerSpeed);
+    void updateActorRenderDirection(const glm::vec2& playerSpeed, Actor* actor_ptr);
     glm::vec2 updateGameState();
-    bool collisionDetected(glm::vec2 pos, Actor* actor_ptr);
-    std::vector<GameIncident> updateDialoguesCollision(std::vector<GameIncident>& allIncidents,
+    bool collisionDetected(const glm::vec2& pos, Actor* actor_ptr);
+    void updateDialoguesCollision(std::vector<GameIncident>& allIncidents,
         std::vector<std::string>* dialogue_queue);
     void updateGameIncidents(std::vector<GameIncident>& incidents);
     void checkGameIncidents(Actor* actor, std::vector<GameIncident>& allIncidents, ContactType contactType);
@@ -110,20 +110,20 @@ public:
     void postUpdate();
     void gameLoop();
     void frameRender(bool isInitialRender = false);
-    void addActorToSpatialHash(Actor* actor, glm::vec2 worldPos);
-    void removeActorFromSpatialHash(Actor* actor, glm::vec2 worldPos);
-    void moveActorToNewSpatialHash(Actor* actor, glm::vec2 newWorldPos);
+    void addActorToSpatialHash(Actor* actor, const glm::vec2& worldPos);
+    void removeActorFromSpatialHash(Actor* actor, const glm::vec2& worldPos);
+    void moveActorToNewSpatialHash(Actor* actor, const glm::vec2& newWorldPos);
     void initializeSpatialHash();
 
     void initializeSpatialHashTrigger();
-    void addActorToSpatialHashTrigger(Actor* actor, glm::vec2 worldPos);
-    void removeActorFromSpatialHashTrigger(Actor* actor, glm::vec2 worldPos);
-    void moveActorToNewSpatialHashTrigger(Actor* actor, glm::vec2 newWorldPos);
+    void addActorToSpatialHashTrigger(Actor* actor, const glm::vec2& worldPos);
+    void removeActorFromSpatialHashTrigger(Actor* actor, const glm::vec2& worldPos);
+    void moveActorToNewSpatialHashTrigger(Actor* actor, const glm::vec2& newWorldPos);
 
     void initializeSpatialHashWindow();
-    void addActorToSpatialHashWindow(Actor* actor, glm::vec2 worldPos);
-    void removeActorFromSpatialHashWindow(Actor* actor, glm::vec2 worldPos);
-    void moveActorToNewSpatialHashWindow(Actor* actor, glm::vec2 newWorldPos);
+    void addActorToSpatialHashWindow(Actor* actor, const glm::vec2& worldPos);
+    void removeActorFromSpatialHashWindow(Actor* actor, const glm::vec2& worldPos);
+    void moveActorToNewSpatialHashWindow(Actor* actor, const glm::vec2& newWorldPos);
 };
 
 #endif // GAME_ENGINE_H
