@@ -321,6 +321,18 @@ struct Ivec2HashTrigger {
     }
 };
 
+struct Ivec2HashWindow {
+    // Runtime configurable cell size for spatial hashing (for window-based culling)
+    static inline glm::vec2 cell_size;
+    
+    std::size_t operator()(const glm::ivec2& v) const {
+        // Combine hash of x and y components using bit shifting and XOR
+        std::size_t h1 = std::hash<int>{}(v.x);
+        std::size_t h2 = std::hash<int>{}(v.y);
+        return h1 ^ (h2 << 1);
+    }
+};
+
 inline glm::ivec2 worldToCell(const glm::vec2& worldPos, const glm::vec2& cell_size) {
         return glm::ivec2(std::floor(worldPos.x / cell_size.x), 
                           std::floor(worldPos.y / cell_size.y));

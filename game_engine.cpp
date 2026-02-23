@@ -131,6 +131,10 @@
         spatial_hash_cell_size_trigger = sceneDB.getLargestTriggerSize();
         Ivec2HashTrigger::cell_size = spatial_hash_cell_size_trigger; 
 
+        // Set spatial hash cell size for window-based culling to match window size in world units
+        spatial_hash_cell_size_window = glm::vec2(window_size.x / (100.0f * zoom_factor), window_size.y / (100.0f * zoom_factor));
+        Ivec2HashWindow::cell_size = spatial_hash_cell_size_window;
+
         hasCollision = sceneDB.hasAnyCollision();
         hasNearbyDialogue = sceneDB.hasAnyNearbyDialogue();
 
@@ -139,6 +143,7 @@
 
         initializeSpatialHash();
         initializeSpatialHashTrigger();
+        initializeSpatialHashWindow();
 
         //if (isInitialLoad){
         //    health = 3;
@@ -334,6 +339,7 @@
                 // remove the actor's index from its old cell
                 moveActorToNewSpatialHash(&actor, nextPosition);
                 moveActorToNewSpatialHashTrigger(&actor, nextPosition);
+                moveActorToNewSpatialHashWindow(&actor, nextPosition);
                 actor.transform_position = nextPosition;
                 actor.velocity = vel; // Update velocity to the new velocity after collision check, so that the actor will stop immediately when colliding with others instead of going through them for one more frame
                 //std::cout<<"Actor "<<actor.actor_name<<" moves to ("<<actor.transform_position.x<<", "<<actor.transform_position.y<<")"<<std::endl;
@@ -765,47 +771,40 @@
             
             if (actorList) {
                 std::priority_queue<Actor*, std::vector<Actor*>, ActorRenderComparator> renderQueue;
-                SDL_FRect window = {0, 0, static_cast<float>(window_size.x), static_cast<float>(window_size.y)};
-                //glm::ivec2 window_top_left = worldToCell(mainActor->transform_position - glm::vec2(window_size.x / (2.0f * 100 * zoom_factor), window_size.y / (2.0f * 100 * zoom_factor)), spatial_hash_cell_size);
-                //glm::ivec2 window_bottom_right = worldToCell(mainActor->transform_position + glm::vec2(window_size.x / (2.0f * 100 * zoom_factor), window_size.y / (2.0f * 100 * zoom_factor)), spatial_hash_cell_size);
-
+                
+                // Calculate world coordinates of screen corners
                 glm::vec2 world_top_left = -camera / (100.0f * zoom_factor);
-                // 屏幕右下角对应的世界坐标  
                 glm::vec2 world_bottom_right = (glm::vec2(window_size.x, window_size.y) - camera) / (100.0f * zoom_factor);
 
-                glm::ivec2 window_top_left = worldToCell(world_top_left, spatial_hash_cell_size);
-                glm::ivec2 window_bottom_right = worldToCell(world_bottom_right, spatial_hash_cell_size);
-                //for (Actor& actor : *actorList) {
-                //    if (actor.has_view_image) {// TODO more effecient way to do 
-                //        if (imageDB->isInScreen(&actor, window, camera, zoom_factor)){
-                //            renderQueue.push(&actor);
-                //        }
-                //        //std::cout<<"rendering actor "<<actor.actor_name<<" at position "<<actor.transform_position.x<<","<<actor.transform_position.y<<"\n";
-                //    }   
-                //}
+                // Convert to spatial hash cells using window-based cell size
+                glm::ivec2 window_top_left = worldToCell(world_top_left, spatial_hash_cell_size_window);
+                glm::ivec2 window_bottom_right = worldToCell(world_bottom_right, spatial_hash_cell_size_window);
 
-                for (int i = window_top_left.x - 5; i <= window_bottom_right.x + 5; i++) {
-                    for (int j = window_top_left.y - 5; j <= window_bottom_right.y + 5; j++) {
+                // Iterate through visible cells in the window-based spatial hash
+                // Add small buffer (±1 cell) to catch actors partially on screen
+                for (int i = window_top_left.x - 1; i <= window_bottom_right.x + 1; i++) {
+                    for (int j = window_top_left.y - 1; j <= window_bottom_right.y + 1; j++) {
                         glm::ivec2 check_cell = glm::ivec2(i, j);
-                        auto it = spatial_hash.find(check_cell);
-                        if (it != spatial_hash.end()) {
+                        auto it = spatial_hash_window.find(check_cell);
+                        if (it != spatial_hash_window.end()) {
                             for (Actor* actor_ptr : it->second) {
                                 if (!actor_ptr) continue;
                                 if (actor_ptr->has_view_image) {
                                     renderQueue.push(actor_ptr);
-                                    //std::cout<<"rendering actor "<<actor_ptr->actor_name<<" at position "<<actor_ptr->transform_position.x<<","<<actor_ptr->transform_position.y<<"\n";
                                 }
                             }
                         }
                     }
                 }
+                
+                // Render all visible actors in sorted order
                 while (!renderQueue.empty()){
                     Actor* renderActor = renderQueue.top();
                     renderQueue.pop();
                     imageDB->renderImageEx(
                         renderActor, camera, zoom_factor, Helper::GetFrameNumber()
                     );
-                    // Visualize box collider if actor has one
+                    // Visualize box collider if actor has one (for debugging)
                     //visualizeBox(ren, renderActor->transform_position, renderActor->box_collider, camera, zoom_factor);
                     //visualizeBox(ren, renderActor->transform_position, renderActor->box_trigger, camera, zoom_factor, SDL_Color{0, 255, 0, 255});
                 }
@@ -944,4 +943,37 @@
         }
         removeActorFromSpatialHashTrigger(actor, oldWorldPos);
         addActorToSpatialHashTrigger(actor, newWorldPos);
+    }
+
+    void GameEngine::initializeSpatialHashWindow() {
+        spatial_hash_window.clear();
+        if (!actorList) return;
+        for (Actor& actor : *actorList){
+            if (actor.has_view_image){
+                addActorToSpatialHashWindow(&actor, actor.transform_position);
+            }
+        }
+    }
+
+    void GameEngine::addActorToSpatialHashWindow(Actor* actor, glm::vec2 worldPos) {
+        if (!actor || !actorList) return;
+        spatial_hash_window[worldToCell(worldPos, spatial_hash_cell_size_window)].push_back(actor);
+    }
+
+    void GameEngine::removeActorFromSpatialHashWindow(Actor* actor, glm::vec2 worldPos) {
+        if (!actor || !actorList) return;
+        glm::ivec2 cell = worldToCell(worldPos, spatial_hash_cell_size_window);
+        auto& cell_actors = spatial_hash_window[cell];
+        cell_actors.erase(std::remove(cell_actors.begin(), cell_actors.end(), actor), cell_actors.end());
+    }
+    
+    void GameEngine::moveActorToNewSpatialHashWindow(Actor* actor, glm::vec2 newWorldPos){
+        if (!actor || !actorList) return;
+        if (!actor->has_view_image) return; // Only track actors with view images
+        glm::vec2 oldWorldPos = actor->transform_position;
+        if (worldToCell(oldWorldPos, spatial_hash_cell_size_window) == worldToCell(newWorldPos, spatial_hash_cell_size_window)){
+            return; // If the actor is still in the same cell, no need to update the spatial hash
+        }
+        removeActorFromSpatialHashWindow(actor, oldWorldPos);
+        addActorToSpatialHashWindow(actor, newWorldPos);
     }

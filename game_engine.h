@@ -83,6 +83,9 @@ public:
     glm::vec2 spatial_hash_cell_size_trigger;
     std::unordered_map<glm::ivec2, std::vector<Actor*>, Ivec2HashTrigger> spatial_hash_trigger;
 
+    glm::vec2 spatial_hash_cell_size_window;
+    std::unordered_map<glm::ivec2, std::vector<Actor*>, Ivec2HashWindow> spatial_hash_window;
+
     bool hasCollision = true;
     bool hasNearbyDialogue = true;
 
@@ -116,6 +119,11 @@ public:
     void addActorToSpatialHashTrigger(Actor* actor, glm::vec2 worldPos);
     void removeActorFromSpatialHashTrigger(Actor* actor, glm::vec2 worldPos);
     void moveActorToNewSpatialHashTrigger(Actor* actor, glm::vec2 newWorldPos);
+
+    void initializeSpatialHashWindow();
+    void addActorToSpatialHashWindow(Actor* actor, glm::vec2 worldPos);
+    void removeActorFromSpatialHashWindow(Actor* actor, glm::vec2 worldPos);
+    void moveActorToNewSpatialHashWindow(Actor* actor, glm::vec2 newWorldPos);
 };
 
 #endif // GAME_ENGINE_H
