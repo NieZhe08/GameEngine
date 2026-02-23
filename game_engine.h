@@ -83,6 +83,9 @@ public:
     glm::vec2 spatial_hash_cell_size_trigger;
     std::unordered_map<glm::ivec2, std::vector<Actor*>, Ivec2HashTrigger> spatial_hash_trigger;
 
+    bool hasCollision = true;
+    bool hasNearbyDialogue = true;
+
     // Constructor and public methods
     GameEngine();
     

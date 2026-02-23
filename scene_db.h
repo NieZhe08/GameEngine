@@ -28,6 +28,9 @@ public:
     glm::vec2 largestColliderSize = glm::vec2(0.0f, 0.0f);
      glm::vec2 largestTriggerSize = glm::vec2(0.0f, 0.0f);
 
+    bool hasCollision = false;
+    bool hasNearbyDialogue = false;
+
     void updateLargestColliderSize(float x, float y){
         if (x > largestColliderSize.x) largestColliderSize.x = x;
         if (y > largestColliderSize.y) largestColliderSize.y = y;
@@ -212,6 +215,13 @@ public:
                     if (transform_position.y > max_y) max_y = transform_position.y;
                     updateLargestColliderSize(box_collider_width, box_collider_height);
                     updateLargestTriggerSize(box_trigger_width, box_trigger_height);
+
+                    if (box_collider_width > 0.0f && box_collider_height > 0.0f){
+                        hasCollision = true;
+                    }
+                    if (!nearby_dialogue.empty() && box_trigger_height > 0.0f && box_trigger_width > 0.0f){
+                        hasNearbyDialogue = true;
+                    }
                     //char view = (!view_str.empty()) ? view_str[0] : '?';
 
                     sceneActors->emplace_back(actor_name, id_counter++, transform_position, 
@@ -277,6 +287,14 @@ public:
 
     glm::vec2 getLargestTriggerSize() {
         return largestTriggerSize;
+    }
+
+    bool hasAnyCollision() {
+        return hasCollision;
+    }
+
+    bool hasAnyNearbyDialogue() {
+        return hasNearbyDialogue;
     }
 
 private:

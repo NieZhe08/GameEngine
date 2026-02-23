@@ -144,7 +144,7 @@ public:
 	/* FEATURE : Render Logger */
 	/* Create a "RENDERLOGGER" environmental variable, run your engine, and check render_logger.txt. */
 	/* Use to compare to test case render_logger.txt files to see what goes wrong in your render. */
-	static inline RenderLoggerStatus render_logger_mode = RL_NOT_INITIALIZED;
+	static inline RenderLoggerStatus render_logger_mode = RL_ENABLED;
 	static inline std::ofstream render_logging_file;
 	static void CheckForRenderLoggerInit()
 	{

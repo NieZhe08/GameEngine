@@ -130,6 +130,10 @@
         
         spatial_hash_cell_size_trigger = sceneDB.getLargestTriggerSize();
         Ivec2HashTrigger::cell_size = spatial_hash_cell_size_trigger; 
+
+        hasCollision = sceneDB.hasAnyCollision();
+        hasNearbyDialogue = sceneDB.hasAnyNearbyDialogue();
+
         //std::cout<<"Spatial Hash Cell Size for Triggers: "<<spatial_hash_cell_size_trigger.x<<" "<<spatial_hash_cell_size_trigger.y<<"\n";
         // Configure hash function for triggers
 
@@ -390,6 +394,7 @@
     }
 
     bool GameEngine::collisionDetected(glm::vec2 pos, Actor* actor_ptr) {
+        if (!hasCollision) return false;
         if (actor_ptr->has_box_collider == false) return false; // If the actor itself doesn't have a box collider, skip collision detection
         bool have_collision = false;
         if (collision_sets[actor_ptr->id].empty() == false) have_collision = true; // If this actor has already been detected to collide with others in this frame, skip further collision detection to optimize performance
@@ -607,6 +612,8 @@
         //        
         //   }
         //}
+        if (!mainActor) return;
+        if (!hasNearbyDialogue) return;
             Actor& actor = *mainActor;
             if (actor.has_box_trigger == false) return;
             glm::ivec2 center_cell = worldToCell(actor.transform_position, spatial_hash_cell_size_trigger);
@@ -862,6 +869,7 @@
     }
 
     void GameEngine::moveActorToNewSpatialHash(Actor* actor, glm::vec2 newWorldPos){
+        if (!hasCollision) return; // If collision detection is turned off, no need to update spatial hash
         if (!actor || !actorList) return;
         glm::vec2 oldWorldPos = actor->transform_position;
         if (worldToCell(oldWorldPos, spatial_hash_cell_size) == worldToCell(newWorldPos, spatial_hash_cell_size)){
@@ -905,6 +913,7 @@
     }
     
     void GameEngine::moveActorToNewSpatialHashTrigger(Actor* actor, glm::vec2 newWorldPos){
+        if (!hasNearbyDialogue) return; // If nearby dialogue is turned off, no need to update spatial hash for triggers
         if (!actor || !actorList) return;
         glm::vec2 oldWorldPos = actor->transform_position;
         if (worldToCell(oldWorldPos, spatial_hash_cell_size_trigger) == worldToCell(newWorldPos, spatial_hash_cell_size_trigger)){
