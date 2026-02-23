@@ -223,10 +223,10 @@ public:
                     }
                     //char view = (!view_str.empty()) ? view_str[0] : '?';
 
-                    box_collider_width *= std::abs(transform_scale.x);
-                    box_collider_height *= std::abs(transform_scale.y);
-                    box_trigger_width *= std::abs(transform_scale.x);
-                    box_trigger_height *= std::abs(transform_scale.y);
+                    box_collider_width *= glm::abs(transform_scale.x);
+                    box_collider_height *= glm::abs(transform_scale.y);
+                    box_trigger_width *= glm::abs(transform_scale.x);
+                    box_trigger_height *= glm::abs(transform_scale.y);
                     //std::cout<<"transform_scale: "<<transform_scale.x<<","<<transform_scale.y<<std::endl;
                     updateLargestColliderSize(box_collider_width, box_collider_height);
                     updateLargestTriggerSize(box_trigger_width, box_trigger_height);
