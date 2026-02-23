@@ -3,6 +3,7 @@ game_engine_osx
 *.o
 *.txt
 *Zone.Identifier
+callgrind.out*
 
 build
 **/resources

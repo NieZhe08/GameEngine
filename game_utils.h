@@ -38,17 +38,34 @@ enum class ContactType {
 };
 
 
-#include <regex>
+#include <string>
 #include <optional>
+#include <algorithm>
 
 inline std::optional<std::string> extractProceedTarget(const std::string& input) {
-    std::regex pattern(R"(proceed to (\w+))", std::regex::icase);
-    std::smatch matches;
+    const std::string prefix = "proceed to ";
     
-    if (std::regex_search(input, matches, pattern)) {
-        return matches[1].str();
+    auto it = std::search(
+        input.begin(), input.end(),
+        prefix.begin(), prefix.end(),
+        [](unsigned char ch1, unsigned char ch2) {
+            return std::tolower(ch1) == std::tolower(ch2);
+        }
+    );
+
+    if (it != input.end()) {
+        size_t startPos = std::distance(input.begin(), it) + prefix.length();
+
+        size_t endPos = startPos;
+        while (endPos < input.length() && (std::isalnum(static_cast<unsigned char>(input[endPos])) || input[endPos] == '_')) {
+            endPos++;
+        }
+
+        if (endPos > startPos) {
+            return input.substr(startPos, endPos - startPos);
+        }
     }
-    
+
     return std::nullopt;
 }
 
