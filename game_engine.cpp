@@ -766,8 +766,15 @@
             if (actorList) {
                 std::priority_queue<Actor*, std::vector<Actor*>, ActorRenderComparator> renderQueue;
                 SDL_FRect window = {0, 0, static_cast<float>(window_size.x), static_cast<float>(window_size.y)};
-                glm::ivec2 window_top_left = worldToCell(mainActor->transform_position - glm::vec2(window_size.x / (2.0f * 100 * zoom_factor), window_size.y / (2.0f * 100 * zoom_factor)), spatial_hash_cell_size);
-                glm::ivec2 window_bottom_right = worldToCell(mainActor->transform_position + glm::vec2(window_size.x / (2.0f * 100 * zoom_factor), window_size.y / (2.0f * 100 * zoom_factor)), spatial_hash_cell_size);
+                //glm::ivec2 window_top_left = worldToCell(mainActor->transform_position - glm::vec2(window_size.x / (2.0f * 100 * zoom_factor), window_size.y / (2.0f * 100 * zoom_factor)), spatial_hash_cell_size);
+                //glm::ivec2 window_bottom_right = worldToCell(mainActor->transform_position + glm::vec2(window_size.x / (2.0f * 100 * zoom_factor), window_size.y / (2.0f * 100 * zoom_factor)), spatial_hash_cell_size);
+
+                glm::vec2 world_top_left = -camera / (100.0f * zoom_factor);
+                // 屏幕右下角对应的世界坐标  
+                glm::vec2 world_bottom_right = (glm::vec2(window_size.x, window_size.y) - camera) / (100.0f * zoom_factor);
+
+                glm::ivec2 window_top_left = worldToCell(world_top_left, spatial_hash_cell_size);
+                glm::ivec2 window_bottom_right = worldToCell(world_bottom_right, spatial_hash_cell_size);
                 //for (Actor& actor : *actorList) {
                 //    if (actor.has_view_image) {// TODO more effecient way to do 
                 //        if (imageDB->isInScreen(&actor, window, camera, zoom_factor)){
@@ -777,8 +784,8 @@
                 //    }   
                 //}
 
-                for (int i = window_top_left.x - 8; i <= window_bottom_right.x + 8; i++) {
-                    for (int j = window_top_left.y - 8; j <= window_bottom_right.y + 8; j++) {
+                for (int i = window_top_left.x - 5; i <= window_bottom_right.x + 5; i++) {
+                    for (int j = window_top_left.y - 5; j <= window_bottom_right.y + 5; j++) {
                         glm::ivec2 check_cell = glm::ivec2(i, j);
                         auto it = spatial_hash.find(check_cell);
                         if (it != spatial_hash.end()) {
