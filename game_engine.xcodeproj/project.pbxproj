@@ -572,6 +572,12 @@
 					"$(PROJECT_DIR)/glm",
 					"$(PROJECT_DIR)",
 				);
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(PROJECT_DIR)/SDL_mixer/osx",
+					"$(PROJECT_DIR)/SDL_ttf/osx",
+					"$(PROJECT_DIR)/SDL_image/osx",
+					"$(PROJECT_DIR)/SDL2/osx",
+				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(PROJECT_DIR)/SDL_mixer",
 					"$(PROJECT_DIR)/SDL_image",
@@ -602,6 +608,12 @@
 					"$(PROJECT_DIR)/SDL2",
 					"$(PROJECT_DIR)/glm",
 					"$(PROJECT_DIR)",
+				);
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(PROJECT_DIR)/SDL_mixer/osx",
+					"$(PROJECT_DIR)/SDL_ttf/osx",
+					"$(PROJECT_DIR)/SDL_image/osx",
+					"$(PROJECT_DIR)/SDL2/osx",
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(PROJECT_DIR)/SDL_mixer",
