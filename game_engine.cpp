@@ -607,9 +607,8 @@
         //        
         //   }
         //}
-
-        for (Actor& actor : *actorList){
-            if (actor.has_box_trigger == false) continue; 
+            Actor& actor = *mainActor;
+            if (actor.has_box_trigger == false) return;
             glm::ivec2 center_cell = worldToCell(actor.transform_position, spatial_hash_cell_size_trigger);
             for (int i = -2; i <= 2; i++) {
                 for (int j = -2; j <= 2; j++) {
@@ -620,25 +619,26 @@
                             if (!other_actor_ptr) continue;
                             if (other_actor_ptr == &actor) continue; // Skip self
                             if (other_actor_ptr->has_box_trigger == false) continue; // If the other actor doesn't have a box collider, skip collision detection
-                            //std::cout<<"checking trigger between "<<actor.actor_name<<" and "<<other_actor_ptr->actor_name<<"\n";
+                            
                             if (checkAABB(actor.transform_position, actor.box_trigger, 
                                 other_actor_ptr->transform_position, other_actor_ptr->box_trigger)
                                 ){ 
-                                    if (actor.nearby_dialogue.empty()) continue;
-                                    if (actor.dialogue_info.audio_state == AudioState::Not_Started) actor.dialogue_info.play(&audioManager);
-                                    checkGameIncidents(&actor, allIncidents, ContactType::Nearby);
-                                    if (actor.nearby_dialogue != "" && actor.nearby_incident != GameIncident::NextScene){
-                                        dialogue_queue->push_back(actor.nearby_dialogue);
+                                    if (other_actor_ptr->nearby_dialogue.empty()) continue;
+                                    if (other_actor_ptr->dialogue_info.audio_state == AudioState::Not_Started) actor.dialogue_info.play(&audioManager);
+                                    //std::cout<<"checking trigger between "<<actor.actor_name<<" and "<<other_actor_ptr->actor_name<<"\n";
+                                    //std::cout<<"Actor "<<other_actor_ptr->actor_name<<" trigger dialogue: "<<other_actor_ptr->nearby_dialogue<<"\n";
+                                    checkGameIncidents(other_actor_ptr, allIncidents, ContactType::Nearby);
+                                    if (other_actor_ptr->nearby_dialogue != "" && other_actor_ptr->nearby_incident != GameIncident::NextScene){
+                                        dialogue_queue->push_back(other_actor_ptr->nearby_dialogue);
                                     }
-                                    if (actor.nearby_incident == GameIncident::HealthDown){
-                                        attack_on_this_frame_set.insert(&actor);
+                                    if (other_actor_ptr->nearby_incident == GameIncident::HealthDown){
+                                        attack_on_this_frame_set.insert(other_actor_ptr);
                                     }
                                 }
                         }
                     }
                 }
             }
-        }
 
     }
 
