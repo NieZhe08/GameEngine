@@ -766,13 +766,31 @@
             if (actorList) {
                 std::priority_queue<Actor*, std::vector<Actor*>, ActorRenderComparator> renderQueue;
                 SDL_FRect window = {0, 0, static_cast<float>(window_size.x), static_cast<float>(window_size.y)};
-                for (Actor& actor : *actorList) {
-                    if (actor.has_view_image) {// TODO more effecient way to do 
-                        if (imageDB->isInScreen(&actor, window, camera, zoom_factor)){
-                            renderQueue.push(&actor);
+                glm::ivec2 window_top_left = worldToCell(glm::vec2(camera.x - window_size.x / 2.0f, camera.y - window_size.y / 2.0f), spatial_hash_cell_size);
+                glm::ivec2 window_bottom_right = worldToCell(glm::vec2(camera.x + window_size.x / 2.0f, camera.y + window_size.y / 2.0f), spatial_hash_cell_size);
+                //for (Actor& actor : *actorList) {
+                //    if (actor.has_view_image) {// TODO more effecient way to do 
+                //        if (imageDB->isInScreen(&actor, window, camera, zoom_factor)){
+                //            renderQueue.push(&actor);
+                //        }
+                //        //std::cout<<"rendering actor "<<actor.actor_name<<" at position "<<actor.transform_position.x<<","<<actor.transform_position.y<<"\n";
+                //    }   
+                //}
+
+                for (int i = window_top_left.x - 1; i <= window_bottom_right.x + 1; i++) {
+                    for (int j = window_top_left.y - 1; j <= window_bottom_right.y + 1; j++) {
+                        glm::ivec2 check_cell = glm::ivec2(i, j);
+                        auto it = spatial_hash.find(check_cell);
+                        if (it != spatial_hash.end()) {
+                            for (Actor* actor_ptr : it->second) {
+                                if (!actor_ptr) continue;
+                                if (actor_ptr->has_view_image) {
+                                    renderQueue.push(actor_ptr);
+                                    //std::cout<<"rendering actor "<<actor_ptr->actor_name<<" at position "<<actor_ptr->transform_position.x<<","<<actor_ptr->transform_position.y<<"\n";
+                                }
+                            }
                         }
-                        //std::cout<<"rendering actor "<<actor.actor_name<<" at position "<<actor.transform_position.x<<","<<actor.transform_position.y<<"\n";
-                    }   
+                    }
                 }
                 while (!renderQueue.empty()){
                     Actor* renderActor = renderQueue.top();
