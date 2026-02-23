@@ -7,11 +7,33 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		E8590AE22F4C136B00D2B9D2 /* SDL2_image.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E8590ADE2F4C0F5F00D2B9D2 /* SDL2_image.framework */; };
+		E8590AE52F4C136C00D2B9D2 /* SDL2_mixer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E8590AE02F4C0F6600D2B9D2 /* SDL2_mixer.framework */; };
+		E8590AE72F4C136D00D2B9D2 /* SDL2_ttf.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E8590ADA2F4C0F4F00D2B9D2 /* SDL2_ttf.framework */; };
+		E8590AE92F4C136F00D2B9D2 /* SDL2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E8590ADC2F4C0F5600D2B9D2 /* SDL2.framework */; };
+		E87172792F4C22CF00ADC081 /* SDL2_mixer.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = E8590AE02F4C0F6600D2B9D2 /* SDL2_mixer.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		E871727A2F4C22D600ADC081 /* SDL2_image.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = E8590ADE2F4C0F5F00D2B9D2 /* SDL2_image.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		E871727B2F4C22DC00ADC081 /* SDL2.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = E8590ADC2F4C0F5600D2B9D2 /* SDL2.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		E871727C2F4C22E200ADC081 /* SDL2_ttf.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = E8590ADA2F4C0F4F00D2B9D2 /* SDL2_ttf.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		E8F79F8C2F30184100F51450 /* game_engine.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8F79F8B2F30184100F51450 /* game_engine.cpp */; };
 		E8F79F902F30187800F51450 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8F79F8F2F30187800F51450 /* main.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		E8590AE42F4C136B00D2B9D2 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				E871727C2F4C22E200ADC081 /* SDL2_ttf.framework in Embed Frameworks */,
+				E871727B2F4C22DC00ADC081 /* SDL2.framework in Embed Frameworks */,
+				E871727A2F4C22D600ADC081 /* SDL2_image.framework in Embed Frameworks */,
+				E87172792F4C22CF00ADC081 /* SDL2_mixer.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		E8F79F7C2F3015AA00F51450 /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -24,6 +46,13 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		E8590A592F4BEDAB00D2B9D2 /* game_engine.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = game_engine.xcodeproj; sourceTree = "<group>"; };
+		E8590ACF2F4C0B8000D2B9D2 /* game_engine.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = game_engine.xcodeproj; sourceTree = "<group>"; };
+		E8590ADA2F4C0F4F00D2B9D2 /* SDL2_ttf.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2_ttf.framework; path = SDL_ttf/osx/SDL2_ttf.framework; sourceTree = "<group>"; };
+		E8590ADC2F4C0F5600D2B9D2 /* SDL2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2.framework; path = SDL2/osx/SDL2.framework; sourceTree = "<group>"; };
+		E8590ADE2F4C0F5F00D2B9D2 /* SDL2_image.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2_image.framework; path = SDL_image/osx/SDL2_image.framework; sourceTree = "<group>"; };
+		E8590AE02F4C0F6600D2B9D2 /* SDL2_mixer.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2_mixer.framework; path = SDL_mixer/osx/SDL2_mixer.framework; sourceTree = "<group>"; };
+		E87172702F4C1D3A00ADC081 /* game_engine.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = game_engine.xcodeproj; sourceTree = "<group>"; };
 		E8F79F7E2F3015AA00F51450 /* game_engine */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = game_engine; sourceTree = BUILT_PRODUCTS_DIR; };
 		E8F79F882F3017BC00F51450 /* game_engine.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = game_engine.xcodeproj; sourceTree = "<group>"; };
 		E8F79F8B2F30184100F51450 /* game_engine.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = game_engine.cpp; sourceTree = "<group>"; };
@@ -35,9 +64,27 @@
 		E8F79F932F3018A400F51450 /* template_db.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = template_db.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		E8590AD82F4C0F3600D2B9D2 /* Exceptions for "game_engine" folder in "game_engine" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				SDL_image/lib/SDL2_image.lib,
+				SDL_mixer/lib/SDL2_mixer.lib,
+				SDL_ttf/lib/SDL2_ttf.lib,
+				SDL2/lib/SDL2.lib,
+				SDL2/lib/SDL2main.lib,
+				SDL2/lib/SDL2test.lib,
+			);
+			target = E8F79F7D2F3015AA00F51450 /* game_engine */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		E8F79F802F3015AA00F51450 /* game_engine */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				E8590AD82F4C0F3600D2B9D2 /* Exceptions for "game_engine" folder in "game_engine" target */,
+			);
 			path = game_engine;
 			sourceTree = "<group>";
 		};
@@ -48,12 +95,42 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E8590AE72F4C136D00D2B9D2 /* SDL2_ttf.framework in Frameworks */,
+				E8590AE52F4C136C00D2B9D2 /* SDL2_mixer.framework in Frameworks */,
+				E8590AE22F4C136B00D2B9D2 /* SDL2_image.framework in Frameworks */,
+				E8590AE92F4C136F00D2B9D2 /* SDL2.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		E8590A5A2F4BEDAB00D2B9D2 /* Products */ = {
+			isa = PBXGroup;
+			name = Products;
+			sourceTree = "<group>";
+		};
+		E8590AD02F4C0B8000D2B9D2 /* Products */ = {
+			isa = PBXGroup;
+			name = Products;
+			sourceTree = "<group>";
+		};
+		E8590AD92F4C0F4F00D2B9D2 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				E8590AE02F4C0F6600D2B9D2 /* SDL2_mixer.framework */,
+				E8590ADE2F4C0F5F00D2B9D2 /* SDL2_image.framework */,
+				E8590ADC2F4C0F5600D2B9D2 /* SDL2.framework */,
+				E8590ADA2F4C0F4F00D2B9D2 /* SDL2_ttf.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		E87172712F4C1D3A00ADC081 /* Products */ = {
+			isa = PBXGroup;
+			name = Products;
+			sourceTree = "<group>";
+		};
 		E8F79F752F3015AA00F51450 = {
 			isa = PBXGroup;
 			children = (
@@ -65,6 +142,7 @@
 				E8F79F8D2F30185500F51450 /* game_utils.h */,
 				E8F79F8B2F30184100F51450 /* game_engine.cpp */,
 				E8F79F802F3015AA00F51450 /* game_engine */,
+				E8590AD92F4C0F4F00D2B9D2 /* Frameworks */,
 				E8F79F7F2F3015AA00F51450 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -92,6 +170,7 @@
 				E8F79F7A2F3015AA00F51450 /* Sources */,
 				E8F79F7B2F3015AA00F51450 /* Frameworks */,
 				E8F79F7C2F3015AA00F51450 /* CopyFiles */,
+				E8590AE42F4C136B00D2B9D2 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -135,6 +214,18 @@
 			projectDirPath = "";
 			projectReferences = (
 				{
+					ProductGroup = E8590AD02F4C0B8000D2B9D2 /* Products */;
+					ProjectRef = E8590ACF2F4C0B8000D2B9D2 /* game_engine.xcodeproj */;
+				},
+				{
+					ProductGroup = E8590A5A2F4BEDAB00D2B9D2 /* Products */;
+					ProjectRef = E8590A592F4BEDAB00D2B9D2 /* game_engine.xcodeproj */;
+				},
+				{
+					ProductGroup = E87172712F4C1D3A00ADC081 /* Products */;
+					ProjectRef = E87172702F4C1D3A00ADC081 /* game_engine.xcodeproj */;
+				},
+				{
 					ProductGroup = E8F79F892F3017BC00F51450 /* Products */;
 					ProjectRef = E8F79F882F3017BC00F51450 /* game_engine.xcodeproj */;
 				},
@@ -164,6 +255,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				BUILD_LIBRARY_FOR_DISTRIBUTION = NO;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
@@ -226,6 +318,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				BUILD_LIBRARY_FOR_DISTRIBUTION = NO;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
@@ -272,6 +365,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 15.7;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = NO;
 				SDKROOT = macosx;
 			};
 			name = Release;
@@ -279,10 +373,29 @@
 		E8F79F862F3015AA00F51450 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 3V8JQALL6Q;
+				DEVELOPMENT_TEAM = 6XNAP58NHT;
 				ENABLE_HARDENED_RUNTIME = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/SDL_ttf/osx",
+					"$(PROJECT_DIR)/SDL2/osx",
+					"$(PROJECT_DIR)/SDL_image/osx",
+					"$(PROJECT_DIR)/SDL_mixer/osx",
+				);
 				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/game_engine/SDL_image/osx",
+					"$(PROJECT_DIR)/game_engine/SDL_mixer/osx",
+					"$(PROJECT_DIR)/game_engine/SDL_ttf/osx",
+					"$(PROJECT_DIR)/game_engine/SDL2/osx",
+					"$(PROJECT_DIR)/game_engine/SDL_image/lib",
+					"$(PROJECT_DIR)/game_engine/SDL_mixer/lib",
+					"$(PROJECT_DIR)/game_engine/SDL_ttf/lib",
+					"$(PROJECT_DIR)/game_engine/SDL2/lib",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -290,10 +403,30 @@
 		E8F79F872F3015AA00F51450 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 3V8JQALL6Q;
+				DEVELOPMENT_TEAM = 6XNAP58NHT;
 				ENABLE_HARDENED_RUNTIME = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/SDL_ttf/osx",
+					"$(PROJECT_DIR)/SDL2/osx",
+					"$(PROJECT_DIR)/SDL_image/osx",
+					"$(PROJECT_DIR)/SDL_mixer/osx",
+				);
 				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)";
+				"LD_RUNPATH_SEARCH_PATHS[arch=*]" = "@executable_path/Frameworks";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/game_engine/SDL_image/osx",
+					"$(PROJECT_DIR)/game_engine/SDL_mixer/osx",
+					"$(PROJECT_DIR)/game_engine/SDL_ttf/osx",
+					"$(PROJECT_DIR)/game_engine/SDL2/osx",
+					"$(PROJECT_DIR)/game_engine/SDL_image/lib",
+					"$(PROJECT_DIR)/game_engine/SDL_mixer/lib",
+					"$(PROJECT_DIR)/game_engine/SDL_ttf/lib",
+					"$(PROJECT_DIR)/game_engine/SDL2/lib",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
