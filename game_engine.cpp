@@ -25,7 +25,8 @@
 #include "AudioManager.h"
 #include "game_engine.h"
 
-
+#include "lua/lua.hpp"
+#include "LuaBridge/LuaBridge.h"
 
     GameEngine::GameEngine() {
         //next_scene_name = "";

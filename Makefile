@@ -1,7 +1,7 @@
 # Compiler settings
 COMPILER = clang++
 COMPILER_FLAGS = -O3 -std=c++17 -Wall -Wextra -Wno-deprecated-declarations
-INCLUDE_PATHS = -I./glm -I./SDL2 -I./SDL_image -I./SDL_mixer -I./SDL2_ttf -lSDL2 -lSDL2_image -lSDL2_mixer -lSDL2_ttf  
+INCLUDE_PATHS = -I./glm -I./SDL2 -I./SDL_image -I./SDL_mixer -I./SDL2_ttf -I./lua -I. -lSDL2 -lSDL2_image -lSDL2_mixer -lSDL2_ttf  
 
 # Source files
 SOURCE_FILES = main.cpp game_engine.cpp
