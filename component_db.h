@@ -46,11 +46,7 @@ public:
         luabridge::LuaRef base = getOrLoadBase(typeName);
         lua_State* state = base.state();
 
-        // 创建新的 table 作为实例
-        lua_newtable(state);                 // [..., instance]
-        luabridge::LuaRef instance = luabridge::LuaRef::fromStack(state, -1);
-        // 弹出栈顶的 instance（LuaRef 仍然持有引用）
-        lua_pop(state, 1);
+        luabridge::LuaRef instance = luabridge::newTable(state);
 
         // 使用统一的继承函数，让实例继承组件类型基础表
         EstablishInheritance(instance, base);
