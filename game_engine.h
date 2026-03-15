@@ -31,8 +31,8 @@ public:
     glm::ivec2 window_size;
     glm::ivec3 clear_color;
     SDL_Event event;
-    SDL_Window* win;
-    SDL_Renderer* ren;
+    SDL_Window* win = nullptr;
+    SDL_Renderer* ren = nullptr;
 
     // possibly useful?
     bool endingFlag = false;
@@ -44,12 +44,12 @@ public:
     lua_State* L = nullptr;
     std::unique_ptr<ComponentDB> componentDB;
     // Managers
-    ActorManager* actorManager; 
-    TextManager* textManager; 
+    ActorManager* actorManager = nullptr; 
+    TextManager* textManager = nullptr; 
     Input input;
-    AudioManager* audioManager;
-    ImageManager* imageManager;
-    CameraManager* cameraManager;
+    AudioManager* audioManager = nullptr;
+    ImageManager* imageManager = nullptr;
+    CameraManager* cameraManager = nullptr;
 
     //std::unique_ptr<std::vector<std::string>> intro_image;
     //std::unique_ptr<std::vector<std::string>> intro_text;

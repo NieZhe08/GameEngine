@@ -75,7 +75,7 @@
             actorManager = new ActorManager(L); // 创建 Actor 管理器实例，并传入 Lua 状态
             textManager = new TextManager(ren); // 创建 Text 管理器实例，传入 SDL_Renderer 用于文本渲染
             input.Init(); // Initialize input states
-            AudioManager* audioManager = new AudioManager();
+            audioManager = new AudioManager();
             audioManager->Init(); // Initialize audio subsystem
             imageManager = new ImageManager(ren); // 创建 Image 管理器实例，传入 SDL_Renderer 用于图像加载和渲染
             cameraManager = new CameraManager();
