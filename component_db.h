@@ -31,12 +31,11 @@ public:
         // 创建新的 metatable，并设置 __index 指向父表
         luabridge::LuaRef new_metatable = luabridge::newTable(state);
         new_metatable["__index"] = parent_table;
-
-        // 使用原生 Lua C API 完成 setmetatable 操作
-        instance_table.push(state);   // [..., instance]
-        new_metatable.push(state);    // [..., instance, mt]
-        lua_setmetatable(state, -2);  // setmetatable(instance, mt); [..., instance]
-        lua_pop(state, 1);            // 弹出 instance
+        
+        instance_table.push(state);       // [..., instance_table]
+        new_metatable.push(state);       // [..., instance_table, new_metatable]
+        lua_setmetatable(state, -2);     // [..., instance_table] with new
+        lua_pop(state, -1);
     }
 
     // 为给定类型和 key 创建一个新的组件实例，并绑定到 owner 上

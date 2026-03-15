@@ -93,12 +93,13 @@ public:
             }
 
             // Get texture dimensions
-            int width, height;
-            SDL_QueryTexture(texture, nullptr, nullptr, &width, &height);
+            float width = 0.0f;
+            float height = 0.0f;
+            Helper::SDL_QueryTexture(texture, &width, &height);
 
             // Render texture to screen
-            SDL_Rect dstRect = { info.x, info.y, width, height };
-            SDL_RenderCopy(renderer_, texture, nullptr, &dstRect);
+            SDL_FRect dstRect = { static_cast<float>(info.x), static_cast<float>(info.y), width, height };
+            Helper::SDL_RenderCopy(renderer_, texture, nullptr, &dstRect);
 
             // Clean up texture
             SDL_DestroyTexture(texture);
