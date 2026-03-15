@@ -668,6 +668,13 @@
             // 事件处理（只依赖 Helper::SDL_PollEvent 和 Input 管理键盘 / 退出）
             while (Helper::SDL_PollEvent(&event)) {
                 input.ProcessEvent(event);
+                if (input.GetQuit()) {
+                    break;
+                }
+            }
+
+            if (input.GetQuit()) {
+                break;
             }
 
             // 驱动 Lua 组件生命周期（OnStart / OnUpdate / OnLateUpdate）
@@ -692,6 +699,7 @@
         this->imageManager->renderUI();
         this->textManager->renderAllText();
         this->imageManager->renderPixels();
+        Helper::SDL_RenderPresent(ren);
         
         // (void)isInitialRender;
         // //std::cout << "clear color is "<< clear_color.x<< clear_color.y<< clear_color.z<< std::endl;
