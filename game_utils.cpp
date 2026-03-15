@@ -99,6 +99,7 @@ luabridge::LuaRef Actor::GetComponentByKey(std::string key) {
 }
 
 luabridge::LuaRef Actor::GetComponent(std::string type) {
+    //std::cout<<components.size() << std::endl;
     for (auto& [key, instance] : components) {
         (void)key;
         if (instance["type"].cast<std::string>() == type) {
@@ -109,6 +110,22 @@ luabridge::LuaRef Actor::GetComponent(std::string type) {
         }
     }
     return luabridge::LuaRef(L);
+}
+
+luabridge::LuaRef Actor::GetComponents(std::string type) {
+    luabridge::LuaRef result = luabridge::newTable(L);
+    int index = 1;
+
+    // std::map keeps keys sorted, so iterating preserves key order.
+    for (const auto& [key, instance] : components) {
+        (void)key;
+        if (instance["type"].cast<std::string>() != type) {
+            continue;
+        }
+        result[index++] = instance;
+    }
+
+    return result;
 }
 
 void Actor::AddComponent(std::string type) {
@@ -223,12 +240,29 @@ void readAndaddComponent(const rapidjson::Value& component_data,
                          const std::string& component_name,
                          ComponentDB* componentDB,
                          Actor* new_actor) {
+    if (!componentDB || !new_actor) return;
     if (!component_data.IsObject()) return;
-    if (!component_data.HasMember("type") || !component_data["type"].IsString()) return;
-
-    std::string type = component_data["type"].GetString();
-    luabridge::LuaRef instance = componentDB->CreateInstance(type, component_name, new_actor);
-
-    componentDB->ApplyProperties(instance, component_data);
-    new_actor->components.insert_or_assign(component_name, instance);
+   
+    std::string type;
+   
+    auto it = new_actor->components.find(component_name);
+    if (it != new_actor->components.end() && !it->second.isNil()) {
+        // Existing component with same key: merge by overriding only fields present in JSON.
+        // Keep prior fields that are absent from JSON, and explicitly allow type override.
+        luabridge::LuaRef& instance = it->second;
+        if (component_data.HasMember("type") && component_data["type"].IsString()) {
+            // error: don;t delete the original instance, just update its type field and apply properties as usual. 
+            type = component_data["type"].GetString();
+            luabridge::LuaRef instance = componentDB->CreateInstance(type, component_name, new_actor);
+            componentDB->ApplyProperties(instance, component_data);
+            new_actor->components.insert_or_assign(component_name, instance);
+        }
+        componentDB->ApplyProperties(instance, component_data);
+    } else {
+        if (!component_data.HasMember("type") || !component_data["type"].IsString()) return;
+        std::string type = component_data["type"].GetString();
+        luabridge::LuaRef instance = componentDB->CreateInstance(type, component_name, new_actor);
+        componentDB->ApplyProperties(instance, component_data);
+        new_actor->components.insert_or_assign(component_name, instance);
+    }
 }

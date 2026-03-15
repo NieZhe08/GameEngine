@@ -86,20 +86,22 @@ public:
     ActorAPI(ActorManager* actorManager, ComponentDB* componentDB): m_actorManager(actorManager), m_componentDB(componentDB) {}
 
     void RegisterLuaAPI(lua_State* L) {
+        ActorManager* actorManager = m_actorManager;
         luabridge::getGlobalNamespace(L)
             .beginClass<Actor>("Actor")
                 .addFunction("GetName", &Actor::GetName)
                 .addFunction("GetID", &Actor::GetID)
                 .addFunction("GetComponent", &Actor::GetComponent)
+                .addFunction("GetComponents", &Actor::GetComponents)
                 .addFunction("GetComponentByKey", &Actor::GetComponentByKey)
                 .addFunction("AddComponent", &Actor::AddComponent)
             .endClass()
             // 使用命名空间 Actor 暴露全局查找函数：Lua 写法为 Actor.Find / Actor.FindAll
             .beginNamespace("Actor")
-                .addFunction("Find", std::function<Actor*(const std::string&)>([this](const std::string& name) -> Actor* { return m_actorManager->Find(name); }))
-                .addFunction("FindAll", std::function<luabridge::LuaRef(const std::string&)>([this](const std::string& name) -> luabridge::LuaRef { return m_actorManager->FindAll(name); }))
-                .addFunction("Instantiate", std::function<Actor*(const std::string&, ComponentDB*)>([this](const std::string& name, ComponentDB* m_componentDB) -> Actor* { return m_actorManager->CreateActor(name, m_componentDB); }))
-                .addFunction("Destroy", std::function<void(Actor*)>([this](Actor* actor) { m_actorManager->Destroy(actor); }))
+                .addFunction("Find", std::function<luabridge::LuaRef(const std::string&)>([actorManager](const std::string& name) -> luabridge::LuaRef { return actorManager->Find(name); }))
+                .addFunction("FindAll", std::function<luabridge::LuaRef(const std::string&)>([actorManager](const std::string& name) -> luabridge::LuaRef { return actorManager->FindAll(name); }))
+                .addFunction("Instantiate", std::function<Actor*(const std::string&, ComponentDB*)>([actorManager](const std::string& name, ComponentDB* componentDB) -> Actor* { return actorManager->CreateActor(name, componentDB); }))
+                .addFunction("Destroy", std::function<void(Actor*)>([actorManager](Actor* actor) { actorManager->Destroy(actor); }))
             .endNamespace();
     }
 };

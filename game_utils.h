@@ -88,6 +88,10 @@ public:
 
     luabridge::LuaRef GetComponent(std::string type);
 
+    luabridge::LuaRef GetComponents(std::string type);
+
+    
+
     void AddComponent(std::string type);
 
     void RemoveComponent(luabridge::LuaRef component);

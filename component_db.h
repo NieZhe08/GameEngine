@@ -66,10 +66,11 @@ public:
     void ApplyProperties(luabridge::LuaRef& instance, const rapidjson::Value& obj) {
         if (!obj.IsObject()) return;
 
+        //std::cout<< "Applying properties to component '" << instance["type"].tostring() << "':" << std::endl;
         for (auto it = obj.MemberBegin(); it != obj.MemberEnd(); ++it) {
             const std::string propName = it->name.GetString();
-            if (propName == "type") continue; // 保留 type 只用于选择脚本
 
+            //std::cout << "  " << propName << ": " << it->value.GetType() << std::endl; // 输出属性名和类型（调试用）
             const rapidjson::Value& v = it->value;
             if (v.IsBool()) {
                 instance[propName] = v.GetBool();
@@ -85,6 +86,10 @@ public:
                 instance[propName] = v.GetDouble();
             } else if (v.IsString()) {
                 instance[propName] = std::string(v.GetString());
+            }
+            else {
+                // print debug info 
+                //std::cout << "Warning: Unsupported property type for '" << propName << "' in component '" << instance["type"].tostring() << "'. Skipping this property." << std::endl;
             }
             // 其它类型（数组 / 对象）本作业不需要，忽略即可
         }

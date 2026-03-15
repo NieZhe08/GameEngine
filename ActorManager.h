@@ -105,7 +105,7 @@ public:
                 return luabridge::LuaRef(L, actor.get());
             }
         }
-        return luabridge::LuaRef(L); // return nil if not found
+        return luabridge::LuaRef(L);
     }
 
     luabridge::LuaRef FindAll(std::string name) {
