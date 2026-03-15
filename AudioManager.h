@@ -6,6 +6,7 @@
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
+#include <algorithm>
 
 enum class AudioState {
     Not_Started,
@@ -18,16 +19,19 @@ class AudioManager {
     static inline std::unordered_map<int, Mix_Chunk*> audio_cache; // Map from audio path hash to loaded Mix_Chunk*
     static inline std::unordered_map<std::string, int> loaded_audio_paths; // Set of loaded audio paths to avoid duplicate loading
     static inline int audio_count = 0;
+    static inline bool is_initialized = false;
 public:
 
     AudioManager() {};
 
     static void Init(){
+        if (is_initialized) return;
         if (AudioHelper::Mix_OpenAudio(48000, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
             std::cout << "error: AudioHelper::Mix_OpenAudio failed: " << Mix_GetError() << "\n";
             exit(0);
         }
         AudioHelper::Mix_AllocateChannels(50);
+        is_initialized = true;
     }
     static int loadAudio(const std::string& path){
         if (loaded_audio_paths.find(path) != loaded_audio_paths.end()) {
@@ -63,6 +67,11 @@ public:
 
     static int HaltChannel(int channel){
         return AudioHelper::Mix_HaltChannel(channel);
+    }
+
+    static int SetVolume(int channel, int volume){
+        int clamped_volume = std::clamp(volume, 0, 128);
+        return AudioHelper::Mix_Volume(channel, clamped_volume);
     }
 };
 

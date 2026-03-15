@@ -5,6 +5,17 @@
 #include <optional>
 #include "SDL2/SDL.h"
 #include "AudioManager.h" 
+#include <string>
+#include <algorithm>
+#include <set>
+#include <lua/lua.hpp>
+#include <LuaBridge/LuaBridge.h>
+#include <map>
+#include <vector>
+#include <set>
+#include <cstdint>
+#include "rapidjson/document.h"
+
 enum class PlayerAction {
     MoveUp,
     MoveDown,
@@ -37,204 +48,70 @@ enum class ContactType {
     Overlap
 };
 
+std::optional<std::string> extractProceedTarget(const std::string& input);
+std::string obtain_word_after_phrase(const std::string& input, const std::string& phrase);
+GameIncident checkGameIncidents(std::string dialogue);
 
-#include <string>
-#include <optional>
-#include <algorithm>
+class ActorManager;
+class ComponentDB;
 
-inline std::optional<std::string> extractProceedTarget(const std::string& input) {
-    const std::string prefix = "proceed to ";
-    
-    auto it = std::search(
-        input.begin(), input.end(),
-        prefix.begin(), prefix.end(),
-        [](unsigned char ch1, unsigned char ch2) {
-            return std::tolower(ch1) == std::tolower(ch2);
-        }
-    );
 
-    if (it != input.end()) {
-        size_t startPos = std::distance(input.begin(), it) + prefix.length();
 
-        size_t endPos = startPos;
-        while (endPos < input.length() && (std::isalnum(static_cast<unsigned char>(input[endPos])) || input[endPos] == '_')) {
-            endPos++;
-        }
-
-        if (endPos > startPos) {
-            return input.substr(startPos, endPos - startPos);
-        }
-    }
-
-    return std::nullopt;
-}
-
-static std::string obtain_word_after_phrase(const std::string& input, const std::string& phrase){
-    size_t pos = input.find(phrase);
-    if (pos == std::string::npos) return "";
-    pos += phrase.length();
-    while (pos < input.size() && isspace(input[pos])) {
-        pos++;
-    }
-    if (pos == input.size()) return "";
-    size_t endPos = pos;
-    while (endPos < input.size() && !isspace(input[endPos])) {
-        endPos++;
-    }
-    return input.substr(pos, endPos - pos);
-}
-
-struct Actor
-{
-private: 
-    GameIncident checkGameIncidents(std::string dialogue){
-        if (dialogue.find("health down") != std::string::npos){
-            return (GameIncident::HealthDown);
-        } else if (dialogue.find("score up") != std::string::npos){
-            return (GameIncident::ScoreUp);
-        } else if (dialogue.find("you win") != std::string::npos){
-            return (GameIncident::YouWin);
-        } else if (dialogue.find("game over") != std::string::npos){
-            return (GameIncident::GameOver);
-        } 
-        return (GameIncident::None);
-    }
+class Actor {
 public:
-	std::string actor_name;
+    // 基础属性 
+    std::string name;
     int id;
-	glm::vec2 transform_position;
-	glm::vec2 velocity;
-	//bool blocking;
-
-    // SDL stuff
-    std::string view_image;
-    bool has_view_image;
-    std::string view_image_back;
-    bool has_view_image_back;
-    std::string view_image_damage;
-    bool has_view_image_damage;
-    int damage_view_duration_frames; // valid 1-30 (<31)
-    std::string view_image_attack;
-    bool has_view_image_attack;
-    int attack_view_duration_frames; // valid 1-30 (<31)
-    glm::vec2 transform_scale;
-    bool flip_x ;
-    bool flip_y ;
-    float transform_rotation_degrees;
-    glm::vec2 view_pivot_offset;
-    bool triggered_scoreUp;
-    int render_order;
-	std::string nearby_dialogue;
-	std::string contact_dialogue;
-    GameIncident nearby_incident;
-    GameIncident contact_incident;
+    lua_State* L;
+    ActorManager* actorManager = nullptr;
+    ComponentDB* componentDB = nullptr;
+    bool pending_destroy = false;
+    bool destroyOnSceneChange = true;
     
-    std::string nearby_scene;
-    std::string contact_scene;
+    // component system: key -> component instance (LuaRef)
+    std::map<std::string, luabridge::LuaRef> components;
+    // track components that have had OnStart called
+    std::set<std::string> started_components;
 
-    bool  movement_bounce_enabled;
+    Actor(lua_State* L, int id, std::string name, ActorManager* am, ComponentDB* cdb);
 
-    glm::vec2 box_collider;
-    glm::vec2 box_trigger;
-    bool has_box_collider;
-    bool has_box_trigger;
+    ~Actor();
 
-    bool view_dir_down = true; // down is default
+    void MarkPendingDestroy();
 
-    AudioInfo dialogue_info;
+    // --- Lua API ---
 
-    // for optimization
-    glm::vec2 tex_size; 
-   
+    std::string GetName() const;
+    int GetID() const;
 
-	Actor(std::string actor_name, int id, glm::vec2 _transform_position,
-        glm::vec2 _velocity, 
-        std::string _view_image, std::string _view_image_back, 
-        std::string _view_image_damage, std::string _view_image_attack,
-        glm::vec2 _transform_scale, 
-        float _transform_rotation_degrees, glm::vec2 _view_pivot_offset, int _render_order,
-        std::string _nearby_dialogue , std::string _contact_dialogue,
-        bool _movement_bounce_enabled, 
-        float bcw, float bch, 
-        float btw, float bth,
-        std::string dialogue_audio_path,
-        glm::vec2 _tex_size) : 
+    luabridge::LuaRef GetComponentByKey(std::string key);
 
-        actor_name(actor_name), id(id), transform_position(_transform_position),
-        velocity(_velocity), 
-        view_image(_view_image), has_view_image(!_view_image.empty()), 
-        view_image_back(_view_image_back), has_view_image_back(!_view_image_back.empty()),
-        view_image_damage(_view_image_damage),  has_view_image_damage(!_view_image_damage.empty()),damage_view_duration_frames(0),
-        view_image_attack(_view_image_attack),  has_view_image_attack(!_view_image_attack.empty()),attack_view_duration_frames(0),
-        transform_scale(glm::abs(_transform_scale)),
-        flip_x(_transform_scale.x <0), flip_y(_transform_scale.y <0),
-        transform_rotation_degrees(_transform_rotation_degrees), view_pivot_offset(_view_pivot_offset),
-        triggered_scoreUp(false), render_order(_render_order),
-        nearby_dialogue(_nearby_dialogue), contact_dialogue(_contact_dialogue),
-        movement_bounce_enabled(_movement_bounce_enabled),
-        box_collider(bcw, bch), box_trigger(btw, bth),
-        has_box_collider(bcw > 0 && bch > 0), has_box_trigger(btw > 0 && bth > 0),
-        dialogue_info(dialogue_audio_path, false),
-        tex_size(_tex_size)
-        {
-            nearby_incident = checkGameIncidents(nearby_dialogue);
-            contact_incident = checkGameIncidents(contact_dialogue);
-            
-            auto nearby_scene_opt = extractProceedTarget(nearby_dialogue);
-            if (nearby_scene_opt.has_value()){
-                nearby_incident = GameIncident::NextScene;
-                nearby_scene = nearby_scene_opt.value();
-            } else {
-                nearby_scene = "";
-            }
-            auto contact_scene_opt = extractProceedTarget(contact_dialogue);
-            if (contact_scene_opt.has_value()){
-                contact_incident = GameIncident::NextScene;
-                contact_scene = contact_scene_opt.value();
-            } else {
-                contact_scene = "";
-            }
-            
-           std::string nb_scene = obtain_word_after_phrase(nearby_dialogue, "proceed to ");
-           if (!nb_scene.empty()){
-               nearby_incident = GameIncident::NextScene;
-               nearby_scene = nb_scene;
-               //std::cout<<"nearby_scene: "<<nearby_scene<<"\n";
-           } else {
-               nearby_scene = "";
-           }
-           std::string ct_scene = obtain_word_after_phrase(contact_dialogue, "proceed to ");
-           if (!ct_scene.empty()){
-               contact_incident = GameIncident::NextScene;
-               contact_scene = ct_scene;
-                //std::cout<<"contact_scene: "<<contact_scene<<"\n";
-           } else {
-               contact_scene = "";
-           }
+    luabridge::LuaRef GetComponent(std::string type);
 
-	    }
+    void AddComponent(std::string type);
 
-    void setDamageViewDuration(){
-        if (has_view_image_damage){
-            damage_view_duration_frames = 30;
-        }
-    }
+    void RemoveComponent(luabridge::LuaRef component);
 
-    void setAttackViewDuration(){
-        if (has_view_image_attack){
-            attack_view_duration_frames = 30;
-        }
-    }
+    // --- 引擎内部生命周期驱动 ---
 
-    bool canSetDamageView(){
-        return has_view_image_damage && damage_view_duration_frames == 0;
-    }
+    // 处理 OnStart 
+    void ProcessOnStart();
 
-    bool canSetAttackView(){
-        return has_view_image_attack && attack_view_duration_frames == 0;
-    }
+    // 处理 OnUpdate 
+    void ProcessOnUpdate();
+
+    // 处理 OnLateUpdate 
+    void ProcessOnLateUpdate();
+
+    void RemainWhenSceneChange();
+
+private:
+    static ActorManager* s_lua_actor_manager;
+    static lua_State* s_lua_state;
+
+    // Error Handling for Lua exceptions, can be extended to log to file or show in-game message box
+    void ReportError(const luabridge::LuaException& e);
 };
-
 
 inline std::uint64_t hashPosition(const glm::ivec2& position) {
     // A simple hash function combining x and y coordinates into a 64-bit key.
@@ -250,51 +127,23 @@ struct ActorSmallerId {
 };
 
 //functor ActorRenderComparator
-struct ActorRenderComparator {
-    bool operator() (const Actor* a1, const Actor* a2) const {
-        if (a1->render_order != a2->render_order) {
-            return a1->render_order > a2->render_order; // Higher render_order is higher priority
-        }
-        else if (a1->transform_position.y != a2->transform_position.y) {
-            return a1->transform_position.y > a2->transform_position.y; // Higher y is lower priority
-        }
-        return a1->id > a2->id; // For same y, smaller id is lower priority
-    }
-};
+//struct ActorRenderComparator {
+//    bool operator() (const Actor* a1, const Actor* a2) const {
+//        if (a1->render_order != a2->render_order) {
+//            return a1->render_order > a2->render_order; // Higher render_order is higher priority
+//        }
+//        else if (a1->transform_position.y != a2->transform_position.y) {
+//            return a1->transform_position.y > a2->transform_position.y; // Higher y is lower priority
+//        }
+//        return a1->id > a2->id; // For same y, smaller id is lower priority
+//    }
+//};
 
-static inline void visualizeBox (SDL_Renderer* renderer, glm::vec2 center, glm::vec2 box, 
+void visualizeBox (SDL_Renderer* renderer, glm::vec2 center, glm::vec2 box,
         glm::vec2 camera = glm::vec2(0,0), float zoom_factor = 1.0f,
-        SDL_Color color = {255, 0, 0, 255}) {
-    
-    glm::vec2 screen_center = center * 100.0f * zoom_factor + camera;
-    glm::vec2 screen_box = box * zoom_factor * 100.0f;
+        SDL_Color color = {255, 0, 0, 255});
 
-    SDL_FRect rect = {
-        screen_center.x - screen_box.x / 2.0f,
-        screen_center.y - screen_box.y / 2.0f,
-        screen_box.x,
-        screen_box.y
-    };
-    //std::cout << "visualizeBox: center=(" << screen_center.x << "," << screen_center.y 
-    //          << ") box=(" << screen_box.x << "," << screen_box.y 
-    //          << ") rect=(" << rect.x << "," << rect.y << "," << rect.w << "," << rect.h << ")\n";
-    SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a); // Red for box
-    SDL_RenderDrawRectF(renderer, &rect); // Draw outline
-}
-
-inline bool checkAABB(glm::vec2 ctr1, glm::vec2 box1, glm::vec2 ctr2, glm::vec2 box2) {
-    // box1 and box2 are width and height, not half-width and half-height
-    // Perform collision detection in world space (no transform) to avoid precision loss
-    
-
-    // Collision detection logic in world space (no scale/camera offset)
-    if (ctr1.x + box1.x/2 > ctr2.x - box2.x/2 && ctr1.x - box1.x/2 < ctr2.x + box2.x/2){
-        if (ctr1.y + box1.y/2 > ctr2.y - box2.y/2 && ctr1.y - box1.y/2 < ctr2.y + box2.y/2){
-            return true;
-        }
-    }
-    return false;
-}
+bool checkAABB(glm::vec2 ctr1, glm::vec2 box1, glm::vec2 ctr2, glm::vec2 box2);
 
 // Hash function for glm::ivec2 to use in unordered_map
 struct Ivec2Hash {
@@ -333,10 +182,12 @@ struct Ivec2HashWindow {
     }
 };
 
-inline glm::ivec2 worldToCell(const glm::vec2& worldPos, const glm::vec2& cell_size) {
-        return glm::ivec2(std::floor(worldPos.x / cell_size.x), 
-                          std::floor(worldPos.y / cell_size.y));
-}
+glm::ivec2 worldToCell(const glm::vec2& worldPos, const glm::vec2& cell_size);
 
-
+// 统一的组件读取与添加函数：
+// 无论来自模板还是 actor 自身的 components，都调用这个函数。
+void readAndaddComponent(const rapidjson::Value& component_data,
+                         const std::string& component_name,
+                         ComponentDB* componentDB,
+                         Actor* new_actor);
 #endif 

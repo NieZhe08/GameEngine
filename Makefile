@@ -1,13 +1,20 @@
 # Compiler settings
-COMPILER = clang++
-COMPILER_FLAGS = -O3 -std=c++17 -Wall -Wextra -Wno-deprecated-declarations
-INCLUDE_PATHS = -I./glm -I./SDL2 -I./SDL_image -I./SDL_mixer -I./SDL2_ttf -I./lua -I. -lSDL2 -lSDL2_image -lSDL2_mixer -lSDL2_ttf  
+CXX = clang++
+CC = clang
+CXXFLAGS = -O3 -std=c++17 -Wall -Wextra -Wno-deprecated-declarations
+CFLAGS = -O3 -std=c11 -Wall -Wextra -Wno-unused-parameter
+CPPFLAGS = -I./glm -I./SDL2 -I./SDL_image -I./SDL_mixer -I./SDL2_ttf -I./lua -I.
+LDLIBS = -lSDL2 -lSDL2_image -lSDL2_mixer -lSDL2_ttf -ldl -lm
 
 # Source files
-SOURCE_FILES = main.cpp game_engine.cpp
+SOURCE_FILES = main.cpp game_engine.cpp game_utils.cpp
+
+# Build bundled Lua runtime (exclude standalone interpreters to avoid duplicate main)
+LUA_SOURCE_FILES = $(filter-out lua/lua.c lua/luac.c, $(wildcard lua/*.c))
+LUA_OBJECT_FILES = $(LUA_SOURCE_FILES:.c=.o)
 
 # Object files (automatically generated from source files)
-OBJECT_FILES = main.o game_engine.o
+OBJECT_FILES = main.o game_engine.o game_utils.o $(LUA_OBJECT_FILES)
 
 # Executable name
 EXECUTABLE = game_engine_linux
@@ -17,23 +24,31 @@ all: $(EXECUTABLE)
 
 # Link object files to create executable
 $(EXECUTABLE): $(OBJECT_FILES)
-	$(COMPILER) $(COMPILER_FLAGS) $(INCLUDE_PATHS) $(OBJECT_FILES) -o $(EXECUTABLE)
+	$(CXX) $(CXXFLAGS) $(OBJECT_FILES) -o $(EXECUTABLE) $(LDLIBS)
 
 # Compile main.cpp to main.o
 main.o: main.cpp
-	$(COMPILER) $(COMPILER_FLAGS) $(INCLUDE_PATHS) -c main.cpp -o main.o
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c main.cpp -o main.o
 
 # Compile game_engine.cpp to game_engine.o
 game_engine.o: game_engine.cpp
-	$(COMPILER) $(COMPILER_FLAGS) $(INCLUDE_PATHS) -c game_engine.cpp -o game_engine.o
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c game_engine.cpp -o game_engine.o
+
+# Compile game_utils.cpp to game_utils.o
+game_utils.o: game_utils.cpp
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c game_utils.cpp -o game_utils.o
+
+# Compile bundled Lua C sources
+lua/%.o: lua/%.c
+	$(CC) $(CFLAGS) $(CPPFLAGS) -c $< -o $@
 
 # Compile json_parser.cpp to json_parser.o
 json_parser.o: json_paraser.cpp
-	$(COMPILER) $(COMPILER_FLAGS) $(INCLUDE_PATHS) -c json_paraser.cpp -o json_parser.o
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c json_paraser.cpp -o json_parser.o
 
 # Compile scene_db.cpp to scene_db.o
 scene_db.o: scene_db.cpp
-	$(COMPILER) $(COMPILER_FLAGS) $(INCLUDE_PATHS) -c scene_db.cpp -o scene_db.o
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c scene_db.cpp -o scene_db.o
 
 # Clean build artifacts
 clean:
