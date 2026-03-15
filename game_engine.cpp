@@ -673,10 +673,6 @@
                 }
             }
 
-            if (input.GetQuit()) {
-                break;
-            }
-
             // 驱动 Lua 组件生命周期（OnStart / OnUpdate / OnLateUpdate）
             update();
 

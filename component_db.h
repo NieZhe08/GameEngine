@@ -113,7 +113,7 @@ private:
                                      / (typeName + ".lua");
         if (!std::filesystem::exists(path)) {
             // 规格：error: failed to locate component <component_type>
-            std::cout << "error: failed to locate component " << typeName << std::endl;
+            std::cout << "error: failed to locate component " << typeName ;
             std::exit(0);
         }
 
@@ -121,14 +121,14 @@ private:
         int status = luaL_dofile(L, path.string().c_str());
         if (status != 0) {
             // 规格：problem with lua file <lua_filename>（不带扩展名）
-            std::cout << "problem with lua file " << typeName << std::endl;
+            std::cout << "problem with lua file " << typeName ;
             std::exit(0);
         }
 
         // 从全局表中取出同名表
         luabridge::LuaRef base = luabridge::getGlobal(L, typeName.c_str());
         if (base.isNil() || !base.isTable()) {
-            std::cout << "problem with lua file " << typeName << std::endl;
+            std::cout << "problem with lua file " << typeName ;
             std::exit(0);
         }
 
