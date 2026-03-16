@@ -109,12 +109,14 @@ public:
 
     void RemainWhenSceneChange();
 
+// Error Handling for Lua exceptions, can be extended to log to file or show in-game message box
+    void ReportError(const std::string actor_name, const luabridge::LuaException& e);
+
 private:
     static ActorManager* s_lua_actor_manager;
     static lua_State* s_lua_state;
 
-    // Error Handling for Lua exceptions, can be extended to log to file or show in-game message box
-    void ReportError(const std::string actor_name, const luabridge::LuaException& e);
+    
 };
 
 inline std::uint64_t hashPosition(const glm::ivec2& position) {

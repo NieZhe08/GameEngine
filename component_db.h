@@ -96,12 +96,29 @@ public:
     }
 
     luabridge::LuaRef AddComponentToActor(Actor* actor, const std::string& typeName){
-        std::string key = "r" + std::to_string(addComponentCounter++) + typeName;
+        std::string key = "r" + std::to_string(addComponentCounter++);
         luabridge::LuaRef instance = CreateInstance(typeName, key, actor);
         if (instance.isNil()) {
             return luabridge::LuaRef(actor->L);
         }
         actor->components.insert_or_assign(key, instance);
+        // check if the component is added for the first time, if so, call its OnStart
+        if (instance.isNil()) {
+        return luabridge::LuaRef(L);
+    }
+
+    if (actor->started_components.find(key) == actor->started_components.end() &&
+        instance["enabled"].cast<bool>() != false) {
+        luabridge::LuaRef onStart = instance["OnStart"];
+        if (onStart.isFunction()) {
+            try {
+                onStart(instance);
+            } catch (luabridge::LuaException const& e) {
+                actor->ReportError(actor->name, e);
+            }
+        }
+        actor->started_components.insert(key);
+    }
         return instance;
     }
 
