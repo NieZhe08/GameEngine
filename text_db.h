@@ -60,6 +60,9 @@ public:
     }
     
     void addText(const std::string& text, int x, int y, const std::string& font_name, int font_size, int r, int g, int b, int a) {
+        if (text.empty()) {
+            return;
+        }
         text_queue.emplace(text, x, y, font_name, font_size, r, g, b, a);
     }
 
@@ -67,6 +70,10 @@ public:
         while (!text_queue.empty()) {
             TextInfo info = text_queue.front();
             text_queue.pop();
+
+            if (info.text.empty()) {
+                continue;
+            }
 
             // Load font if not already loaded
             auto font_it = font_cache.find(info.font_name);

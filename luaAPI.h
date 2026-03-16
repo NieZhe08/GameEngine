@@ -166,8 +166,18 @@ class TextAPI {
             auto textManager = m_textManager;
             luabridge::getGlobalNamespace(L)
                 .beginNamespace("Text")
-                    .addFunction("Draw", std::function<void(const std::string&, int, int, const std::string&, int, int, int, int, int)>([textManager](const std::string& text, int x, int y, const std::string& font_name, int font_size, int r, int g, int b, int a) {
-                        textManager->addText(text, x, y, font_name, font_size, r, g, b, a);
+                    .addFunction("Draw", std::function<void(const std::string&, float, float, const std::string&, float, float, float, float, float)>([textManager](const std::string& text, float x, float y, const std::string& font_name, float font_size, float r, float g, float b, float a) {
+                        textManager->addText(
+                            text,
+                            static_cast<int>(x),
+                            static_cast<int>(y),
+                            font_name,
+                            static_cast<int>(font_size),
+                            static_cast<int>(r),
+                            static_cast<int>(g),
+                            static_cast<int>(b),
+                            static_cast<int>(a)
+                        );
                     }))
                 .endNamespace();
         }
