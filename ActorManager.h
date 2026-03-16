@@ -50,11 +50,14 @@ public:
             pending_new_actors.clear();
         }
 
-        for (const auto& actor : actors_to_call_onstart) {
+        // Snapshot current queue so OnStart-triggered new work is deferred to next frame.
+        std::vector<std::shared_ptr<Actor>> onstart_snapshot;
+        onstart_snapshot.swap(actors_to_call_onstart);
+
+        for (const auto& actor : onstart_snapshot) {
             if (!actor || actor->pending_destroy) continue;
             actor->ProcessOnStart();
         }
-        actors_to_call_onstart.clear();
     }
 
     void ProcessOnUpdateAllActor() {
