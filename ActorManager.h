@@ -13,7 +13,7 @@ class ActorManager {
 public:
     // 所有的 Actor 都住在这里，由 shared_ptr 保证地址不动且生命周期受控
     std::vector<std::shared_ptr<Actor>> all_actors;
-    // 本帧新创建的 Actor 先进入过渡容器，在 LateUpdate 结束后再并入 all_actors。
+    // 本帧新创建的 Actor 先进入过渡容器，在下一帧 OnStart 前并入 all_actors。
     std::vector<std::shared_ptr<Actor>> pending_new_actors;
     // 存储本帧需要调用 OnStart 的 Actor（可重复入队，Actor 内部会跳过已启动组件）。
     std::vector<std::shared_ptr<Actor>> actors_to_call_onstart;
@@ -45,6 +45,11 @@ public:
 
     //每帧开始时调用此函数
     void ProcessOnStartAllActor() {
+        if (!pending_new_actors.empty()) {
+            all_actors.insert(all_actors.end(), pending_new_actors.begin(), pending_new_actors.end());
+            pending_new_actors.clear();
+        }
+
         for (const auto& actor : actors_to_call_onstart) {
             if (!actor || actor->pending_destroy) continue;
             actor->ProcessOnStart();
@@ -65,11 +70,6 @@ public:
             if (actor && !actor->pending_destroy) {
                 actor->ProcessOnLateUpdate();
             }
-        }
-
-        if (!pending_new_actors.empty()) {
-            all_actors.insert(all_actors.end(), pending_new_actors.begin(), pending_new_actors.end());
-            pending_new_actors.clear();
         }
     }
 

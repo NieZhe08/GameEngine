@@ -694,9 +694,6 @@
             // 事件处理（只依赖 Helper::SDL_PollEvent 和 Input 管理键盘 / 退出）
             while (Helper::SDL_PollEvent(&event)) {
                 input.ProcessEvent(event);
-                if (input.GetQuit()) {
-                    break;
-                }
             }
 
             // 驱动 Lua 组件生命周期（OnStart / OnUpdate / OnLateUpdate）
@@ -719,6 +716,8 @@
     void GameEngine::frameRender(bool isInitialRender) {// render main
         (void)isInitialRender;
 
+        //std::cout<<"render the frame"<<Helper::GetFrameNumber()<<"\n";
+         
         SDL_SetRenderDrawColor(
             ren,
             static_cast<Uint8>(std::clamp(clear_color.x, 0, 255)),
