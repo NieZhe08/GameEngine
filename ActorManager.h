@@ -36,14 +36,19 @@ public:
 
     //每帧开始时调用此函数
     void ProcessOnStartAllActor() {
-        for (auto& actor : all_actors) {
+        const auto actors_snapshot = all_actors;
+        for (const auto& actor : actors_snapshot) {
+            if (!actor || actor->pending_destroy) continue;
             actor->ProcessOnStart();
         }
-        //all_actors.clear(); // 本帧调用完后清空列表
+        // Kept for compatibility with existing create path; otherwise this vector
+        // grows forever when actors are created at runtime.
+        actors_to_call_onstart.clear();
     }
 
     void ProcessOnUpdateAllActor() {
-        for (auto& actor : all_actors) {
+        const auto actors_snapshot = all_actors;
+        for (const auto& actor : actors_snapshot) {
             if (actor && !actor->pending_destroy) {
                 actor->ProcessOnUpdate();
             }
@@ -51,7 +56,8 @@ public:
     }
 
     void ProcessOnLateUpdateAllActor() {
-        for (auto& actor : all_actors) {
+        const auto actors_snapshot = all_actors;
+        for (const auto& actor : actors_snapshot) {
             if (actor && !actor->pending_destroy) {
                 actor->ProcessOnLateUpdate();
             }

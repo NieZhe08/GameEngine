@@ -36,21 +36,38 @@
     }
 
     GameEngine::~GameEngine() {
+        // Destroy managers that may hold LuaRef first.
+        delete actorManager;
+        actorManager = nullptr;
+
+        componentDB.reset();
+
+        delete textManager;
+        textManager = nullptr;
+        delete audioManager;
+        audioManager = nullptr;
+        delete imageManager;
+        imageManager = nullptr;
+        delete cameraManager;
+        cameraManager = nullptr;
+
+        // Close Lua state after all LuaRef owners are gone.
+        if (L) {
+            lua_close(L);
+            L = nullptr;
+        }
+
         // Clean up SDL resources
-        if (ren) SDL_DestroyRenderer(ren);
-        if (win) SDL_DestroyWindow(win);
+        if (ren) {
+            SDL_DestroyRenderer(ren);
+            ren = nullptr;
+        }
+        if (win) {
+            SDL_DestroyWindow(win);
+            win = nullptr;
+        }
         TTF_Quit();
         SDL_Quit();
-
-        // Clean up Lua state
-        if (L) lua_close(L);
-
-        // Clean up managers
-        delete actorManager;
-        delete textManager;
-        delete audioManager;
-        delete imageManager;
-        delete cameraManager;
     }
 
     void GameEngine::initializeGame(bool isInitialLoad) {
