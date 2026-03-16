@@ -36,10 +36,10 @@ public:
 
     //每帧开始时调用此函数
     void ProcessOnStartAllActor() {
-        for (auto& actor : actors_to_call_onstart) {
+        for (auto& actor : all_actors) {
             actor->ProcessOnStart();
         }
-        actors_to_call_onstart.clear(); // 本帧调用完后清空列表
+        //all_actors.clear(); // 本帧调用完后清空列表
     }
 
     void ProcessOnUpdateAllActor() {

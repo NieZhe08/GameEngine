@@ -107,7 +107,7 @@ public:
         return luabridge::LuaRef(L);
     }
 
-    if (actor->started_components.find(key) == actor->started_components.end() &&
+ /*    if (actor->started_components.find(key) == actor->started_components.end() &&
         instance["enabled"].cast<bool>() != false) {
         luabridge::LuaRef onStart = instance["OnStart"];
         if (onStart.isFunction()) {
@@ -118,7 +118,7 @@ public:
             }
         }
         actor->started_components.insert(key);
-    }
+    } */
         return instance;
     }
 
