@@ -107,9 +107,6 @@ private:
         return template_cache.back();
     }
 
-    glm::vec2 setDefaultPivotForValidTexture(const std::string& view_str, float transform_scale_x = 1.0f, float transform_scale_y = 1.0f) {
-        // texture would be left later
-    }
 };
 
 #endif

@@ -9,6 +9,14 @@
 /* Begin PBXBuildFile section */
 		E85B449C2F4CD867002344E4 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E85B44982F4CD867002344E4 /* main.cpp */; };
 		E85B449D2F4CD867002344E4 /* game_engine.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E85B44922F4CD867002344E4 /* game_engine.cpp */; };
+		E85B45132F4CF165002344E4 /* SDL2.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = E85B44C12F4CF158002344E4 /* SDL2.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		E85B45162F4CF171002344E4 /* SDL2_ttf.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = E85B44AE2F4CDE4C002344E4 /* SDL2_ttf.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		E85B45182F4CF17E002344E4 /* SDL2_image.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = E85B44A42F4CDE18002344E4 /* SDL2_image.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		E85B451A2F4CF18A002344E4 /* SDL2_mixer.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = E85B44AB2F4CDE3C002344E4 /* SDL2_mixer.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		E85B451B2F4CF19F002344E4 /* SDL2_image.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E85B44A42F4CDE18002344E4 /* SDL2_image.framework */; };
+		E85B451C2F4CF1A9002344E4 /* SDL2_mixer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E85B44AB2F4CDE3C002344E4 /* SDL2_mixer.framework */; };
+		E85B451D2F4CF1B6002344E4 /* SDL2_ttf.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E85B44AE2F4CDE4C002344E4 /* SDL2_ttf.framework */; };
+		E85B451E2F4CF1C2002344E4 /* SDL2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E85B44C12F4CF158002344E4 /* SDL2.framework */; };
 		E8DE559E2F686B2A00677129 /* game_utils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8DE559D2F686B2A00677129 /* game_utils.cpp */; };
 		E8DE55F92F686B6B00677129 /* lfunc.c in Sources */ = {isa = PBXBuildFile; fileRef = E8DE55CC2F686B6B00677129 /* lfunc.c */; };
 		E8DE55FA2F686B6B00677129 /* lzio.c in Sources */ = {isa = PBXBuildFile; fileRef = E8DE55F62F686B6B00677129 /* lzio.c */; };
@@ -42,14 +50,6 @@
 		E8DE56172F686B6B00677129 /* ldebug.c in Sources */ = {isa = PBXBuildFile; fileRef = E8DE55C72F686B6B00677129 /* ldebug.c */; };
 		E8DE56182F686B6B00677129 /* lundump.c in Sources */ = {isa = PBXBuildFile; fileRef = E8DE55F12F686B6B00677129 /* lundump.c */; };
 		E8DE56192F686B6B00677129 /* ltm.c in Sources */ = {isa = PBXBuildFile; fileRef = E8DE55EB2F686B6B00677129 /* ltm.c */; };
-		E8DE562C2F6882BB00677129 /* SDL2_ttf.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E85B44AE2F4CDE4C002344E4 /* SDL2_ttf.framework */; };
-		E8DE562D2F6882BB00677129 /* SDL2_ttf.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = E85B44AE2F4CDE4C002344E4 /* SDL2_ttf.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		E8DE562F2F6882C200677129 /* SDL2_mixer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E85B44AB2F4CDE3C002344E4 /* SDL2_mixer.framework */; };
-		E8DE56302F6882C200677129 /* SDL2_mixer.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = E85B44AB2F4CDE3C002344E4 /* SDL2_mixer.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		E8DE56312F6882C900677129 /* SDL2_image.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E85B44A42F4CDE18002344E4 /* SDL2_image.framework */; };
-		E8DE56322F6882C900677129 /* SDL2_image.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = E85B44A42F4CDE18002344E4 /* SDL2_image.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		E8DE56352F68831900677129 /* SDL2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E85B44B12F4CDE5B002344E4 /* SDL2.framework */; };
-		E8DE56362F68831900677129 /* SDL2.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = E85B44B12F4CDE5B002344E4 /* SDL2.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -62,16 +62,16 @@
 			);
 			runOnlyForDeploymentPostprocessing = 1;
 		};
-		E8DE562E2F6882BB00677129 /* Embed Frameworks */ = {
+		E85B45142F4CF165002344E4 /* Embed Frameworks */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				E8DE56322F6882C900677129 /* SDL2_image.framework in Embed Frameworks */,
-				E8DE562D2F6882BB00677129 /* SDL2_ttf.framework in Embed Frameworks */,
-				E8DE56302F6882C200677129 /* SDL2_mixer.framework in Embed Frameworks */,
-				E8DE56362F68831900677129 /* SDL2.framework in Embed Frameworks */,
+				E85B45182F4CF17E002344E4 /* SDL2_image.framework in Embed Frameworks */,
+				E85B451A2F4CF18A002344E4 /* SDL2_mixer.framework in Embed Frameworks */,
+				E85B45162F4CF171002344E4 /* SDL2_ttf.framework in Embed Frameworks */,
+				E85B45132F4CF165002344E4 /* SDL2.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -276,18 +276,25 @@
 		E8DE55F42F686B6B00677129 /* lvm.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = lvm.c; sourceTree = "<group>"; };
 		E8DE55F52F686B6B00677129 /* lzio.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = lzio.h; sourceTree = "<group>"; };
 		E8DE55F62F686B6B00677129 /* lzio.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = lzio.c; sourceTree = "<group>"; };
-		E8DE56272F6882A300677129 /* SDL2_mixer.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2_mixer.framework; path = ../../../../../SDL2_mixer/SDL2_mixer.framework; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		E85B44852F4CD7E8002344E4 /* game_engine */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = game_engine;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		E85B44802F4CD7E8002344E4 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E8DE56312F6882C900677129 /* SDL2_image.framework in Frameworks */,
-				E8DE562C2F6882BB00677129 /* SDL2_ttf.framework in Frameworks */,
-				E8DE562F2F6882C200677129 /* SDL2_mixer.framework in Frameworks */,
-				E8DE56352F68831900677129 /* SDL2.framework in Frameworks */,
+				E85B451E2F4CF1C2002344E4 /* SDL2.framework in Frameworks */,
+				E85B451D2F4CF1B6002344E4 /* SDL2_ttf.framework in Frameworks */,
+				E85B451C2F4CF1A9002344E4 /* SDL2_mixer.framework in Frameworks */,
+				E85B451B2F4CF19F002344E4 /* SDL2_image.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -319,6 +326,7 @@
 				E85B44992F4CD867002344E4 /* scene_db.h */,
 				E85B449A2F4CD867002344E4 /* template_db.h */,
 				E85B449B2F4CD867002344E4 /* text_db.h */,
+				E85B44852F4CD7E8002344E4 /* game_engine */,
 				E85B449E2F4CDE18002344E4 /* Frameworks */,
 				E85B44842F4CD7E8002344E4 /* Products */,
 			);
@@ -335,7 +343,6 @@
 		E85B449E2F4CDE18002344E4 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				E8DE56272F6882A300677129 /* SDL2_mixer.framework */,
 				E85B45112F4CF158002344E4 /* SDL2 */,
 				E85B44B12F4CDE5B002344E4 /* SDL2.framework */,
 				E85B44AE2F4CDE4C002344E4 /* SDL2_ttf.framework */,
@@ -608,11 +615,14 @@
 				E85B447F2F4CD7E8002344E4 /* Sources */,
 				E85B44802F4CD7E8002344E4 /* Frameworks */,
 				E85B44812F4CD7E8002344E4 /* CopyFiles */,
-				E8DE562E2F6882BB00677129 /* Embed Frameworks */,
+				E85B45142F4CF165002344E4 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				E85B44852F4CD7E8002344E4 /* game_engine */,
 			);
 			name = game_engine;
 			packageProductDependencies = (
@@ -827,7 +837,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_ASSET_PATHS = "";
 				DEVELOPMENT_TEAM = 3V8JQALL6Q;
 				ENABLE_HARDENED_RUNTIME = YES;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -867,7 +876,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_ASSET_PATHS = "";
 				DEVELOPMENT_TEAM = 3V8JQALL6Q;
 				ENABLE_HARDENED_RUNTIME = YES;
 				FRAMEWORK_SEARCH_PATHS = (
