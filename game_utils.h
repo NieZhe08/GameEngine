@@ -69,15 +69,8 @@ public:
     bool pending_destroy = false;
     bool destroyOnSceneChange = true;
     
-    struct ComponentRuntime {
-        luabridge::LuaRef instance;
-        luabridge::LuaRef onStart;
-        luabridge::LuaRef onUpdate;
-        luabridge::LuaRef onLateUpdate;
-    };
-
-    // component system: key -> component instance + cached lifecycle functions
-    std::map<std::string, ComponentRuntime> components;
+    // component system: key -> component instance (LuaRef)
+    std::map<std::string, luabridge::LuaRef> components;
     // track components that have had OnStart called
     std::set<std::string> started_components;
 
@@ -101,8 +94,6 @@ public:
     
 
     luabridge::LuaRef AddComponent(std::string type);
-
-    void UpsertComponent(const std::string& key, const luabridge::LuaRef& instance);
 
     void RemoveComponent(luabridge::LuaRef component);
 

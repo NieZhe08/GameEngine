@@ -94,20 +94,20 @@ int Actor::GetID() const {
 luabridge::LuaRef Actor::GetComponentByKey(std::string key) {
     auto it = components.find(key);
     if (it != components.end()) {
-        return it->second.instance;
+        return it->second;
     }
     return luabridge::LuaRef(L);
 }
 
 luabridge::LuaRef Actor::GetComponent(std::string type) {
     //std::cout<<components.size() << std::endl;
-    for (auto& [key, runtime] : components) {
+    for (auto& [key, instance] : components) {
         (void)key;
-        if (runtime.instance["type"].cast<std::string>() == type) {
-            if (runtime.instance["enabled"].cast<bool>() == false) {
+        if (instance["type"].cast<std::string>() == type) {
+            if (instance["enabled"].cast<bool>() == false) {
                 return luabridge::LuaRef(L);
             }
-            return runtime.instance;
+            return instance;
         }
     }
     return luabridge::LuaRef(L);
@@ -118,15 +118,15 @@ luabridge::LuaRef Actor::GetComponents(std::string type) {
     int index = 1;
 
     // std::map keeps keys sorted, so iterating preserves key order.
-    for (const auto& [key, runtime] : components) {
+    for (const auto& [key, instance] : components) {
         (void)key;
-        if (runtime.instance["type"].cast<std::string>() != type) {
+        if (instance["type"].cast<std::string>() != type) {
             continue;
         }
-        if (runtime.instance["enabled"].cast<bool>() == false) {
+        if (instance["enabled"].cast<bool>() == false) {
             continue;
         }
-        result[index++] = runtime.instance;
+        result[index++] = instance;
     }
 
     return result;
@@ -140,29 +140,20 @@ luabridge::LuaRef Actor::AddComponent(std::string type) {
     return instance;
 }
 
-void Actor::UpsertComponent(const std::string& key, const luabridge::LuaRef& instance) {
-    ComponentRuntime runtime{
-        instance,
-        instance["OnStart"],
-        instance["OnUpdate"],
-        instance["OnLateUpdate"]
-    };
-    components.insert_or_assign(key, runtime);
-}
-
 void Actor::RemoveComponent(luabridge::LuaRef component) {
     component["enabled"] = false;
 }
 
 void Actor::ProcessOnStart() {
-    for (auto& [key, runtime] : components) {
+    for (auto& [key, instance] : components) {
         if (pending_destroy) break;
-        if (runtime.instance["enabled"].cast<bool>() == false) continue;
+        if (instance["enabled"].cast<bool>() == false) continue;
 
         if (started_components.find(key) == started_components.end()) {
-            if (runtime.onStart.isFunction()) {
+            luabridge::LuaRef onStart = instance["OnStart"];
+            if (onStart.isFunction()) {
                 try {
-                    runtime.onStart(runtime.instance);
+                    onStart(instance);
                 } catch (luabridge::LuaException const& e) {
                     ReportError(this->name, e);
                 }
@@ -175,14 +166,15 @@ void Actor::ProcessOnStart() {
 void Actor::ProcessOnUpdate() {
     if (pending_destroy) return;
 
-    for (auto& [key, runtime] : components) {
+    for (auto& [key, instance] : components) {
         if (pending_destroy) break;
         if (started_components.find(key) == started_components.end()) continue;
-        if (runtime.instance["enabled"].cast<bool>() == false) continue;
+        if (instance["enabled"].cast<bool>() == false) continue;
 
-        if (runtime.onUpdate.isFunction()) {
+        luabridge::LuaRef onUpdate = instance["OnUpdate"];
+        if (onUpdate.isFunction()) {
             try {
-                runtime.onUpdate(runtime.instance);
+                onUpdate(instance);
             } catch (luabridge::LuaException const& e) {
                 ReportError(this->name, e);
             }
@@ -193,14 +185,15 @@ void Actor::ProcessOnUpdate() {
 void Actor::ProcessOnLateUpdate() {
     if (pending_destroy) return;
 
-    for (auto& [key, runtime] : components) {
+    for (auto& [key, instance] : components) {
         if (pending_destroy) break;
         if (started_components.find(key) == started_components.end()) continue;
-        if (runtime.instance["enabled"].cast<bool>() == false) continue;
+        if (instance["enabled"].cast<bool>() == false) continue;
 
-        if (runtime.onLateUpdate.isFunction()) {
+        luabridge::LuaRef onLateUpdate = instance["OnLateUpdate"];
+        if (onLateUpdate.isFunction()) {
             try {
-                runtime.onLateUpdate(runtime.instance);
+                onLateUpdate(instance);
             } catch (luabridge::LuaException const& e) {
                 ReportError(this->name, e);
             }
@@ -262,25 +255,23 @@ void readAndaddComponent(const rapidjson::Value& component_data,
     std::string type;
    
     auto it = new_actor->components.find(component_name);
-    if (it != new_actor->components.end() && !it->second.instance.isNil()) {
+    if (it != new_actor->components.end() && !it->second.isNil()) {
         // Existing component with same key: merge by overriding only fields present in JSON.
         // Keep prior fields that are absent from JSON, and explicitly allow type override.
-        luabridge::LuaRef instance = it->second.instance;
+        luabridge::LuaRef& instance = it->second;
         if (component_data.HasMember("type") && component_data["type"].IsString()) {
             // error: don;t delete the original instance, just update its type field and apply properties as usual. 
             type = component_data["type"].GetString();
-            luabridge::LuaRef overridden = componentDB->CreateInstance(type, component_name, new_actor);
-            componentDB->ApplyProperties(overridden, component_data);
-            new_actor->UpsertComponent(component_name, overridden);
-            return;
+            luabridge::LuaRef instance = componentDB->CreateInstance(type, component_name, new_actor);
+            componentDB->ApplyProperties(instance, component_data);
+            new_actor->components.insert_or_assign(component_name, instance);
         }
         componentDB->ApplyProperties(instance, component_data);
-        new_actor->UpsertComponent(component_name, instance);
     } else {
         if (!component_data.HasMember("type") || !component_data["type"].IsString()) return;
         std::string type = component_data["type"].GetString();
         luabridge::LuaRef instance = componentDB->CreateInstance(type, component_name, new_actor);
         componentDB->ApplyProperties(instance, component_data);
-        new_actor->UpsertComponent(component_name, instance);
+        new_actor->components.insert_or_assign(component_name, instance);
     }
 }
