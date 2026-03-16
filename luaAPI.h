@@ -128,6 +128,7 @@ public:
 // Input API
 class InputAPI {
 public:
+
     void RegisterLuaAPI(lua_State* L) {
         luabridge::getGlobalNamespace(L)
             .beginClass<glm::vec2>("vec2")

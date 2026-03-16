@@ -18,9 +18,12 @@ public:
 	static void ProcessEvent(const SDL_Event & e); // Call every frame at start of event loop.
 	static void LateUpdate(); // Call at end of frame to transition states.
 
-	static bool GetKey(SDL_Scancode keycode); // Returns true if key is held down (includes just became down)
-	static bool GetKeyDown(SDL_Scancode keycode); // Returns true only on the frame the key was pressed
-	static bool GetKeyUp(SDL_Scancode keycode); // Returns true only on the frame the key was released
+	static bool _GetKey(SDL_Scancode keycode); // Returns true if key is held down (includes just became down)
+	static bool _GetKeyDown(SDL_Scancode keycode); // Returns true only on the frame the key was pressed
+	static bool _GetKeyUp(SDL_Scancode keycode); // Returns true only on the frame the key was released
+	static bool GetKey(const std::string& keycode); // Overload that takes string keycode, e.g. "A", "Left", "Space"
+	static bool GetKeyDown(const std::string& keycode);
+	static bool GetKeyUp(const std::string& keycode);
 	static glm::vec2 GetMousePosition();
 	static bool GetMouseButton(int button);
 	static bool GetMouseButtonDown(int button);
@@ -165,25 +168,40 @@ inline void Input::LateUpdate() {
 	mouse_scroll_this_frame = 0.0f;
 }
 
-inline bool Input::GetKey(SDL_Scancode keycode) {
+inline bool Input::_GetKey(SDL_Scancode keycode) {
 	if (!IsValidScancode(keycode)) return false;
 	auto it = keyboard_states.find(keycode);
 	if (it == keyboard_states.end()) {return false;}
 	else {return it->second == INPUT_STATE_DOWN || it->second == INPUT_STATE_JUST_BECAME_DOWN;}
 }
 
-inline bool Input::GetKeyDown(SDL_Scancode keycode) {
+inline bool Input::_GetKeyDown(SDL_Scancode keycode) {
 	if (!IsValidScancode(keycode)) return false;
 	auto it = keyboard_states.find(keycode);
 	if (it == keyboard_states.end()) {return false;}
 	else {return it->second == INPUT_STATE_JUST_BECAME_DOWN;}
 }
 
-inline bool Input::GetKeyUp(SDL_Scancode keycode) {
+inline bool Input::_GetKeyUp(SDL_Scancode keycode) {
 	if (!IsValidScancode(keycode)) return false;
 	auto it = keyboard_states.find(keycode);
 	if (it == keyboard_states.end()) {return false;}
 	else {return it->second == INPUT_STATE_JUST_BECAME_UP;}
+}
+
+inline bool Input::GetKey(const std::string& keycode) {
+	SDL_Scancode scancode = KeycodeFromString(keycode);
+	return _GetKey(scancode);
+}
+
+inline bool Input::GetKeyDown(const std::string& keycode) {
+	SDL_Scancode scancode = KeycodeFromString(keycode);
+	return _GetKeyDown(scancode);
+}
+
+inline bool Input::GetKeyUp(const std::string& keycode) {
+	SDL_Scancode scancode = KeycodeFromString(keycode);
+	return _GetKeyUp(scancode);
 }
 
 inline SDL_Scancode Input::KeycodeFromString(const std::string& keycode) {
@@ -199,24 +217,79 @@ inline SDL_Scancode Input::KeycodeFromString(const std::string& keycode) {
 	std::transform(normalized.begin(), normalized.end(), normalized.begin(), [](unsigned char c){ return static_cast<char>(std::tolower(c)); });
 
 	static const std::unordered_map<std::string, SDL_Scancode> map = {
-		{"up", SDL_SCANCODE_UP}, {"down", SDL_SCANCODE_DOWN}, {"left", SDL_SCANCODE_LEFT}, {"right", SDL_SCANCODE_RIGHT},
-		{"space", SDL_SCANCODE_SPACE}, {"enter", SDL_SCANCODE_RETURN}, {"return", SDL_SCANCODE_RETURN},
-		{"escape", SDL_SCANCODE_ESCAPE}, {"esc", SDL_SCANCODE_ESCAPE}, {"tab", SDL_SCANCODE_TAB},
-		{"backspace", SDL_SCANCODE_BACKSPACE}, {"delete", SDL_SCANCODE_DELETE}, {"insert", SDL_SCANCODE_INSERT},
-		{"lshift", SDL_SCANCODE_LSHIFT}, {"rshift", SDL_SCANCODE_RSHIFT},
-		{"lctrl", SDL_SCANCODE_LCTRL}, {"rctrl", SDL_SCANCODE_RCTRL},
-		{"lalt", SDL_SCANCODE_LALT}, {"ralt", SDL_SCANCODE_RALT},
-		{"0", SDL_SCANCODE_0}, {"1", SDL_SCANCODE_1}, {"2", SDL_SCANCODE_2}, {"3", SDL_SCANCODE_3}, {"4", SDL_SCANCODE_4},
-		{"5", SDL_SCANCODE_5}, {"6", SDL_SCANCODE_6}, {"7", SDL_SCANCODE_7}, {"8", SDL_SCANCODE_8}, {"9", SDL_SCANCODE_9},
-		{"/", SDL_SCANCODE_SLASH}, {";", SDL_SCANCODE_SEMICOLON}, {"=", SDL_SCANCODE_EQUALS}, {"-", SDL_SCANCODE_MINUS},
-		{".", SDL_SCANCODE_PERIOD}, {",", SDL_SCANCODE_COMMA}, {"[", SDL_SCANCODE_LEFTBRACKET}, {"]", SDL_SCANCODE_RIGHTBRACKET},
-		{"\\", SDL_SCANCODE_BACKSLASH}, {"'", SDL_SCANCODE_APOSTROPHE},
-		{"a", SDL_SCANCODE_A}, {"b", SDL_SCANCODE_B}, {"c", SDL_SCANCODE_C}, {"d", SDL_SCANCODE_D}, {"e", SDL_SCANCODE_E},
-		{"f", SDL_SCANCODE_F}, {"g", SDL_SCANCODE_G}, {"h", SDL_SCANCODE_H}, {"i", SDL_SCANCODE_I}, {"j", SDL_SCANCODE_J},
-		{"k", SDL_SCANCODE_K}, {"l", SDL_SCANCODE_L}, {"m", SDL_SCANCODE_M}, {"n", SDL_SCANCODE_N}, {"o", SDL_SCANCODE_O},
-		{"p", SDL_SCANCODE_P}, {"q", SDL_SCANCODE_Q}, {"r", SDL_SCANCODE_R}, {"s", SDL_SCANCODE_S}, {"t", SDL_SCANCODE_T},
-		{"u", SDL_SCANCODE_U}, {"v", SDL_SCANCODE_V}, {"w", SDL_SCANCODE_W}, {"x", SDL_SCANCODE_X}, {"y", SDL_SCANCODE_Y},
-		{"z", SDL_SCANCODE_Z}
+		// Directional (arrow) Keys
+	{"up", SDL_SCANCODE_UP},
+	{"down", SDL_SCANCODE_DOWN},
+	{"right", SDL_SCANCODE_RIGHT},
+	{"left", SDL_SCANCODE_LEFT},
+
+	// Misc Keys
+	{"escape", SDL_SCANCODE_ESCAPE},
+
+	// Modifier Keys
+	{"lshift", SDL_SCANCODE_LSHIFT},
+	{"rshift", SDL_SCANCODE_RSHIFT},
+	{"lctrl", SDL_SCANCODE_LCTRL},
+	{"rctrl", SDL_SCANCODE_RCTRL},
+	{"lalt", SDL_SCANCODE_LALT},
+	{"ralt", SDL_SCANCODE_RALT},
+
+	// Editing Keys
+	{"tab", SDL_SCANCODE_TAB},
+	{"return", SDL_SCANCODE_RETURN},
+	{"enter", SDL_SCANCODE_RETURN},
+	{"backspace", SDL_SCANCODE_BACKSPACE},
+	{"delete", SDL_SCANCODE_DELETE},
+	{"insert", SDL_SCANCODE_INSERT},
+
+	// Character Keys
+	{"space", SDL_SCANCODE_SPACE},
+	{"a", SDL_SCANCODE_A},
+	{"b", SDL_SCANCODE_B},
+	{"c", SDL_SCANCODE_C},
+	{"d", SDL_SCANCODE_D},
+	{"e", SDL_SCANCODE_E},
+	{"f", SDL_SCANCODE_F},
+	{"g", SDL_SCANCODE_G},
+	{"h", SDL_SCANCODE_H},
+	{"i", SDL_SCANCODE_I},
+	{"j", SDL_SCANCODE_J},
+	{"k", SDL_SCANCODE_K},
+	{"l", SDL_SCANCODE_L},
+	{"m", SDL_SCANCODE_M},
+	{"n", SDL_SCANCODE_N},
+	{"o", SDL_SCANCODE_O},
+	{"p", SDL_SCANCODE_P},
+	{"q", SDL_SCANCODE_Q},
+	{"r", SDL_SCANCODE_R},
+	{"s", SDL_SCANCODE_S},
+	{"t", SDL_SCANCODE_T},
+	{"u", SDL_SCANCODE_U},
+	{"v", SDL_SCANCODE_V},
+	{"w", SDL_SCANCODE_W},
+	{"x", SDL_SCANCODE_X},
+	{"y", SDL_SCANCODE_Y},
+	{"z", SDL_SCANCODE_Z},
+	{"0", SDL_SCANCODE_0},
+	{"1", SDL_SCANCODE_1},
+	{"2", SDL_SCANCODE_2},
+	{"3", SDL_SCANCODE_3},
+	{"4", SDL_SCANCODE_4},
+	{"5", SDL_SCANCODE_5},
+	{"6", SDL_SCANCODE_6},
+	{"7", SDL_SCANCODE_7},
+	{"8", SDL_SCANCODE_8},
+	{"9", SDL_SCANCODE_9},
+	{"/", SDL_SCANCODE_SLASH},
+	{";", SDL_SCANCODE_SEMICOLON},
+	{"=", SDL_SCANCODE_EQUALS},
+	{"-", SDL_SCANCODE_MINUS},
+	{".", SDL_SCANCODE_PERIOD},
+	{",", SDL_SCANCODE_COMMA},
+	{"[", SDL_SCANCODE_LEFTBRACKET},
+	{"]", SDL_SCANCODE_RIGHTBRACKET},
+	{"\\", SDL_SCANCODE_BACKSLASH},
+	{"'", SDL_SCANCODE_APOSTROPHE}
 	};
 
 	auto it = map.find(normalized);
@@ -255,7 +328,7 @@ inline bool Input::IsValidScancode(SDL_Scancode keycode) {
 }
 
 inline bool Input::IsValidMouseButton(int button) {
-	return button >= static_cast<int>(SDL_BUTTON_LEFT) && button <= static_cast<int>(SDL_BUTTON_X2);
+	return button >= static_cast<int>(SDL_BUTTON_LEFT) && button <= static_cast<int>(SDL_BUTTON_RIGHT);
 }
 
 inline float Input::GetMouseScrollDelta() {
