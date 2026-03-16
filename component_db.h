@@ -101,7 +101,7 @@ public:
         if (instance.isNil()) {
             return luabridge::LuaRef(actor->L);
         }
-        actor->components.insert_or_assign(key, instance);
+        actor->UpsertComponent(key, instance);
         // check if the component is added for the first time, if so, call its OnStart
         if (instance.isNil()) {
         return luabridge::LuaRef(L);

@@ -58,7 +58,7 @@ class ComponentDB;
 
 
 
-class Actor {
+class Actor : public std::enable_shared_from_this<Actor> {
 public:
     // 基础属性 
     std::string name;
@@ -69,8 +69,15 @@ public:
     bool pending_destroy = false;
     bool destroyOnSceneChange = true;
     
-    // component system: key -> component instance (LuaRef)
-    std::map<std::string, luabridge::LuaRef> components;
+    struct ComponentRuntime {
+        luabridge::LuaRef instance;
+        luabridge::LuaRef onStart;
+        luabridge::LuaRef onUpdate;
+        luabridge::LuaRef onLateUpdate;
+    };
+
+    // component system: key -> component instance + cached lifecycle functions
+    std::map<std::string, ComponentRuntime> components;
     // track components that have had OnStart called
     std::set<std::string> started_components;
 
@@ -94,6 +101,8 @@ public:
     
 
     luabridge::LuaRef AddComponent(std::string type);
+
+    void UpsertComponent(const std::string& key, const luabridge::LuaRef& instance);
 
     void RemoveComponent(luabridge::LuaRef component);
 
