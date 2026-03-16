@@ -99,7 +99,7 @@ public:
 
             // Render texture to screen
             SDL_FRect dstRect = { static_cast<float>(info.x), static_cast<float>(info.y), width, height };
-            Helper::SDL_RenderCopy(renderer_, texture, nullptr, &dstRect);
+            Helper::SDL_RenderCopyEx(0, "", renderer_, texture, nullptr, &dstRect, 0, nullptr, SDL_FLIP_NONE);
 
             // Clean up texture
             SDL_DestroyTexture(texture);

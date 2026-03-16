@@ -208,22 +208,23 @@ public:
     explicit ImageAPI(const std::shared_ptr<ImageManager>& imageManager): m_imageManager(imageManager) {}
     
     void RegisterLuaAPI(lua_State* L) {
+        auto imageManager = m_imageManager;
         luabridge::getGlobalNamespace(L)
             .beginNamespace("Image")
-                .addFunction("DrawUI", std::function<void(const std::string&, float, float)>([this](const std::string& image_name, float x, float y) {
-                    m_imageManager->pushDrawUI(image_name, x, y);
+                .addFunction("DrawUI", std::function<void(const std::string&, float, float)>([imageManager](const std::string& image_name, float x, float y) {
+                    imageManager->pushDrawUI(image_name, x, y);
                 }))
-                .addFunction("DrawUIEx", std::function<void(const std::string&, float, float, int, int, int, int, int)>([this](const std::string& image_name, float x, float y, int r, int g, int b, int a, int sorting_order) {
-                    m_imageManager->pushDrawUIEx(image_name, x, y, r, g, b, a, sorting_order);
+                .addFunction("DrawUIEx", std::function<void(const std::string&, float, float, int, int, int, int, int)>([imageManager](const std::string& image_name, float x, float y, int r, int g, int b, int a, int sorting_order) {
+                    imageManager->pushDrawUIEx(image_name, x, y, r, g, b, a, sorting_order);
                 }))
-                .addFunction("Draw", std::function<void(const std::string&, float, float)>([this](const std::string& image_name, float x, float y) {
-                    m_imageManager->pushDraw(image_name, x, y);
+                .addFunction("Draw", std::function<void(const std::string&, float, float)>([imageManager](const std::string& image_name, float x, float y) {
+                    imageManager->pushDraw(image_name, x, y);
                 }))
-                .addFunction("DrawEx", std::function<void(const std::string&, float, float, int, float, float, float, float, int, int, int, int, int)>([this](const std::string& image_name, float x, float y, int rotation_degrees, float scale_x, float scale_y, float pivot_x, float pivot_y, int r, int g, int b, int a, int sorting_order) {
-                    m_imageManager->pushDrawEx(image_name, x, y, rotation_degrees, scale_x, scale_y, pivot_x, pivot_y, r, g, b, a, sorting_order);
+                .addFunction("DrawEx", std::function<void(const std::string&, float, float, int, float, float, float, float, int, int, int, int, int)>([imageManager](const std::string& image_name, float x, float y, int rotation_degrees, float scale_x, float scale_y, float pivot_x, float pivot_y, int r, int g, int b, int a, int sorting_order) {
+                    imageManager->pushDrawEx(image_name, x, y, rotation_degrees, scale_x, scale_y, pivot_x, pivot_y, r, g, b, a, sorting_order);
                 }))
-                .addFunction("DrawPixel", std::function<void(int, int, int, int, int, int)>([this](int x, int y, int r, int g, int b, int a) {
-                    m_imageManager->pushDrawPixel(x, y, r, g, b, a);
+                .addFunction("DrawPixel", std::function<void(int, int, int, int, int, int)>([imageManager](int x, int y, int r, int g, int b, int a) {
+                    imageManager->pushDrawPixel(x, y, r, g, b, a);
                 }))
             .endNamespace();
     }
@@ -236,22 +237,23 @@ public:
     explicit CameraAPI(const std::shared_ptr<CameraManager>& cameraManager): m_cameraManager(cameraManager) {}
 
     void RegisterLuaAPI(lua_State* L) {
+        auto cameraManager = m_cameraManager;
         luabridge::getGlobalNamespace(L)
             .beginNamespace("Camera")
-                .addFunction("SetPosition", std::function<void(float, float)>([this](float x, float y) {
-                    m_cameraManager->setPosition(x, y);
+                .addFunction("SetPosition", std::function<void(float, float)>([cameraManager](float x, float y) {
+                    cameraManager->setPosition(x, y);
                 }))
-                .addFunction("SetZoom", std::function<void(float)>([this](float zoom_factor) {
-                    m_cameraManager->setZoom(zoom_factor);
+                .addFunction("SetZoom", std::function<void(float)>([cameraManager](float zoom_factor) {
+                    cameraManager->setZoom(zoom_factor);
                 }))
-                .addFunction("GetPositionX", std::function<float()>([this]() {
-                    return m_cameraManager->getPositionX();
+                .addFunction("GetPositionX", std::function<float()>([cameraManager]() {
+                    return cameraManager->getPositionX();
                 }))
-                .addFunction("GetPositionY", std::function<float()>([this]() {
-                    return m_cameraManager->getPositionY();
+                .addFunction("GetPositionY", std::function<float()>([cameraManager]() {
+                    return cameraManager->getPositionY();
                 }))
-                .addFunction("GetZoom", std::function<float()>([this]() {
-                    return m_cameraManager->getZoom();
+                .addFunction("GetZoom", std::function<float()>([cameraManager]() {
+                    return cameraManager->getZoom();
                 }))
             .endNamespace();
     }
