@@ -21,7 +21,7 @@ public:
     ActorManager(lua_State* L) : L(L) {}
 
     // 提供给 Scene 或 Lua 调用的创建接口
-    Actor* CreateActor( std::string name, ComponentDB* componentDB) {
+    Actor* CreateActor( std::string name, const std::shared_ptr<ComponentDB>& componentDB) {
         auto new_actor = std::make_shared<Actor>(L, next_actor_id++, name, this, componentDB);
         all_actors.push_back(new_actor);
         actors_to_call_onstart.push_back(new_actor); // 新创建的 Actor 需要在本帧调用 OnStart
@@ -126,7 +126,7 @@ public:
         return result;
     }
 
-    Actor* Instantiate(std::string templateName, TemplateDB* templateDB, ComponentDB* componentDB){
+    Actor* Instantiate(std::string templateName, TemplateDB* templateDB, const std::shared_ptr<ComponentDB>& componentDB){
         const rapidjson::Value* components_obj = templateDB->getComponentsObject();
         if (!components_obj) return nullptr; // return nullptr if no components object in template
 
@@ -134,7 +134,7 @@ public:
         for (auto it = components_obj->MemberBegin(); it != components_obj->MemberEnd(); ++it) {
             const std::string component_name = it->name.GetString();
             const rapidjson::Value& component_data = it->value;
-            readAndaddComponent(component_data, component_name, componentDB, new_actor);
+            readAndaddComponent(component_data, component_name, componentDB.get(), new_actor);
         }
         return new_actor;
     }

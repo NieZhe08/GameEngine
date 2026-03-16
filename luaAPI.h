@@ -10,6 +10,7 @@
 #include "input_manager.h"
 #include <thread>
 #include <chrono>
+#include <memory>
 #include "cameraManager.h"
 
 // Debug API 
@@ -98,14 +99,16 @@ public:
 // Actor API 
 class ActorAPI {
 private:
-    ActorManager* m_actorManager;
-    ComponentDB* m_componentDB;
+    std::shared_ptr<ActorManager> m_actorManager;
+    std::shared_ptr<ComponentDB> m_componentDB;
 public:
-    ActorAPI(ActorManager* actorManager, ComponentDB* componentDB): m_actorManager(actorManager), m_componentDB(componentDB) {}
+    ActorAPI(const std::shared_ptr<ActorManager>& actorManager,
+             const std::shared_ptr<ComponentDB>& componentDB)
+        : m_actorManager(actorManager), m_componentDB(componentDB) {}
 
     void RegisterLuaAPI(lua_State* L) {
-        ActorManager* actorManager = m_actorManager;
-        ComponentDB* componentDB = m_componentDB;
+        ActorManager* actorManager = m_actorManager.get();
+        std::shared_ptr<ComponentDB> componentDB = m_componentDB;
         luabridge::getGlobalNamespace(L)
             .beginClass<Actor>("Actor")
                 .addFunction("GetName", &Actor::GetName)
@@ -155,15 +158,16 @@ public:
 };
 
 class TextAPI {
-    TextManager* m_textManager;
+    std::shared_ptr<TextManager> m_textManager;
     public:
-        TextAPI(TextManager* textManager): m_textManager(textManager) {}
+        explicit TextAPI(const std::shared_ptr<TextManager>& textManager): m_textManager(textManager) {}
 
         void RegisterLuaAPI(lua_State* L) {
+            auto textManager = m_textManager;
             luabridge::getGlobalNamespace(L)
                 .beginNamespace("Text")
-                    .addFunction("Draw", std::function<void(const std::string&, int, int, const std::string&, int, int, int, int, int)>([this](const std::string& text, int x, int y, const std::string& font_name, int font_size, int r, int g, int b, int a) {
-                        m_textManager->addText(text, x, y, font_name, font_size, r, g, b, a);
+                    .addFunction("Draw", std::function<void(const std::string&, int, int, const std::string&, int, int, int, int, int)>([textManager](const std::string& text, int x, int y, const std::string& font_name, int font_size, int r, int g, int b, int a) {
+                        textManager->addText(text, x, y, font_name, font_size, r, g, b, a);
                     }))
                 .endNamespace();
         }
@@ -199,9 +203,9 @@ public:
 };
 
 class ImageAPI {
-    ImageManager* m_imageManager;
+    std::shared_ptr<ImageManager> m_imageManager;
 public:
-    ImageAPI(ImageManager* imageManager): m_imageManager(imageManager) {}
+    explicit ImageAPI(const std::shared_ptr<ImageManager>& imageManager): m_imageManager(imageManager) {}
     
     void RegisterLuaAPI(lua_State* L) {
         luabridge::getGlobalNamespace(L)
@@ -226,10 +230,10 @@ public:
 };
 
 class CameraAPI {
-    CameraManager* m_cameraManager;
+    std::shared_ptr<CameraManager> m_cameraManager;
 
 public:
-    CameraAPI(CameraManager* cameraManager): m_cameraManager(cameraManager) {}
+    explicit CameraAPI(const std::shared_ptr<CameraManager>& cameraManager): m_cameraManager(cameraManager) {}
 
     void RegisterLuaAPI(lua_State* L) {
         luabridge::getGlobalNamespace(L)

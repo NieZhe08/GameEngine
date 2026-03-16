@@ -37,27 +37,19 @@
 
     GameEngine::~GameEngine() {
         // Destroy managers that may hold LuaRef first.
-        delete actorManager;
-        actorManager = nullptr;
-
+        actorManager.reset();
         componentDB.reset();
+        textManager.reset();
+        audioManager.reset();
+        imageManager.reset();
+        cameraManager.reset();
 
-        delete textManager;
-        textManager = nullptr;
-        delete audioManager;
-        audioManager = nullptr;
-        delete imageManager;
-        imageManager = nullptr;
-        delete cameraManager;
-        cameraManager = nullptr;
+        // NOTE: lua_close currently aborts with munmap_chunk(): invalid pointer
+        // in this codebase during close_state. Keep process-exit reclamation.
+        if (L) lua_close(L);
+        L = nullptr;
 
-        // Close Lua state after all LuaRef owners are gone.
-        if (L) {
-            lua_close(L);
-            L = nullptr;
-        }
-
-        // Clean up SDL resources
+        // SDL teardown should be centralized at engine level.
         if (ren) {
             SDL_DestroyRenderer(ren);
             ren = nullptr;
@@ -88,19 +80,19 @@
             L = luaL_newstate();
             luaL_openlibs(L);
             // 3. initialize managers:
-            componentDB = std::make_unique<ComponentDB>(L);
-            actorManager = new ActorManager(L); // 创建 Actor 管理器实例，并传入 Lua 状态
-            textManager = new TextManager(ren); // 创建 Text 管理器实例，传入 SDL_Renderer 用于文本渲染
+            componentDB = std::make_shared<ComponentDB>(L);
+            actorManager = std::make_shared<ActorManager>(L); // 创建 Actor 管理器实例，并传入 Lua 状态
+            textManager = std::make_shared<TextManager>(ren); // 创建 Text 管理器实例，传入 SDL_Renderer 用于文本渲染
             input.Init(); // Initialize input states
-            audioManager = new AudioManager();
+            audioManager = std::make_shared<AudioManager>();
             audioManager->Init(); // Initialize audio subsystem
-            imageManager = new ImageManager(ren); // 创建 Image 管理器实例，传入 SDL_Renderer 用于图像加载和渲染
-            cameraManager = new CameraManager();
+            imageManager = std::make_shared<ImageManager>(ren); // 创建 Image 管理器实例，传入 SDL_Renderer 用于图像加载和渲染
+            cameraManager = std::make_shared<CameraManager>();
 
             // 注册 Lua API（Debug / Application / Actor）
             Debug().RegisterLuaAPI(L);
             ApplicationAPI().RegisterLuaAPI(L);
-            ActorAPI(actorManager, componentDB.get()).RegisterLuaAPI(L);
+            ActorAPI(actorManager, componentDB).RegisterLuaAPI(L);
             InputAPI().RegisterLuaAPI(L); // 统一格式
             TextAPI(textManager).RegisterLuaAPI(L);
             AudioAPI().RegisterLuaAPI(L); // 统一格式
@@ -113,7 +105,7 @@
         }
         
         // load scene module
-        SceneDB sceneDB(next_scene_name, L, componentDB.get(), *actorManager);
+        SceneDB sceneDB(next_scene_name, L, componentDB, actorManager);
        
         next_scene_name = "";
         endingFlag = false;
@@ -708,6 +700,17 @@
     }
 
     void GameEngine::frameRender(bool isInitialRender) {// render main
+        (void)isInitialRender;
+
+        SDL_SetRenderDrawColor(
+            ren,
+            static_cast<Uint8>(std::clamp(clear_color.x, 0, 255)),
+            static_cast<Uint8>(std::clamp(clear_color.y, 0, 255)),
+            static_cast<Uint8>(std::clamp(clear_color.z, 0, 255)),
+            255
+        );
+        SDL_RenderClear(ren);
+
         this->imageManager->renderSSImages();
         this->imageManager->renderUI();
         this->textManager->renderAllText();

@@ -19,18 +19,18 @@ class SceneDB {
 public:
     rapidjson::Document scenes;
     std::string sceneName;
-    ActorManager& actorManager;
+    std::shared_ptr<ActorManager> actorManager;
     glm::ivec2 mapSize;
     //ImageDB* imageDB;
     std::vector<TemplateDB> template_cache;
     lua_State* L;                // 共享的全局 Lua 状态
-    ComponentDB* componentDB;    // 组件类型数据库（不拥有）
+    std::shared_ptr<ComponentDB> componentDB;    // 组件类型数据库
 
     SceneDB (std::string sceneName,
              //ImageDB* _imageDB,
              lua_State* L,
-             ComponentDB* componentDB,
-             ActorManager& actorManager)
+                         const std::shared_ptr<ComponentDB>& componentDB,
+                         const std::shared_ptr<ActorManager>& actorManager)
         : sceneName(sceneName),
           actorManager(actorManager),
           mapSize(0, 0),
@@ -64,7 +64,7 @@ public:
                     if (actor.HasMember("name") && actor["name"].IsString()){
                         name = actor["name"].GetString();
                     } 
-                    Actor* new_actor = actorManager.CreateActor(name, componentDB);
+                    Actor* new_actor = actorManager->CreateActor(name, componentDB);
 
                     if (actor.HasMember("template")){// actor would still have templates
                         std::string templateName = actor["template"].GetString();
@@ -74,7 +74,7 @@ public:
                             for (rapidjson::Value::ConstMemberIterator it = componentsFromTemplate->MemberBegin(); it != componentsFromTemplate->MemberEnd(); ++it){
                                 const std::string component_name = it->name.GetString();
                                 const rapidjson::Value& component_data = it->value;
-                                readAndaddComponent(component_data, component_name, componentDB, new_actor);
+                                readAndaddComponent(component_data, component_name, componentDB.get(), new_actor);
                             }
                         }
 
@@ -85,7 +85,7 @@ public:
                         for (rapidjson::Value::ConstMemberIterator it = components.MemberBegin(); it != components.MemberEnd(); ++it){
                             const std::string component_name = it->name.GetString();
                             const rapidjson::Value& component_data = it->value;
-                            readAndaddComponent(component_data, component_name, componentDB, new_actor);
+                            readAndaddComponent(component_data, component_name, componentDB.get(), new_actor);
                         }
                     }
                 }

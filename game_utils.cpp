@@ -66,7 +66,7 @@ GameIncident checkGameIncidents(std::string dialogue) {
 ActorManager* Actor::s_lua_actor_manager = nullptr;
 lua_State* Actor::s_lua_state = nullptr;
 
-Actor::Actor(lua_State* L, int id, std::string name, ActorManager* am, ComponentDB* cdb)
+Actor::Actor(lua_State* L, int id, std::string name, ActorManager* am, const std::shared_ptr<ComponentDB>& cdb)
     : name(std::move(name)),
       id(id),
       L(L),

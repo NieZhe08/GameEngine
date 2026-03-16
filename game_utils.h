@@ -14,6 +14,7 @@
 #include <vector>
 #include <set>
 #include <cstdint>
+#include <memory>
 #include "rapidjson/document.h"
 
 enum class PlayerAction {
@@ -64,7 +65,7 @@ public:
     int id;
     lua_State* L;
     ActorManager* actorManager = nullptr;
-    ComponentDB* componentDB = nullptr;
+    std::shared_ptr<ComponentDB> componentDB;
     bool pending_destroy = false;
     bool destroyOnSceneChange = true;
     
@@ -73,7 +74,7 @@ public:
     // track components that have had OnStart called
     std::set<std::string> started_components;
 
-    Actor(lua_State* L, int id, std::string name, ActorManager* am, ComponentDB* cdb);
+    Actor(lua_State* L, int id, std::string name, ActorManager* am, const std::shared_ptr<ComponentDB>& cdb);
 
     ~Actor();
 

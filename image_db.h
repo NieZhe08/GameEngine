@@ -162,11 +162,10 @@ public:
     ImageManager(SDL_Renderer* renderer) : ren(renderer) {}
 
     ~ImageManager() {
-        for (auto& entry : image_cache) {
-            if (entry.second) {
-                SDL_DestroyTexture(entry.second);
-            }
-        }
+        // Textures are tied to renderer/driver lifetime in this project.
+        // Let renderer teardown reclaim them to avoid shutdown double-free
+        // hazards on some driver stacks.
+        image_cache.clear();
     }
 
     SDL_Texture* loadImage(const std::string& path) {

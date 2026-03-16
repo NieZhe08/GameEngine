@@ -42,14 +42,14 @@ public:
 
     // 全局 Lua 状态与组件数据库（HW7）
     lua_State* L = nullptr;
-    std::unique_ptr<ComponentDB> componentDB;
+    std::shared_ptr<ComponentDB> componentDB;
     // Managers
-    ActorManager* actorManager = nullptr; 
-    TextManager* textManager = nullptr; 
+    std::shared_ptr<ActorManager> actorManager;
+    std::shared_ptr<TextManager> textManager;
     Input input;
-    AudioManager* audioManager = nullptr;
-    ImageManager* imageManager = nullptr;
-    CameraManager* cameraManager = nullptr;
+    std::shared_ptr<AudioManager> audioManager;
+    std::shared_ptr<ImageManager> imageManager;
+    std::shared_ptr<CameraManager> cameraManager;
 
     //std::unique_ptr<std::vector<std::string>> intro_image;
     //std::unique_ptr<std::vector<std::string>> intro_text;
