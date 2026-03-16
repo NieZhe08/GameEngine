@@ -78,7 +78,7 @@ public:
 
             // Render text to surface
             SDL_Color color = { static_cast<Uint8>(info.r), static_cast<Uint8>(info.g), static_cast<Uint8>(info.b), static_cast<Uint8>(info.a) };
-            SDL_Surface* surface = TTF_RenderText_Blended(font, info.text.c_str(), color);
+            SDL_Surface* surface = TTF_RenderText_Solid(font, info.text.c_str(), color);
             if (!surface) {
                 std::cout << "Failed to create text surface: " << TTF_GetError() << std::endl;
                 continue;
