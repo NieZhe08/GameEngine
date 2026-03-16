@@ -21,12 +21,6 @@ public:
 	static bool GetKey(SDL_Scancode keycode); // Returns true if key is held down (includes just became down)
 	static bool GetKeyDown(SDL_Scancode keycode); // Returns true only on the frame the key was pressed
 	static bool GetKeyUp(SDL_Scancode keycode); // Returns true only on the frame the key was released
-	static bool GetKey(const char* keycode);
-	static bool GetKeyDown(const char* keycode);
-	static bool GetKeyUp(const char* keycode);
-	static bool GetKey(const std::string& keycode);
-	static bool GetKeyDown(const std::string& keycode);
-	static bool GetKeyUp(const std::string& keycode);
 	static glm::vec2 GetMousePosition();
 	static bool GetMouseButton(int button);
 	static bool GetMouseButtonDown(int button);
@@ -174,37 +168,22 @@ inline void Input::LateUpdate() {
 inline bool Input::GetKey(SDL_Scancode keycode) {
 	if (!IsValidScancode(keycode)) return false;
 	auto it = keyboard_states.find(keycode);
-	if (it == keyboard_states.end()) return false;
-	return it->second == INPUT_STATE_DOWN || it->second == INPUT_STATE_JUST_BECAME_DOWN;
+	if (it == keyboard_states.end()) {return false;}
+	else {return it->second == INPUT_STATE_DOWN || it->second == INPUT_STATE_JUST_BECAME_DOWN;}
 }
 
 inline bool Input::GetKeyDown(SDL_Scancode keycode) {
 	if (!IsValidScancode(keycode)) return false;
 	auto it = keyboard_states.find(keycode);
-	if (it == keyboard_states.end()) return false;
-	return it->second == INPUT_STATE_JUST_BECAME_DOWN;
+	if (it == keyboard_states.end()) {return false;}
+	else {return it->second == INPUT_STATE_JUST_BECAME_DOWN;}
 }
 
 inline bool Input::GetKeyUp(SDL_Scancode keycode) {
 	if (!IsValidScancode(keycode)) return false;
 	auto it = keyboard_states.find(keycode);
-	if (it == keyboard_states.end()) return false;
-	return it->second == INPUT_STATE_JUST_BECAME_UP;
-}
-
-inline bool Input::GetKey(const char* keycode) {
-	if (keycode == nullptr) return false;
-	return GetKey(std::string(keycode));
-}
-
-inline bool Input::GetKeyDown(const char* keycode) {
-	if (keycode == nullptr) return false;
-	return GetKeyDown(std::string(keycode));
-}
-
-inline bool Input::GetKeyUp(const char* keycode) {
-	if (keycode == nullptr) return false;
-	return GetKeyUp(std::string(keycode));
+	if (it == keyboard_states.end()) {return false;}
+	else {return it->second == INPUT_STATE_JUST_BECAME_UP;}
 }
 
 inline SDL_Scancode Input::KeycodeFromString(const std::string& keycode) {
@@ -243,24 +222,6 @@ inline SDL_Scancode Input::KeycodeFromString(const std::string& keycode) {
 	auto it = map.find(normalized);
 	if (it == map.end()) return SDL_SCANCODE_UNKNOWN;
 	return it->second;
-}
-
-inline bool Input::GetKey(const std::string& keycode) {
-	SDL_Scancode scan = KeycodeFromString(keycode);
-	if (scan == SDL_SCANCODE_UNKNOWN) return false;
-	return GetKey(scan);
-}
-
-inline bool Input::GetKeyDown(const std::string& keycode) {
-	SDL_Scancode scan = KeycodeFromString(keycode);
-	if (scan == SDL_SCANCODE_UNKNOWN) return false;
-	return GetKeyDown(scan);
-}
-
-inline bool Input::GetKeyUp(const std::string& keycode) {
-	SDL_Scancode scan = KeycodeFromString(keycode);
-	if (scan == SDL_SCANCODE_UNKNOWN) return false;
-	return GetKeyUp(scan);
 }
 
 inline glm::vec2 Input::GetMousePosition() {
