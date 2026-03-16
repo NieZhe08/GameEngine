@@ -214,17 +214,47 @@ public:
                 .addFunction("DrawUI", std::function<void(const std::string&, float, float)>([imageManager](const std::string& image_name, float x, float y) {
                     imageManager->pushDrawUI(image_name, x, y);
                 }))
-                .addFunction("DrawUIEx", std::function<void(const std::string&, float, float, int, int, int, int, int)>([imageManager](const std::string& image_name, float x, float y, int r, int g, int b, int a, int sorting_order) {
-                    imageManager->pushDrawUIEx(image_name, x, y, r, g, b, a, sorting_order);
+                .addFunction("DrawUIEx", std::function<void(const std::string&, float, float, float, float, float, float, float)>([imageManager](const std::string& image_name, float x, float y, float r, float g, float b, float a, float sorting_order) {
+                    imageManager->pushDrawUIEx(
+                        image_name,
+                        x,
+                        y,
+                        static_cast<int>(r),
+                        static_cast<int>(g),
+                        static_cast<int>(b),
+                        static_cast<int>(a),
+                        static_cast<int>(sorting_order)
+                    );
                 }))
                 .addFunction("Draw", std::function<void(const std::string&, float, float)>([imageManager](const std::string& image_name, float x, float y) {
                     imageManager->pushDraw(image_name, x, y);
                 }))
-                .addFunction("DrawEx", std::function<void(const std::string&, float, float, int, float, float, float, float, int, int, int, int, int)>([imageManager](const std::string& image_name, float x, float y, int rotation_degrees, float scale_x, float scale_y, float pivot_x, float pivot_y, int r, int g, int b, int a, int sorting_order) {
-                    imageManager->pushDrawEx(image_name, x, y, rotation_degrees, scale_x, scale_y, pivot_x, pivot_y, r, g, b, a, sorting_order);
+                .addFunction("DrawEx", std::function<void(const std::string&, float, float, float, float, float, float, float, float, float, float, float, float)>([imageManager](const std::string& image_name, float x, float y, float rotation_degrees, float scale_x, float scale_y, float pivot_x, float pivot_y, float r, float g, float b, float a, float sorting_order) {
+                    imageManager->pushDrawEx(
+                        image_name,
+                        x,
+                        y,
+                        static_cast<int>(rotation_degrees),
+                        scale_x,
+                        scale_y,
+                        pivot_x,
+                        pivot_y,
+                        static_cast<int>(r),
+                        static_cast<int>(g),
+                        static_cast<int>(b),
+                        static_cast<int>(a),
+                        static_cast<int>(sorting_order)
+                    );
                 }))
-                .addFunction("DrawPixel", std::function<void(int, int, int, int, int, int)>([imageManager](int x, int y, int r, int g, int b, int a) {
-                    imageManager->pushDrawPixel(x, y, r, g, b, a);
+                .addFunction("DrawPixel", std::function<void(float, float, float, float, float, float)>([imageManager](float x, float y, float r, float g, float b, float a) {
+                    imageManager->pushDrawPixel(
+                        static_cast<int>(x),
+                        static_cast<int>(y),
+                        static_cast<int>(r),
+                        static_cast<int>(g),
+                        static_cast<int>(b),
+                        static_cast<int>(a)
+                    );
                 }))
             .endNamespace();
     }

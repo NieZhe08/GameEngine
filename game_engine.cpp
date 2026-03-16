@@ -728,6 +728,13 @@
         );
         SDL_RenderClear(ren);
 
+        if (this->imageManager && this->cameraManager) {
+            this->imageManager->setCameraState(
+                glm::vec2(this->cameraManager->getPositionX(), this->cameraManager->getPositionY()),
+                this->cameraManager->getZoom()
+            );
+        }
+
         this->imageManager->renderSSImages();
         this->imageManager->renderUI();
         this->textManager->renderAllText();
