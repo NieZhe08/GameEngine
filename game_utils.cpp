@@ -133,24 +133,6 @@ luabridge::LuaRef Actor::GetComponents(std::string type) {
 
 luabridge::LuaRef Actor::AddComponent(std::string type) {
     luabridge::LuaRef instance = this->componentDB->AddComponentToActor(this, type);
-    if (instance.isNil()) {
-        return luabridge::LuaRef(L);
-    }
-
-    const std::string key = instance["key"].cast<std::string>();
-    if (started_components.find(key) == started_components.end() &&
-        instance["enabled"].cast<bool>() != false) {
-        luabridge::LuaRef onStart = instance["OnStart"];
-        if (onStart.isFunction()) {
-            try {
-                onStart(instance);
-            } catch (luabridge::LuaException const& e) {
-                ReportError(this->name, e);
-            }
-        }
-        started_components.insert(key);
-    }
-
     return instance;
 }
 

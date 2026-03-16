@@ -17,7 +17,7 @@ class Debug {
 public:
     static void CppLog(const luabridge::LuaRef& message) {
         if (message.isNil()) {
-            std::cout << "nil" << std::endl;
+            std::cout  << '\n';
             return;
         }
 
@@ -30,7 +30,7 @@ public:
 
     static void CppLogError(const luabridge::LuaRef& message) {
         if (message.isNil()) {
-            std::cerr << "nil" << std::endl;
+            std::cerr << '\n';
             return;
         }
 

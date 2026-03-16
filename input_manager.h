@@ -21,6 +21,9 @@ public:
 	static bool GetKey(SDL_Scancode keycode); // Returns true if key is held down (includes just became down)
 	static bool GetKeyDown(SDL_Scancode keycode); // Returns true only on the frame the key was pressed
 	static bool GetKeyUp(SDL_Scancode keycode); // Returns true only on the frame the key was released
+	static bool GetKey(const char* keycode);
+	static bool GetKeyDown(const char* keycode);
+	static bool GetKeyUp(const char* keycode);
 	static bool GetKey(const std::string& keycode);
 	static bool GetKeyDown(const std::string& keycode);
 	static bool GetKeyUp(const std::string& keycode);
@@ -49,6 +52,8 @@ private:
 	static inline float mouse_scroll_this_frame = 0.0f;
 
 	static SDL_Scancode KeycodeFromString(const std::string& keycode);
+	static bool IsValidScancode(SDL_Scancode keycode);
+	static bool IsValidMouseButton(int button);
 };
 
 // Implementation
@@ -72,6 +77,9 @@ inline void Input::ProcessEvent(const SDL_Event & e) {
 	}
 	if (e.type == SDL_KEYDOWN ) {
 		SDL_Scancode scancode = e.key.keysym.scancode;
+		if (!IsValidScancode(scancode)) {
+			return;
+		}
 		auto it = keyboard_states.find(scancode);
 		INPUT_STATE current_state = (it != keyboard_states.end()) ? it->second : INPUT_STATE_UP;
 		
@@ -83,6 +91,9 @@ inline void Input::ProcessEvent(const SDL_Event & e) {
 	}
 	else if (e.type == SDL_KEYUP) {
 		SDL_Scancode scancode = e.key.keysym.scancode;
+		if (!IsValidScancode(scancode)) {
+			return;
+		}
 		auto it = keyboard_states.find(scancode);
 		
 		// Only transition to JUST_BECAME_UP if the key was tracked and currently down
@@ -96,6 +107,9 @@ inline void Input::ProcessEvent(const SDL_Event & e) {
 	}
 	else if (e.type == SDL_MOUSEBUTTONDOWN) {
 		int button = static_cast<int>(e.button.button);
+		if (!IsValidMouseButton(button)) {
+			return;
+		}
 		auto it = mouse_button_states.find(button);
 		INPUT_STATE current_state = (it != mouse_button_states.end()) ? it->second : INPUT_STATE_UP;
 		if (current_state == INPUT_STATE_UP) {
@@ -105,6 +119,9 @@ inline void Input::ProcessEvent(const SDL_Event & e) {
 	}
 	else if (e.type == SDL_MOUSEBUTTONUP) {
 		int button = static_cast<int>(e.button.button);
+		if (!IsValidMouseButton(button)) {
+			return;
+		}
 		auto it = mouse_button_states.find(button);
 		if (it != mouse_button_states.end() && (it->second == INPUT_STATE_DOWN || it->second == INPUT_STATE_JUST_BECAME_DOWN)) {
 			mouse_button_states[button] = INPUT_STATE_JUST_BECAME_UP;
@@ -119,30 +136,34 @@ inline void Input::ProcessEvent(const SDL_Event & e) {
 inline void Input::LateUpdate() {
 	// Update states from JUST_BECAME_DOWN to DOWN
 	for (SDL_Scancode scancode : just_became_down_scancodes) {
-		if (keyboard_states[scancode] == INPUT_STATE_JUST_BECAME_DOWN) {
-			keyboard_states[scancode] = INPUT_STATE_DOWN;
+		auto it = keyboard_states.find(scancode);
+		if (it != keyboard_states.end() && it->second == INPUT_STATE_JUST_BECAME_DOWN) {
+			it->second = INPUT_STATE_DOWN;
 		}
 	}
 	just_became_down_scancodes.clear();
 	
 	// Update states from JUST_BECAME_UP to UP
 	for (SDL_Scancode scancode : just_became_up_scancodes) {
-		if (keyboard_states[scancode] == INPUT_STATE_JUST_BECAME_UP) {
-			keyboard_states[scancode] = INPUT_STATE_UP;
+		auto it = keyboard_states.find(scancode);
+		if (it != keyboard_states.end() && it->second == INPUT_STATE_JUST_BECAME_UP) {
+			it->second = INPUT_STATE_UP;
 		}
 	}
 	just_became_up_scancodes.clear();
 
 	for (int button : just_became_down_buttons) {
-		if (mouse_button_states[button] == INPUT_STATE_JUST_BECAME_DOWN) {
-			mouse_button_states[button] = INPUT_STATE_DOWN;
+		auto it = mouse_button_states.find(button);
+		if (it != mouse_button_states.end() && it->second == INPUT_STATE_JUST_BECAME_DOWN) {
+			it->second = INPUT_STATE_DOWN;
 		}
 	}
 	just_became_down_buttons.clear();
 
 	for (int button : just_became_up_buttons) {
-		if (mouse_button_states[button] == INPUT_STATE_JUST_BECAME_UP) {
-			mouse_button_states[button] = INPUT_STATE_UP;
+		auto it = mouse_button_states.find(button);
+		if (it != mouse_button_states.end() && it->second == INPUT_STATE_JUST_BECAME_UP) {
+			it->second = INPUT_STATE_UP;
 		}
 	}
 	just_became_up_buttons.clear();
@@ -151,24 +172,43 @@ inline void Input::LateUpdate() {
 }
 
 inline bool Input::GetKey(SDL_Scancode keycode) {
+	if (!IsValidScancode(keycode)) return false;
 	auto it = keyboard_states.find(keycode);
 	if (it == keyboard_states.end()) return false;
 	return it->second == INPUT_STATE_DOWN || it->second == INPUT_STATE_JUST_BECAME_DOWN;
 }
 
 inline bool Input::GetKeyDown(SDL_Scancode keycode) {
+	if (!IsValidScancode(keycode)) return false;
 	auto it = keyboard_states.find(keycode);
 	if (it == keyboard_states.end()) return false;
 	return it->second == INPUT_STATE_JUST_BECAME_DOWN;
 }
 
 inline bool Input::GetKeyUp(SDL_Scancode keycode) {
+	if (!IsValidScancode(keycode)) return false;
 	auto it = keyboard_states.find(keycode);
 	if (it == keyboard_states.end()) return false;
 	return it->second == INPUT_STATE_JUST_BECAME_UP;
 }
 
+inline bool Input::GetKey(const char* keycode) {
+	if (keycode == nullptr) return false;
+	return GetKey(std::string(keycode));
+}
+
+inline bool Input::GetKeyDown(const char* keycode) {
+	if (keycode == nullptr) return false;
+	return GetKeyDown(std::string(keycode));
+}
+
+inline bool Input::GetKeyUp(const char* keycode) {
+	if (keycode == nullptr) return false;
+	return GetKeyUp(std::string(keycode));
+}
+
 inline SDL_Scancode Input::KeycodeFromString(const std::string& keycode) {
+	if (keycode.empty()) return SDL_SCANCODE_UNKNOWN;
 	std::string normalized = keycode;
 	// CSV 里有部分键名前后带空格，这里先做修剪再做大小写归一化。
 	while (!normalized.empty() && std::isspace(static_cast<unsigned char>(normalized.front()))) {
@@ -228,21 +268,33 @@ inline glm::vec2 Input::GetMousePosition() {
 }
 
 inline bool Input::GetMouseButton(int button) {
+	if (!IsValidMouseButton(button)) return false;
 	auto it = mouse_button_states.find(button);
 	if (it == mouse_button_states.end()) return false;
 	return it->second == INPUT_STATE_DOWN || it->second == INPUT_STATE_JUST_BECAME_DOWN;
 }
 
 inline bool Input::GetMouseButtonDown(int button) {
+	if (!IsValidMouseButton(button)) return false;
 	auto it = mouse_button_states.find(button);
 	if (it == mouse_button_states.end()) return false;
 	return it->second == INPUT_STATE_JUST_BECAME_DOWN;
 }
 
 inline bool Input::GetMouseButtonUp(int button) {
+	if (!IsValidMouseButton(button)) return false;
 	auto it = mouse_button_states.find(button);
 	if (it == mouse_button_states.end()) return false;
 	return it->second == INPUT_STATE_JUST_BECAME_UP;
+}
+
+inline bool Input::IsValidScancode(SDL_Scancode keycode) {
+	int code = static_cast<int>(keycode);
+	return code > static_cast<int>(SDL_SCANCODE_UNKNOWN) && code < static_cast<int>(SDL_NUM_SCANCODES);
+}
+
+inline bool Input::IsValidMouseButton(int button) {
+	return button >= static_cast<int>(SDL_BUTTON_LEFT) && button <= static_cast<int>(SDL_BUTTON_X2);
 }
 
 inline float Input::GetMouseScrollDelta() {
