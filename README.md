@@ -7,4 +7,4 @@
 [] When calling RenderEx, check whether the image dst rect is in the region of window (How would I deal with the case of rotation?). If it's not in, don't render it. 
 
 [] as the movement is continous and the speed is even be able to set in game.config, pay attention to how camera zoom change the movement scale on original grid.  
-ab
+abc
