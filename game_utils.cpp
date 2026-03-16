@@ -135,7 +135,7 @@ luabridge::LuaRef Actor::GetComponents(std::string type) {
 luabridge::LuaRef Actor::AddComponent(std::string type) {
     luabridge::LuaRef instance = this->componentDB->AddComponentToActor(this, type);
     if (!instance.isNil() && this->actorManager) {
-        this->actorManager->QueueActorForOnStart(this->shared_from_this());
+        this->actorManager->QueueActorForOnStart(this);
     }
     return instance;
 }

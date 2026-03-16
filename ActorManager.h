@@ -27,13 +27,14 @@ public:
     Actor* CreateActor( std::string name, const std::shared_ptr<ComponentDB>& componentDB) {
         auto new_actor = std::make_shared<Actor>(L, next_actor_id++, name, this, componentDB);
         pending_new_actors.push_back(new_actor);
-        actors_to_call_onstart.push_back(new_actor); // 新创建的 Actor 需要在本帧调用 OnStart
+        QueueActorForOnStart(new_actor.get());
         return new_actor.get();
     }
 
-    void QueueActorForOnStart(const std::shared_ptr<Actor>& actor) {
+    void QueueActorForOnStart(Actor* actor) {
         if (!actor) return;
-        actors_to_call_onstart.push_back(actor);
+
+        actors_to_call_onstart.push_back(actor->shared_from_this());
     }
 
 
@@ -52,9 +53,7 @@ public:
     }
 
     void ProcessOnUpdateAllActor() {
-        const std::size_t count_at_frame_start = all_actors.size();
-        for (std::size_t i = 0; i < count_at_frame_start; ++i) {
-            const auto& actor = all_actors[i];
+        for (const auto& actor : all_actors) {
             if (actor && !actor->pending_destroy) {
                 actor->ProcessOnUpdate();
             }
@@ -62,19 +61,14 @@ public:
     }
 
     void ProcessOnLateUpdateAllActor() {
-        const std::size_t count_at_frame_start = all_actors.size();
-        for (std::size_t i = 0; i < count_at_frame_start; ++i) {
-            const auto& actor = all_actors[i];
+        for (const auto& actor : all_actors) {
             if (actor && !actor->pending_destroy) {
                 actor->ProcessOnLateUpdate();
             }
         }
 
         if (!pending_new_actors.empty()) {
-            all_actors.reserve(all_actors.size() + pending_new_actors.size());
-            for (auto& actor_ptr : pending_new_actors) {
-                all_actors.push_back(actor_ptr);
-            }
+            all_actors.insert(all_actors.end(), pending_new_actors.begin(), pending_new_actors.end());
             pending_new_actors.clear();
         }
     }
@@ -93,7 +87,7 @@ public:
         pending_new_actors.erase(
             std::remove_if(pending_new_actors.begin(), pending_new_actors.end(),
                 [](const std::shared_ptr<Actor>& actor) {
-                    return actor && actor->pending_destroy;
+                    return !actor || actor->pending_destroy;
                 }
             ),
             pending_new_actors.end()
@@ -153,14 +147,12 @@ public:
                 return luabridge::LuaRef(L, actor.get());
             }
         }
-
         for (auto& actor : pending_new_actors){
             if (!actor || actor->pending_destroy) continue;
             if (actor->name == name){
                 return luabridge::LuaRef(L, actor.get());
             }
         }
-
         return luabridge::LuaRef(L);
     }
 
@@ -173,14 +165,12 @@ public:
                 result[index++] = actor_ptr.get();
             }
         }
-
         for (auto& actor_ptr : pending_new_actors) {
             if (!actor_ptr || actor_ptr->pending_destroy) continue;
             if (actor_ptr->GetName() == name) {
                 result[index++] = actor_ptr.get();
             }
         }
-
         return result;
     }
 
