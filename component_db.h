@@ -35,7 +35,7 @@ public:
         instance_table.push(state);       // [..., instance_table]
         new_metatable.push(state);       // [..., instance_table, new_metatable]
         lua_setmetatable(state, -2);     // [..., instance_table] with new
-        lua_pop(state, -1);
+        lua_pop(state, 1);
     }
 
     // 为给定类型和 key 创建一个新的组件实例，并绑定到 owner 上
@@ -95,9 +95,14 @@ public:
         }
     }
 
-    void AddComponentToActor(Actor* actor, const std::string& typeName){
+    luabridge::LuaRef AddComponentToActor(Actor* actor, const std::string& typeName){
         std::string key = "r" + std::to_string(addComponentCounter++) + typeName;
         luabridge::LuaRef instance = CreateInstance(typeName, key, actor);
+        if (instance.isNil()) {
+            return luabridge::LuaRef(actor->L);
+        }
+        actor->components.insert_or_assign(key, instance);
+        return instance;
     }
 
 private:

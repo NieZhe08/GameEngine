@@ -122,14 +122,17 @@ luabridge::LuaRef Actor::GetComponents(std::string type) {
         if (instance["type"].cast<std::string>() != type) {
             continue;
         }
+        if (instance["enabled"].cast<bool>() == false) {
+            continue;
+        }
         result[index++] = instance;
     }
 
     return result;
 }
 
-void Actor::AddComponent(std::string type) {
-    this->componentDB->AddComponentToActor(this, type);
+luabridge::LuaRef Actor::AddComponent(std::string type) {
+    return this->componentDB->AddComponentToActor(this, type);
 }
 
 void Actor::RemoveComponent(luabridge::LuaRef component) {
@@ -147,7 +150,7 @@ void Actor::ProcessOnStart() {
                 try {
                     onStart(instance);
                 } catch (luabridge::LuaException const& e) {
-                    ReportError(e);
+                    ReportError(this->name, e);
                 }
             }
             started_components.insert(key);
@@ -168,7 +171,7 @@ void Actor::ProcessOnUpdate() {
             try {
                 onUpdate(instance);
             } catch (luabridge::LuaException const& e) {
-                ReportError(e);
+                ReportError(this->name, e);
             }
         }
     }
@@ -187,7 +190,7 @@ void Actor::ProcessOnLateUpdate() {
             try {
                 onLateUpdate(instance);
             } catch (luabridge::LuaException const& e) {
-                ReportError(e);
+                ReportError(this->name, e);
             }
         }
     }
@@ -197,9 +200,10 @@ void Actor::RemainWhenSceneChange() {
     destroyOnSceneChange = false;
 }
 
-void Actor::ReportError(const luabridge::LuaException& e) {
+void Actor::ReportError(const std::string actor_name, const luabridge::LuaException& e) {
     std::string msg = e.what();
-    std::cout << msg << std::endl;
+    std::replace(msg.begin(), msg.end(), '\\', '/');
+    std::cout << "\033[31m"<<actor_name << " : " << msg << "\033[0m" << std::endl;
 }
 
 void visualizeBox(SDL_Renderer* renderer,

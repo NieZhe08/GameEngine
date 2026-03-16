@@ -92,7 +92,7 @@ public:
 
     
 
-    void AddComponent(std::string type);
+    luabridge::LuaRef AddComponent(std::string type);
 
     void RemoveComponent(luabridge::LuaRef component);
 
@@ -114,7 +114,7 @@ private:
     static lua_State* s_lua_state;
 
     // Error Handling for Lua exceptions, can be extended to log to file or show in-game message box
-    void ReportError(const luabridge::LuaException& e);
+    void ReportError(const std::string actor_name, const luabridge::LuaException& e);
 };
 
 inline std::uint64_t hashPosition(const glm::ivec2& position) {

@@ -15,12 +15,30 @@
 // Debug API 
 class Debug {
 public:
-    static void CppLog(std::string message) {
-        std::cout << message << '\n';
+    static void CppLog(const luabridge::LuaRef& message) {
+        if (message.isNil()) {
+            std::cout << "nil" << std::endl;
+            return;
+        }
+
+        try {
+            std::cout << message.tostring() << std::endl;
+        } catch (...) {
+            std::cout << "<unprintable Lua value>" << std::endl;
+        }
     }
 
-    static void CppLogError(std::string message) {
-        std::cerr << message << '\n';
+    static void CppLogError(const luabridge::LuaRef& message) {
+        if (message.isNil()) {
+            std::cerr << "nil" << std::endl;
+            return;
+        }
+
+        try {
+            std::cerr << message.tostring() << std::endl;
+        } catch (...) {
+            std::cerr << "<unprintable Lua value>" << std::endl;
+        }
     }
 
     void RegisterLuaAPI(lua_State* L) {
@@ -95,6 +113,7 @@ public:
                 .addFunction("GetComponents", &Actor::GetComponents)
                 .addFunction("GetComponentByKey", &Actor::GetComponentByKey)
                 .addFunction("AddComponent", &Actor::AddComponent)
+                .addFunction("RemoveComponent", &Actor::RemoveComponent)
             .endClass()
             // 使用命名空间 Actor 暴露全局查找函数：Lua 写法为 Actor.Find / Actor.FindAll
             .beginNamespace("Actor")
