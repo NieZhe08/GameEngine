@@ -23,6 +23,7 @@ public:
     
     
     GameState states;
+    std::string current_scene_name;
     std::string next_scene_name;
 
     Helper helper;
@@ -70,6 +71,7 @@ public:
     ~GameEngine();
     
     void initializeGame(bool isInitialLoad = true);
+    void processPendingSceneLoad();
     void update();
     void updateIntroAnimation();
     void updateGameEnd(bool win);

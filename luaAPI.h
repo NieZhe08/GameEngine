@@ -259,4 +259,40 @@ public:
     }
 };
 
+class SceneAPI {
+    std::shared_ptr<ActorManager> m_actorManager;
+    std::string* m_nextSceneName;
+    std::string* m_currentSceneName;
+
+public:
+    SceneAPI(const std::shared_ptr<ActorManager>& actorManager,
+             std::string* nextSceneName,
+             std::string* currentSceneName)
+        : m_actorManager(actorManager),
+          m_nextSceneName(nextSceneName),
+          m_currentSceneName(currentSceneName) {}
+
+    void RegisterLuaAPI(lua_State* L) {
+        auto actorManager = m_actorManager;
+        std::string* nextSceneName = m_nextSceneName;
+        std::string* currentSceneName = m_currentSceneName;
+
+        luabridge::getGlobalNamespace(L)
+            .beginNamespace("Scene")
+                .addFunction("Load", std::function<void(const std::string&)>([nextSceneName](const std::string& sceneName) {
+                    if (!nextSceneName) return;
+                    *nextSceneName = sceneName;
+                }))
+                .addFunction("GetCurrent", std::function<std::string()>([currentSceneName]() -> std::string {
+                    if (!currentSceneName) return "";
+                    return *currentSceneName;
+                }))
+                .addFunction("DontDestroy", std::function<void(Actor*)>([actorManager](Actor* actor) {
+                    if (!actorManager || !actor) return;
+                    actor->RemainWhenSceneChange();
+                }))
+            .endNamespace();
+    }
+};
+
 #endif

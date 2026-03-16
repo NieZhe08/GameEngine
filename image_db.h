@@ -195,7 +195,8 @@ public:
     }
 
     void pushDrawUIEx(const std::string &image_name, float x, float y, int r, int g, int b, int a, int sorting_order){
-        this->ui_image_draw_queue.push_back({request_counter++, image_name, x, y, 0, 1.0f, 1.0f, 0.5f, 0.5f, r, g, b, a, sorting_order});
+        // UI coordinates are top-left anchored, so use a (0,0) pivot.
+        this->ui_image_draw_queue.push_back({request_counter++, image_name, x, y, 0, 1.0f, 1.0f, 0.0f, 0.0f, r, g, b, a, sorting_order});
     }
 
     void pushDrawUI(const std::string &image_name, float x, float y){

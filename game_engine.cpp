@@ -98,6 +98,7 @@
             AudioAPI().RegisterLuaAPI(L); // 统一格式
             ImageAPI(imageManager).RegisterLuaAPI(L);
             CameraAPI(cameraManager).RegisterLuaAPI(L);
+            SceneAPI(actorManager, &next_scene_name, &current_scene_name).RegisterLuaAPI(L);
 
             states = GameState::Ongoing; 
         } else {
@@ -105,13 +106,26 @@
         }
         
         // load scene module
-        SceneDB sceneDB(next_scene_name, L, componentDB, actorManager);
+        current_scene_name = next_scene_name;
+        SceneDB sceneDB(current_scene_name, L, componentDB, actorManager);
        
         next_scene_name = "";
         endingFlag = false;
         endingState = GameState::Ongoing;
         // Initialize game state, load map, actors, etc.
         //frameRender(isInitialLoad);
+    }
+
+    void GameEngine::processPendingSceneLoad() {
+        if (next_scene_name.empty()) return;
+        if (!actorManager || !componentDB) return;
+
+        // Keep actors marked DontDestroy and unload the rest.
+        actorManager->ClearSceneActors();
+
+        current_scene_name = next_scene_name;
+        SceneDB sceneDB(current_scene_name, L, componentDB, actorManager);
+        next_scene_name.clear();
     }
 
     void GameEngine::update(){
@@ -674,6 +688,9 @@
     void GameEngine::gameLoop() {
         // 简化版主循环：基于 SDL 事件与 Lua 组件生命周期驱动
         while (!input.GetQuit()) {
+            // Scene.Load is deferred: apply the newest request at next-frame start.
+            processPendingSceneLoad();
+
             // 事件处理（只依赖 Helper::SDL_PollEvent 和 Input 管理键盘 / 退出）
             while (Helper::SDL_PollEvent(&event)) {
                 input.ProcessEvent(event);
