@@ -9,6 +9,10 @@
 #include "rapidjson/filereadstream.h"
 #include <iostream>
 
+/*
+    Class for Json Reading. 
+*/
+
 class EngineUtils {
 public:
     static void ReadJsonFile(const std::string& path, rapidjson::Document& out_document) {
@@ -29,7 +33,7 @@ public:
         std::fclose(file_pointer);
 
         if (out_document.HasParseError()) {
-            rapidjson::ParseErrorCode errorCode = out_document.GetParseError();
+            out_document.GetParseError();
             std::cout<< "Error parsing JSON at [" << path << "]" << std::endl;
             exit(EXIT_FAILURE);
         }

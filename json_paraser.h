@@ -39,24 +39,6 @@ public:
 
     }
 
-    std::string getGameStartMessage() {
-        if (game.HasMember("game_start_message"))
-            return game["game_start_message"].GetString();
-        return "";
-    }
-
-    std::string getGameOverGoodMessage() {
-        if (game.HasMember("game_over_good_message"))
-            return game["game_over_good_message"].GetString();
-        return "";
-    }
-
-    std::string getGameOverBadMessage() {
-        if (game.HasMember("game_over_bad_message"))
-            return game["game_over_bad_message"].GetString();
-        return "";
-    }
-
     std::string getGameTitle() {
         if (game.HasMember("game_title"))
             return game["game_title"].GetString();
@@ -92,15 +74,6 @@ public:
         }
     }
 
-    std::string getHPimage(){ // only call when exist a player
-        if (game.IsObject() && game.HasMember("hp_image")){
-            return game["hp_image"].GetString();
-        } else {
-            std::cout<<"error: player actor requires an hp_image be defined"; 
-            exit(0);
-        }
-    }
-
     glm::vec2 getCameraOffset(){
         if (rendering.IsObject()){
             float x_offset = (rendering.HasMember("cam_offset_x"))? rendering["cam_offset_x"].GetFloat(): 0.0f;
@@ -117,61 +90,6 @@ public:
         return 1.0f; // default zoom factor
     }
     
-    float getPlayerMovementSpeed(){
-        if (game.IsObject() && game.HasMember("player_movement_speed")){
-            return game["player_movement_speed"].GetFloat();
-        } 
-        return 0.02f; // default player movement speed
-    }
-
-    float getCamEaseFactor(){
-        if (rendering.IsObject() && rendering.HasMember("cam_ease_factor")){
-            return rendering["cam_ease_factor"].GetFloat();
-        } 
-        return 1.0f; // default camera easing factor
-    }
-
-    bool getXScaleActorFlippingOnMovement(){
-        if (rendering.IsObject() && rendering.HasMember("x_scale_actor_flipping_on_movement")){
-            return rendering["x_scale_actor_flipping_on_movement"].GetBool();
-        } 
-        return false; // default to no flipping
-    }
-
-    std::string getIntroBGM(){
-        if (game.IsObject() && game.HasMember("intro_bgm")){
-            return game["intro_bgm"].GetString();
-        } 
-        return ""; // default to no intro bgm
-    }
-
-    std::string getGamePlayBGM(){
-        if (game.IsObject() && game.HasMember("gameplay_audio")){
-            return game["gameplay_audio"].GetString();
-        } 
-        return ""; // default to no gameplay bgm
-    }
-
-    std::string getGameWinBGM(){
-        if (game.IsObject() && game.HasMember("game_over_good_audio")){
-            return game["game_over_good_audio"].GetString();
-        } 
-        return ""; // default to no game win bgm
-    }
-
-    std::string getGameLoseBGM(){
-        if (game.IsObject() && game.HasMember("game_over_bad_audio")){
-            return game["game_over_bad_audio"].GetString();
-        } 
-        return ""; // default to no game lose bgm
-    }
-
-    std::string getScoreSFX(){
-        if (game.IsObject() && game.HasMember("score_sfx")){
-            return game["score_sfx"].GetString();
-        } 
-        return ""; // default to no score sfx
-    }
 
 };
 

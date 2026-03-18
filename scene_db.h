@@ -51,7 +51,6 @@ public:
     }
 
     void processSceneActors() {
-        int max_x = 0; int max_y = 0;
         if (scenes.HasMember("actors")){
             const rapidjson::Value& actors = scenes["actors"];
             if (actors.IsArray()){

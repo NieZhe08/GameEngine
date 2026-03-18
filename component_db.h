@@ -89,9 +89,7 @@ public:
             }
             else {
                 // print debug info 
-                //std::cout << "Warning: Unsupported property type for '" << propName << "' in component '" << instance["type"].tostring() << "'. Skipping this property." << std::endl;
             }
-            // 其它类型（数组 / 对象）本作业不需要，忽略即可
         }
     }
 
@@ -106,19 +104,6 @@ public:
         if (instance.isNil()) {
         return luabridge::LuaRef(L);
     }
-
- /*    if (actor->started_components.find(key) == actor->started_components.end() &&
-        instance["enabled"].cast<bool>() != false) {
-        luabridge::LuaRef onStart = instance["OnStart"];
-        if (onStart.isFunction()) {
-            try {
-                onStart(instance);
-            } catch (luabridge::LuaException const& e) {
-                actor->ReportError(actor->name, e);
-            }
-        }
-        actor->started_components.insert(key);
-    } */
         return instance;
     }
 

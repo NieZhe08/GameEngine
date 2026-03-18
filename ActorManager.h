@@ -177,7 +177,7 @@ public:
         return result;
     }
 
-    Actor* Instantiate(std::string templateName, TemplateDB* templateDB, const std::shared_ptr<ComponentDB>& componentDB){
+    Actor* Instantiate(TemplateDB* templateDB, const std::shared_ptr<ComponentDB>& componentDB){
         const rapidjson::Value* components_obj = templateDB->getComponentsObject();
         if (!components_obj) return nullptr; // return nullptr if no components object in template
 

@@ -20,12 +20,10 @@ class ComponentDB;
 
 class GameEngine {
 public:
-    
-    
-    GameState states;
     std::string current_scene_name;
     std::string next_scene_name;
 
+    // Autograder API to track the calls of SDL functions 
     Helper helper;
     
     // SDL stuffs, unsure about whether to remove
@@ -34,12 +32,6 @@ public:
     SDL_Event event;
     SDL_Window* win = nullptr;
     SDL_Renderer* ren = nullptr;
-
-    // possibly useful?
-    bool endingFlag = false;
-    GameState endingState = GameState::Ongoing;
-    bool hasCollision = true;
-    bool hasNearbyDialogue = true;
 
     // 全局 Lua 状态与组件数据库（HW7）
     lua_State* L = nullptr;
@@ -52,20 +44,6 @@ public:
     std::shared_ptr<ImageManager> imageManager;
     std::shared_ptr<CameraManager> cameraManager;
 
-    //std::unique_ptr<std::vector<std::string>> intro_image;
-    //std::unique_ptr<std::vector<std::string>> intro_text;
-    //std::vector<ImageRenderConfig> images_to_render;
-    //std::vector<TextRenderConfig> text_to_render;
-
-    //glm::vec2 spatial_hash_cell_size;
-    //std::unordered_map<glm::ivec2, std::vector<Actor*>, Ivec2Hash> spatial_hash;
-
-    //glm::vec2 spatial_hash_cell_size_trigger;
-    //std::unordered_map<glm::ivec2, std::vector<Actor*>, Ivec2HashTrigger> spatial_hash_trigger;
-
-    //glm::vec2 spatial_hash_cell_size_window;
-    //std::unordered_map<glm::ivec2, std::vector<Actor*>, Ivec2HashWindow> spatial_hash_window;
-
     // Constructor and public methods
     GameEngine();
     ~GameEngine();
@@ -73,36 +51,8 @@ public:
     void initializeGame(bool isInitialLoad = true);
     void processPendingSceneLoad();
     void update();
-    void updateIntroAnimation();
-    void updateGameEnd(bool win);
-    void updateOngoing();
-    void updateActorPositions(const glm::vec2& playerSpeed);
-    void updateActorRenderDirection(const glm::vec2& playerSpeed, Actor* actor_ptr);
-    glm::vec2 updateGameState();
-    bool collisionDetected(const glm::vec2& pos, Actor* actor_ptr);
-    void updateDialoguesCollision(std::vector<GameIncident>& allIncidents,
-        std::vector<std::string>* dialogue_queue);
-    void updateGameIncidents(std::vector<GameIncident>& incidents);
-    void checkGameIncidents(Actor* actor, std::vector<GameIncident>& allIncidents, ContactType contactType);
-    void updateDialoguesTrigger(std::vector<GameIncident>& allIncidents, std::vector<std::string>* dialogue_queue);
-    void updateHurtAndAttackView();
-    void postUpdate();
     void gameLoop();
     void frameRender(bool isInitialRender = false);
-    void addActorToSpatialHash(Actor* actor, const glm::vec2& worldPos);
-    void removeActorFromSpatialHash(Actor* actor, const glm::vec2& worldPos);
-    void moveActorToNewSpatialHash(Actor* actor, const glm::vec2& newWorldPos);
-    void initializeSpatialHash();
-
-    void initializeSpatialHashTrigger();
-    void addActorToSpatialHashTrigger(Actor* actor, const glm::vec2& worldPos);
-    void removeActorFromSpatialHashTrigger(Actor* actor, const glm::vec2& worldPos);
-    void moveActorToNewSpatialHashTrigger(Actor* actor, const glm::vec2& newWorldPos);
-
-    void initializeSpatialHashWindow();
-    void addActorToSpatialHashWindow(Actor* actor, const glm::vec2& worldPos);
-    void removeActorFromSpatialHashWindow(Actor* actor, const glm::vec2& worldPos);
-    void moveActorToNewSpatialHashWindow(Actor* actor, const glm::vec2& newWorldPos);
 };
 
 #endif // GAME_ENGINE_H

@@ -4,68 +4,9 @@
 #include "ActorManager.h"
 #include "component_db.h"
 
-std::optional<std::string> extractProceedTarget(const std::string& input) {
-    const std::string prefix = "proceed to ";
-
-    auto it = std::search(
-        input.begin(), input.end(),
-        prefix.begin(), prefix.end(),
-        [](unsigned char ch1, unsigned char ch2) {
-            return std::tolower(ch1) == std::tolower(ch2);
-        }
-    );
-
-    if (it != input.end()) {
-        size_t startPos = std::distance(input.begin(), it) + prefix.length();
-
-        size_t endPos = startPos;
-        while (endPos < input.length() &&
-               (std::isalnum(static_cast<unsigned char>(input[endPos])) || input[endPos] == '_')) {
-            endPos++;
-        }
-
-        if (endPos > startPos) {
-            return input.substr(startPos, endPos - startPos);
-        }
-    }
-
-    return std::nullopt;
-}
-
-std::string obtain_word_after_phrase(const std::string& input, const std::string& phrase) {
-    size_t pos = input.find(phrase);
-    if (pos == std::string::npos) return "";
-
-    pos += phrase.length();
-    while (pos < input.size() && std::isspace(static_cast<unsigned char>(input[pos]))) {
-        pos++;
-    }
-
-    if (pos == input.size()) return "";
-
-    size_t endPos = pos;
-    while (endPos < input.size() && !std::isspace(static_cast<unsigned char>(input[endPos]))) {
-        endPos++;
-    }
-
-    return input.substr(pos, endPos - pos);
-}
-
-GameIncident checkGameIncidents(std::string dialogue) {
-    if (dialogue.find("health down") != std::string::npos) {
-        return GameIncident::HealthDown;
-    } else if (dialogue.find("score up") != std::string::npos) {
-        return GameIncident::ScoreUp;
-    } else if (dialogue.find("you win") != std::string::npos) {
-        return GameIncident::YouWin;
-    } else if (dialogue.find("game over") != std::string::npos) {
-        return GameIncident::GameOver;
-    }
-    return GameIncident::None;
-}
-
-ActorManager* Actor::s_lua_actor_manager = nullptr;
-lua_State* Actor::s_lua_state = nullptr;
+// disabled forward declaration, we would NOT want to use that.
+//ActorManager* Actor::s_lua_actor_manager = nullptr;
+//lua_State* Actor::s_lua_state = nullptr;
 
 Actor::Actor(lua_State* L, int id, std::string name, ActorManager* am, const std::shared_ptr<ComponentDB>& cdb)
     : name(std::move(name)),
@@ -211,6 +152,7 @@ void Actor::ReportError(const std::string actor_name, const luabridge::LuaExcept
     std::cout << "\033[31m"<<actor_name << " : " << msg << "\033[0m" << std::endl;
 }
 
+// Old utils we may use for physics debugging
 void visualizeBox(SDL_Renderer* renderer,
                   glm::vec2 center,
                   glm::vec2 box,
@@ -240,11 +182,7 @@ bool checkAABB(glm::vec2 ctr1, glm::vec2 box1, glm::vec2 ctr2, glm::vec2 box2) {
     return false;
 }
 
-glm::ivec2 worldToCell(const glm::vec2& worldPos, const glm::vec2& cell_size) {
-    return glm::ivec2(std::floor(worldPos.x / cell_size.x),
-                      std::floor(worldPos.y / cell_size.y));
-}
-
+// shared utility function to read component data from JSON and add to actor, used in both scene loading and AddComponentFromJson API.
 void readAndaddComponent(const rapidjson::Value& component_data,
                          const std::string& component_name,
                          ComponentDB* componentDB,

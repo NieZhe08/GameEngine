@@ -88,8 +88,7 @@ class AudioInfo{
             audio_state = AudioState::None;
         }
 
-        void setByInfo(std::string path, int channel, bool does_loop, AudioManager* manager, 
-            bool channelBaseOnFrame = false){
+        void setByInfo(std::string path, int channel, bool does_loop, AudioManager* manager){
             audio_path = path;
             this->channel = channel;
             this->does_loop = does_loop;
@@ -126,12 +125,12 @@ class AudioInfo{
             AudioManager* manager = nullptr, int _channel = -1) : 
             channelBaseOnFrame(_channel == -1), 
             hasNotLoaded(manager == nullptr){
-            setByInfo(_path, _channel, _does_loop, manager, channelBaseOnFrame);
+            setByInfo(_path, _channel, _does_loop, manager);
         }
         
         void play(AudioManager* manager){
             if (hasNotLoaded){
-                setByInfo(audio_path, channel, does_loop, manager, channelBaseOnFrame);
+                setByInfo(audio_path, channel, does_loop, manager);
                 hasNotLoaded = false;
             }
             if (audio_number == -1) {
@@ -159,7 +158,7 @@ class AudioInfo{
                 return;
             }
             int result = 0;
-            if (audio_state == AudioState::Playing) int result = manager->HaltChannel(channel);
+            if (audio_state == AudioState::Playing) result = manager->HaltChannel(channel);
             if (result == -1){
                 std::cout << "error: failed to halt audio for path " << audio_path << "\n";
             } else {

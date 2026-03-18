@@ -125,7 +125,7 @@ public:
                 .addFunction("FindAll", std::function<luabridge::LuaRef(const std::string&)>([actorManager](const std::string& name) -> luabridge::LuaRef { return actorManager->FindAll(name); }))
                 .addFunction("Instantiate", std::function<Actor*(const std::string&)>([actorManager, componentDB](const std::string& templateName) -> Actor* {
                     TemplateDB templateDB(templateName);
-                    return actorManager->Instantiate(templateName, &templateDB, componentDB);
+                    return actorManager->Instantiate(&templateDB, componentDB);
                 }))
                 .addFunction("Destroy", std::function<void(Actor*)>([actorManager](Actor* actor) { actorManager->Destroy(actor); }))
             .endNamespace();
