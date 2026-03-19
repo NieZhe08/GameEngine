@@ -12,6 +12,7 @@
 #include <chrono>
 #include <memory>
 #include "cameraManager.h"
+#include "box2d/box2d.h"
 
 // Debug API 
 class Debug {
@@ -333,6 +334,26 @@ public:
                 }))
             .endNamespace();
     }
+};
+
+class Vector2API {
+    void RegisterLuaAPI(lua_State* L) {
+        luabridge::getGlobalNamespace(L)
+            .beginClass<b2Vec2>("Vector2")
+            .addConstructor<void(*)(float, float)>()
+            .addProperty("x", &b2Vec2::x)
+            .addProperty("y", &b2Vec2::y)
+            .addFunction("Normalize", &b2Vec2::Normalize)
+            .addFunction("Length", &b2Vec2::Length)
+            .addFunction("__add", &b2Vec2::operator_add)
+            .addFunction("__sub", &b2Vec2::operator_sub)
+            .addFunction("__mul", &b2Vec2::operator_mul)
+            .endClass()
+            .beginNamespace("Vector2")
+            .addFunction("Distance", std::function<float(const b2Vec2&, const b2Vec2&)>([](const b2Vec2& a, const b2Vec2& b) { return b2Distance(a, b); }))
+            .addFunction("Dot", std::function<float(const b2Vec2&, const b2Vec2&)>([](const b2Vec2& a, const b2Vec2& b) { return b2Dot(a, b); }))
+            .endNamespace();
+        }
 };
 
 #endif

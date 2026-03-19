@@ -29,6 +29,8 @@
 #include "lua/lua.hpp"
 #include "LuaBridge/LuaBridge.h"
 
+#include "box2d/box2d.h"
+
     GameEngine::GameEngine() {
         // //next_scene_name = "";
         initializeGame(true);
