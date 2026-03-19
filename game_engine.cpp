@@ -100,6 +100,7 @@
             ImageAPI(imageManager).RegisterLuaAPI(L);
             CameraAPI(cameraManager).RegisterLuaAPI(L);
             SceneAPI(actorManager, &next_scene_name, &current_scene_name).RegisterLuaAPI(L);
+            Vector2API().RegisterLuaAPI(L);
         } 
 
         // load scene module

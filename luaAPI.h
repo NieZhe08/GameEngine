@@ -337,6 +337,7 @@ public:
 };
 
 class Vector2API {
+public:
     void RegisterLuaAPI(lua_State* L) {
         luabridge::getGlobalNamespace(L)
             .beginClass<b2Vec2>("Vector2")
