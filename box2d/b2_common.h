@@ -134,5 +134,4 @@ struct b2Version
 
 /// Current version.
 extern B2_API b2Version b2_version;
-
 #endif
