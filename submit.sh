@@ -8,7 +8,7 @@ read -p "Confirm Submission ? (y/n): " answer
 
 if [ "$answer" = "y" ]; then
     git add .
-    git commit -m "Please graded homework8 linux"
+    git commit -m "Please grade homework8 linux"
     git push
 else
     echo "Submission cancelled."
