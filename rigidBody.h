@@ -32,6 +32,13 @@ public:
     bool has_collider = true; // Not used for anything just yet, but please add it.
     bool has_trigger = true; // Not used for anything just yet, but please add it.
 
+    std::string collider_type = "box"; // "box", "circle"
+    float width = 1.0f;
+    float height = 1.0f;
+    float radius = 0.5f;
+    float friction = 0.3f;
+    float bounciness = 0.3f;
+
     // ====== runtime ======
     b2Body* body = nullptr; // set in RigidBodySystem when creating the body in the physics world, used for runtime queries and updates.
     b2World* world = nullptr; // set in RigidBodySystem when creating the body in the physics world, used for runtime queries and updates.
@@ -43,7 +50,34 @@ public:
     }
 
     float GetRotation(){// Use b2Body->GetAngle() and convert to degrees
+        if (!body) {
+            return rotation;
+        }
         return RtoD(body->GetAngle());
+    }
+
+    void _setShapeAndFixture(){
+        if (!body) return;
+
+        b2Shape* shape = nullptr;
+        if (collider_type == "box") {
+            b2PolygonShape* box_shape = new b2PolygonShape();
+            box_shape->SetAsBox(width / 2.0f, height / 2.0f);
+            shape = box_shape;
+        } else if (collider_type == "circle") {
+            b2CircleShape* circle_shape = new b2CircleShape();
+            circle_shape->m_radius = radius;
+            shape = circle_shape;
+        }
+
+        if (shape) {
+            b2FixtureDef fixtureDef;
+            fixtureDef.shape = shape;
+            //fixtureDef.density = density;
+            //fixtureDef.friction = friction;
+            //fixtureDef.restitution = bounciness;
+            body->CreateFixture(&fixtureDef);
+        }
     }
 
     void initialize(){
@@ -63,13 +97,7 @@ public:
 
         body = world->CreateBody(&bodyDef);
 
-        b2PolygonShape my_shape;
-        my_shape.SetAsBox(0.5f, 0.5f); // default to a 1x1 box collider, can be overridden by adding a Collider component to the
-
-        b2FixtureDef fixture;
-        fixture.shape = &my_shape;
-        fixture.density = 1.0f;
-        body->CreateFixture(&fixture);
+        _setShapeAndFixture();
     }
 
     void OnStart(){
@@ -112,7 +140,7 @@ public:
 
     void SetRotation(float degrees_clockwise){
         if (body) {
-            body->SetTransform(body->GetPosition(), DtoR(degrees_clockwise));
+            body->SetTransform(body->GetPosition(), DtoR(-degrees_clockwise));
         }
     }
 
@@ -158,7 +186,7 @@ public:
 
     float GetAngularVelocity(){
         if (body) {
-            return RtoD(body->GetAngularVelocity());
+            return -RtoD(body->GetAngularVelocity());
         }
         return 0.0f;
     }
@@ -171,15 +199,21 @@ public:
     }
 
     b2Vec2 GetUpDirection(){
-        if (!body) return b2Vec2(0.0f, 1.0f);
-        float angle = body->GetAngle();
-        return b2Vec2(-glm::sin(angle), glm::cos(angle));
+        if (!body) return b2Vec2(0.0f, -1.0f);
+        float angle = (body->GetAngle());
+        // Screen-space convention: up is (0, -1) when angle is 0.
+        b2Vec2 result = b2Vec2(glm::sin(angle), -glm::cos(angle));
+        result.Normalize();
+        return result;
     }
 
     b2Vec2 GetRightDirection(){
         if (!body) return b2Vec2(1.0f, 0.0f);
-        float angle = body->GetAngle();
-        return b2Vec2(glm::cos(angle), glm::sin(angle));
+        float angle = (body->GetAngle());
+        // Right is +90 degrees clockwise from up in screen-space.
+        b2Vec2 result = b2Vec2(glm::cos(angle), -glm::sin(angle));
+        result.Normalize();
+        return result;
     }
 };
 
