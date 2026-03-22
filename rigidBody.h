@@ -73,7 +73,7 @@ public:
         if (shape) {
             b2FixtureDef fixtureDef;
             fixtureDef.shape = shape;
-            //fixtureDef.density = density;
+            fixtureDef.density = density;
             //fixtureDef.friction = friction;
             //fixtureDef.restitution = bounciness;
             body->CreateFixture(&fixtureDef);
