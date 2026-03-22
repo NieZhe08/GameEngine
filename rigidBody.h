@@ -65,6 +65,9 @@ public:
     void _setShapeAndFixture(){
         if (!body) return;
 
+        static constexpr uint16 kColliderCategory = 0x0001;
+        static constexpr uint16 kTriggerCategory = 0x0002;
+
         b2Shape* collider_shape = nullptr;
         b2Shape* trigger_shape = nullptr;
         if (!has_collider && !has_trigger){
@@ -103,6 +106,8 @@ public:
             fixtureDef.density = density;
             fixtureDef.friction = friction;
             fixtureDef.restitution = bounciness;
+            fixtureDef.filter.categoryBits = kColliderCategory;
+            fixtureDef.filter.maskBits = kColliderCategory;
             b2Fixture* fixture = body->CreateFixture(&fixtureDef);
             if (fixture) {
                 fixture->GetUserData().pointer = reinterpret_cast<uintptr_t>(actor);
@@ -112,7 +117,10 @@ public:
         if (trigger_shape){
             b2FixtureDef fixtureDef;
             fixtureDef.shape = trigger_shape;
+            fixtureDef.density = density; // !
             fixtureDef.isSensor = true;
+            fixtureDef.filter.categoryBits = kTriggerCategory;
+            fixtureDef.filter.maskBits = kTriggerCategory;
             b2Fixture* fixture = body->CreateFixture(&fixtureDef);
             if (fixture) {
                 fixture->GetUserData().pointer = reinterpret_cast<uintptr_t>(actor);

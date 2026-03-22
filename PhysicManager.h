@@ -24,7 +24,7 @@ public:
         return -other_body->GetLinearVelocity() + self_body->GetLinearVelocity();
     }
 
-    void Dispatch(b2Contact* contact, const char* lifecycle_name, bool is_begin_contact) {
+    void Dispatch(b2Contact* contact, const char* lifecycle_name, bool use_contact_point_and_normal) {
         if (!contact || !lifecycle_name) return;
 
         b2Fixture* fixtureA = contact->GetFixtureA();
@@ -38,8 +38,8 @@ public:
         contact->GetWorldManifold(&world_manifold);
 
         const b2Vec2 invalid_vector(-999.0f, -999.0f);
-        const b2Vec2 point = is_begin_contact ? world_manifold.points[0] : invalid_vector;
-        const b2Vec2 normal = is_begin_contact ? world_manifold.normal : invalid_vector;
+        const b2Vec2 point = use_contact_point_and_normal ? world_manifold.points[0] : invalid_vector;
+        const b2Vec2 normal = use_contact_point_and_normal ? world_manifold.normal : invalid_vector;
         const b2Vec2 relative_velocity = ComputeRelativeVelocity(fixtureA, fixtureB);
 
         if (actorA) {
@@ -62,11 +62,42 @@ public:
     }
 
     void BeginContact(b2Contact* contact) override {
-        Dispatch(contact, "OnCollisionEnter", true);
+        if (!contact) return;
+        b2Fixture* fixtureA = contact->GetFixtureA();
+        b2Fixture* fixtureB = contact->GetFixtureB();
+        if (!fixtureA || !fixtureB) return;
+
+        const bool a_is_sensor = fixtureA->IsSensor();
+        const bool b_is_sensor = fixtureB->IsSensor();
+
+        if (a_is_sensor && b_is_sensor) {
+            // Trigger callbacks always carry sentinel point/normal values.
+            Dispatch(contact, "OnTriggerEnter", false);
+            return;
+        }
+
+        if (!a_is_sensor && !b_is_sensor) {
+            Dispatch(contact, "OnCollisionEnter", true);
+        }
     }
 
     void EndContact(b2Contact* contact) override {
-        Dispatch(contact, "OnCollisionExit", false);
+        if (!contact) return;
+        b2Fixture* fixtureA = contact->GetFixtureA();
+        b2Fixture* fixtureB = contact->GetFixtureB();
+        if (!fixtureA || !fixtureB) return;
+
+        const bool a_is_sensor = fixtureA->IsSensor();
+        const bool b_is_sensor = fixtureB->IsSensor();
+
+        if (a_is_sensor && b_is_sensor) {
+            Dispatch(contact, "OnTriggerExit", false);
+            return;
+        }
+
+        if (!a_is_sensor && !b_is_sensor) {
+            Dispatch(contact, "OnCollisionExit", false);
+        }
     }
 };
 
