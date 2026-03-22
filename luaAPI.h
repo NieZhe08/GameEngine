@@ -32,14 +32,14 @@ public:
 
     static void CppLogError(const luabridge::LuaRef& message) {
         if (message.isNil()) {
-            std::cerr << '\n';
+            std::cout << '\n';
             return;
         }
 
         try {
-            std::cerr << message.tostring() << std::endl;
+            std::cout << message.tostring() << std::endl;
         } catch (...) {
-            std::cerr << "<unprintable Lua value>" << std::endl;
+            std::cout << "<unprintable Lua value>" << std::endl;
         }
     }
 
