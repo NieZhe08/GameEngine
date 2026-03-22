@@ -81,7 +81,7 @@ void GameEngine::initializeGame(bool isInitialLoad) {
         L = luaL_newstate();
         luaL_openlibs(L);
         // 3. initialize managers:
-        b2World* world = PhysicsManager::Instance().GetOrCreateWorld();
+        world = PhysicsManager::Instance().GetOrCreateWorld();
         componentDB = std::make_shared<ComponentDB>(L, world);
         actorManager = std::make_shared<ActorManager>(L); // 创建 Actor 管理器实例，并传入 Lua 状态
         textManager = std::make_shared<TextManager>(ren); // 创建 Text 管理器实例，传入 SDL_Renderer 用于文本渲染

@@ -46,6 +46,7 @@ public:
     
 
     // Physic Engine
+    b2World* world = nullptr;
     //PhysicsManager* physicsManager = nullptr;
     //bool createPhysicsFlag = false;
 
