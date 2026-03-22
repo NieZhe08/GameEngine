@@ -70,19 +70,19 @@ public:
         b2Filter filterA = fixtureA->GetFilterData();
         b2Filter filterB = fixtureB->GetFilterData();
 
-        const bool a_is_collider = (filterA.categoryBits & 0x0001) != 0;
-        const bool b_is_collider = (filterB.categoryBits & 0x0001) != 0;
-        const bool a_is_trigger = (filterA.categoryBits & 0x0002) != 0;
-        const bool b_is_trigger = (filterB.categoryBits & 0x0002) != 0;
+        const bool a_is_collider = (filterA.categoryBits == 0x0001);
+        const bool b_is_collider = (filterB.categoryBits == 0x0001);
+        const bool a_is_trigger = (filterA.categoryBits == 0x0002);
+        const bool b_is_trigger = (filterB.categoryBits == 0x0002);
 
         if (a_is_collider && b_is_collider) {
+            Dispatch(contact, "OnCollisionEnter", true);
+        }
+
+        if (a_is_trigger && b_is_trigger) {
             // Trigger callbacks always carry sentinel point/normal values.
             Dispatch(contact, "OnTriggerEnter", false);
             return;
-        }
-
-        if (!a_is_trigger && !b_is_trigger) {
-            Dispatch(contact, "OnCollisionEnter", true);
         }
     }
 
@@ -95,19 +95,20 @@ public:
         b2Filter filterA = fixtureA->GetFilterData();
         b2Filter filterB = fixtureB->GetFilterData();
 
-        const bool a_is_collider = (filterA.categoryBits & 0x0001) != 0;
-        const bool b_is_collider = (filterB.categoryBits & 0x0001) != 0;
-        const bool a_is_trigger = (filterA.categoryBits & 0x0002) != 0;
-        const bool b_is_trigger = (filterB.categoryBits & 0x0002) != 0;
+        const bool a_is_collider = (filterA.categoryBits == 0x0001);
+        const bool b_is_collider = (filterB.categoryBits == 0x0001);
+        const bool a_is_trigger = (filterA.categoryBits == 0x0002);
+        const bool b_is_trigger = (filterB.categoryBits == 0x0002);
 
         if (a_is_collider && b_is_collider) {
+            Dispatch(contact, "OnCollisionExit", false);
+        }
+
+        if (a_is_trigger && b_is_trigger) {
             Dispatch(contact, "OnTriggerExit", false);
             return;
         }
-
-        if (!a_is_trigger && !b_is_trigger) {
-            Dispatch(contact, "OnCollisionExit", false);
-        }
+        
     }
 };
 
