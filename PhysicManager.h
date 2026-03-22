@@ -48,7 +48,7 @@ public:
             collision_for_a.point = point;
             collision_for_a.normal = normal;
             collision_for_a.relative_velocity = relative_velocity;
-            actorA->ProcessCollisionLifecycle(lifecycle_name, collision_for_a);
+            actorA->ProcessPhysicsLifecycle(lifecycle_name, collision_for_a);
         }
 
         if (actorB) {
@@ -57,7 +57,7 @@ public:
             collision_for_b.point = point;
             collision_for_b.normal = normal;
             collision_for_b.relative_velocity = relative_velocity;
-            actorB->ProcessCollisionLifecycle(lifecycle_name, collision_for_b);
+            actorB->ProcessPhysicsLifecycle(lifecycle_name, collision_for_b);
         }
     }
 

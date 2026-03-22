@@ -142,7 +142,7 @@ void Actor::ProcessOnLateUpdate() {
     }
 }
 
-void Actor::ProcessCollisionLifecycle(const char* lifecycle_name, const Collision& collision) {
+void Actor::ProcessPhysicsLifecycle(const char* lifecycle_name, const Collision& collision) {
     if (pending_destroy || !lifecycle_name) return;
 
     for (auto& [key, instance] : components) {

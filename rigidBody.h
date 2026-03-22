@@ -39,6 +39,12 @@ public:
     float friction = 0.3f;
     float bounciness = 0.3f;
 
+    std::string trigger_type = "box"; // "box", "circle"
+    float trigger_width = 1.0f;
+    float trigger_height = 1.0f;
+    float trigger_radius = 0.5f;
+
+
     // ====== runtime ======
     b2Body* body = nullptr; // set in RigidBodySystem when creating the body in the physics world, used for runtime queries and updates.
     b2World* world = nullptr; // set in RigidBodySystem when creating the body in the physics world, used for runtime queries and updates.
@@ -59,32 +65,63 @@ public:
     void _setShapeAndFixture(){
         if (!body) return;
 
-        b2Shape* shape = nullptr;
-        if (collider_type == "circle") {
-            b2CircleShape* circle_shape = new b2CircleShape();
-            circle_shape->m_radius = radius;
-            shape = circle_shape;
-        } else { // collider_type == "box" and also default
+        b2Shape* collider_shape = nullptr;
+        b2Shape* trigger_shape = nullptr;
+        if (!has_collider && !has_trigger){
             b2PolygonShape* box_shape = new b2PolygonShape();
             box_shape->SetAsBox(width / 2.0f, height / 2.0f);
-            shape = box_shape;
-        } 
-
-        if (shape) {
-            b2FixtureDef fixtureDef;
-            fixtureDef.shape = shape;
-            fixtureDef.density = density;
-            if (!has_collider && !has_trigger) {
-                fixtureDef.isSensor = true;
-            } else {
-                fixtureDef.friction = friction;
-                fixtureDef.restitution = bounciness;
+            trigger_shape = box_shape;
+        } else {
+            if (has_collider){
+                if (collider_type == "circle") {
+                    b2CircleShape* circle_shape = new b2CircleShape();
+                    circle_shape->m_radius = radius;
+                    collider_shape = circle_shape;
+                } else { // collider_type == "box" and also default
+                    b2PolygonShape* box_shape = new b2PolygonShape();
+                    box_shape->SetAsBox(width / 2.0f, height / 2.0f);
+                    collider_shape = box_shape;
+                }
             }
+
+            if (has_trigger){
+                if (trigger_type == "circle") {
+                    b2CircleShape* circle_shape = new b2CircleShape();
+                    circle_shape->m_radius = trigger_radius;
+                    trigger_shape = circle_shape;
+                } else { // trigger_type == "box" and also default
+                    b2PolygonShape* box_shape = new b2PolygonShape();
+                    box_shape->SetAsBox(trigger_width / 2.0f, trigger_height / 2.0f);
+                    trigger_shape = box_shape;
+                }
+            }
+        }
+
+        if (collider_shape){
+            b2FixtureDef fixtureDef;
+            fixtureDef.shape = collider_shape;
+            fixtureDef.density = density;
+            fixtureDef.friction = friction;
+            fixtureDef.restitution = bounciness;
             b2Fixture* fixture = body->CreateFixture(&fixtureDef);
             if (fixture) {
                 fixture->GetUserData().pointer = reinterpret_cast<uintptr_t>(actor);
             }
         }
+
+        if (trigger_shape){
+            b2FixtureDef fixtureDef;
+            fixtureDef.shape = trigger_shape;
+            fixtureDef.isSensor = true;
+            b2Fixture* fixture = body->CreateFixture(&fixtureDef);
+            if (fixture) {
+                fixture->GetUserData().pointer = reinterpret_cast<uintptr_t>(actor);
+            }
+        }
+
+        //Notes: isSensor in Box2d
+        // a component is labelled as isSensor true would not be affected by
+        // physics and would not cause collision response, but would still trigger collision events.
     }
 
     void initialize(){

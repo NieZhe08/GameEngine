@@ -374,12 +374,18 @@ public:
             .addData("rotation", &Rigidbody::rotation)
             .addData("has_collider", &Rigidbody::has_collider)
             .addData("has_trigger", &Rigidbody::has_trigger)
+
             .addData("collider_type", &Rigidbody::collider_type)
             .addData("width", &Rigidbody::width)
             .addData("height", &Rigidbody::height)
             .addData("radius", &Rigidbody::radius)
             .addData("friction", &Rigidbody::friction)
             .addData("bounciness", &Rigidbody::bounciness)
+
+            .addData("trigger_type", &Rigidbody::trigger_type)
+            .addData("trigger_width", &Rigidbody::trigger_width)
+            .addData("trigger_height", &Rigidbody::trigger_height)
+            .addData("trigger_radius", &Rigidbody::trigger_radius)
 
             .addFunction("GetPosition", &Rigidbody::GetPosition)
             .addFunction("GetRotation", &Rigidbody::GetRotation)

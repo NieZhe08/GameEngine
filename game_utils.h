@@ -79,7 +79,7 @@ public:
     // 处理 OnLateUpdate 
     void ProcessOnLateUpdate();
 
-    void ProcessCollisionLifecycle(const char* lifecycle_name, const Collision& collision);
+    void ProcessPhysicsLifecycle(const char* lifecycle_name, const Collision& collision);
 
     void RemainWhenSceneChange();
 
