@@ -215,9 +215,9 @@ void readAndaddComponent(const rapidjson::Value& component_data,
 }
 
 float RtoD(float radians){
-    return radians * 180.0f / b2_pi;
+    return (radians) * 180.0f / b2_pi;
 }
 
 float DtoR(float degrees){
-    return degrees * b2_pi / 180.0f;
+    return (degrees) * b2_pi / 180.0f;
 }

@@ -374,12 +374,30 @@ public:
             .addData("rotation", &Rigidbody::rotation)
             .addData("has_collider", &Rigidbody::has_collider)
             .addData("has_trigger", &Rigidbody::has_trigger)
+
             .addFunction("GetPosition", &Rigidbody::GetPosition)
             .addFunction("GetRotation", &Rigidbody::GetRotation)
+            .addFunction("SetUpDirection", &Rigidbody::SetUpDirection)
+            .addFunction("SetRightDirection", &Rigidbody::SetRightDirection)
             .addFunction("OnStart", &Rigidbody::OnStart)
             .addFunction("OnUpdate", &Rigidbody::OnUpdate)
             .addFunction("OnLateUpdate", &Rigidbody::OnLateUpdate)
             .addFunction("OnDestroy", &Rigidbody::OnDestroy)
+
+            .addFunction("AddForce", &Rigidbody::AddForce)
+            .addFunction("SetVelocity", &Rigidbody::SetVelocity)
+            .addFunction("SetPosition", &Rigidbody::SetPosition)
+            .addFunction("SetRotation", &Rigidbody::SetRotation)
+            .addFunction("SetAngularVelocity", &Rigidbody::SetAngularVelocity)
+            .addFunction("SetGravityScale", &Rigidbody::SetGravityScale)
+            .addFunction("SetUpDirection", &Rigidbody::SetUpDirection)
+            .addFunction("SetRightDirection", &Rigidbody::SetRightDirection)
+            .addFunction("GetVelocity", &Rigidbody::GetVelocity)
+            .addFunction("GetAngularVelocity", &Rigidbody::GetAngularVelocity)
+            .addFunction("GetGravityScale", &Rigidbody::GetGravityScale)
+            .addFunction("GetUpDirection", &Rigidbody::GetUpDirection)
+            .addFunction("GetRightDirection", &Rigidbody::GetRightDirection)
+
             .endClass();
     }
 };

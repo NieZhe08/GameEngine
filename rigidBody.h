@@ -6,6 +6,7 @@
 #include "LuaBridge/LuaBridge.h"
 #include "PhysicManager.h"
 #include "game_utils.h"
+#include "glm/glm.hpp"
 
 #include <string>
 
@@ -89,6 +90,96 @@ public:
             world->DestroyBody(body);
             body = nullptr;
         }
+    }
+
+    void AddForce(b2Vec2 vec){
+        if (body) {
+            body->ApplyForceToCenter(vec, true);
+        }
+    }
+
+    void SetVelocity(b2Vec2 vec){
+        if (body) {
+            body->SetLinearVelocity(vec);
+        }
+    }
+
+    void SetPosition(b2Vec2 vec){
+        if (body) {
+            body->SetTransform(vec, body->GetAngle());
+        }
+    }
+
+    void SetRotation(float degrees_clockwise){
+        if (body) {
+            body->SetTransform(body->GetPosition(), DtoR(360-degrees_clockwise));
+        }
+    }
+
+    void SetAngularVelocity(float degrees_clockwise){
+        if (body) {
+            body->SetAngularVelocity(DtoR(360-degrees_clockwise));
+        }
+    }
+
+    void SetGravityScale(float scale){
+        if (body) {
+            body->SetGravityScale(scale);
+        }
+    }
+
+    void SetUpDirection(b2Vec2 direction){
+        if (!body) return;
+        if (direction.Normalize() <= b2_epsilon) {
+            return;
+        }
+
+        float up_angle_radians = glm::atan(direction.x, -direction.y);
+        body->SetTransform(body->GetPosition(), up_angle_radians);
+    }
+
+    void SetRightDirection(b2Vec2 direction){
+        if (!body) return;
+        if (direction.Normalize() <= b2_epsilon) {
+            return;
+        }
+
+        float up_angle_radians = glm::atan(direction.x, -direction.y);
+        float right_angle_radians = up_angle_radians - (b2_pi / 2.0f);
+        body->SetTransform(body->GetPosition(), right_angle_radians);
+    }
+
+    b2Vec2 GetVelocity(){
+        if (body) {
+            return body->GetLinearVelocity();
+        }
+        return b2Vec2(0.0f, 0.0f);
+    }
+
+    float GetAngularVelocity(){
+        if (body) {
+            return RtoD(body->GetAngularVelocity());
+        }
+        return 0.0f;
+    }
+
+    float GetGravityScale(){
+        if (body) {
+            return body->GetGravityScale();
+        }
+        return 1.0f;
+    }
+
+    b2Vec2 GetUpDirection(){
+        if (!body) return b2Vec2(0.0f, 1.0f);
+        float angle = body->GetAngle();
+        return b2Vec2(-glm::sin(angle), glm::cos(angle));
+    }
+
+    b2Vec2 GetRightDirection(){
+        if (!body) return b2Vec2(1.0f, 0.0f);
+        float angle = body->GetAngle();
+        return b2Vec2(glm::cos(angle), glm::sin(angle));
     }
 };
 
