@@ -67,6 +67,7 @@ public:
 
         static constexpr uint16 kColliderCategory = 0x0001;
         static constexpr uint16 kTriggerCategory = 0x0002;
+        static constexpr uint16 kNotDefinedCategory = 0x0004;
 
         b2Shape* collider_shape = nullptr;
         b2Shape* trigger_shape = nullptr;
@@ -107,7 +108,7 @@ public:
             fixtureDef.friction = friction;
             fixtureDef.restitution = bounciness;
             fixtureDef.filter.categoryBits = kColliderCategory;
-            fixtureDef.filter.maskBits = kColliderCategory;
+            fixtureDef.filter.maskBits = kColliderCategory | kNotDefinedCategory;
             b2Fixture* fixture = body->CreateFixture(&fixtureDef);
             if (fixture) {
                 fixture->GetUserData().pointer = reinterpret_cast<uintptr_t>(actor);
@@ -119,8 +120,13 @@ public:
             fixtureDef.shape = trigger_shape;
             fixtureDef.density = density; // !
             fixtureDef.isSensor = true;
-            fixtureDef.filter.categoryBits = kTriggerCategory;
-            fixtureDef.filter.maskBits = kTriggerCategory;
+            if (has_trigger){
+                fixtureDef.filter.categoryBits = kTriggerCategory;
+                fixtureDef.filter.maskBits = kTriggerCategory | kNotDefinedCategory;
+            } else {
+                fixtureDef.filter.categoryBits = kNotDefinedCategory;
+                fixtureDef.filter.maskBits = kColliderCategory | kTriggerCategory | kNotDefinedCategory;
+            }
             b2Fixture* fixture = body->CreateFixture(&fixtureDef);
             if (fixture) {
                 fixture->GetUserData().pointer = reinterpret_cast<uintptr_t>(actor);
