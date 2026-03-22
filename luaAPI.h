@@ -1,5 +1,4 @@
-#ifndef LUAAPI_H
-#define LUAAPI_H
+#pragma once
 
 #include <iostream>
 #include "lua/lua.hpp"
@@ -13,6 +12,7 @@
 #include <memory>
 #include "cameraManager.h"
 #include "box2d/box2d.h"
+#include "rigidBody.h"
 
 // Debug API 
 class Debug {
@@ -355,4 +355,30 @@ public:
         }
 };
 
-#endif
+class RigidbodyAPI {
+public:
+    void RegisterLuaAPI(lua_State* L) {
+        luabridge::getGlobalNamespace(L)
+            .beginClass<Rigidbody>("Rigidbody")
+            .addData("enabled", &Rigidbody::enabled)
+            .addData("key", &Rigidbody::key)
+            .addData("type", &Rigidbody::type)
+            .addData("actor", &Rigidbody::actor)
+            .addFunction("GetPosition", &Rigidbody::GetPosition)
+            .addFunction("GetRotation", &Rigidbody::GetRotation)
+            .addFunction("OnStart", &Rigidbody::OnStart)
+            .addFunction("OnUpdate", &Rigidbody::OnUpdate)
+            .addFunction("OnLateUpdate", &Rigidbody::OnLateUpdate)
+            .addFunction("OnDestroy", &Rigidbody::OnDestroy)
+            .endClass();
+    }
+};
+
+class PhysicsAPI {
+public:
+    void RegisterLuaAPI(lua_State* L) {
+        luabridge::getGlobalNamespace(L)
+            .beginClass<PhysicsManager>("PhysicsManager")
+            .endClass();
+    }
+};

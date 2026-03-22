@@ -1,5 +1,4 @@
-#ifndef GAME_UTILS_H
-#define GAME_UTILS_H
+#pragma once
 #include <iostream>
 #include "glm/glm.hpp"
 #include <optional>
@@ -16,6 +15,7 @@
 #include <cstdint>
 #include <memory>
 #include "rapidjson/document.h"
+#include "box2d/box2d.h"
 
 
 class ActorManager;
@@ -95,4 +95,6 @@ void readAndaddComponent(const rapidjson::Value& component_data,
                          const std::string& component_name,
                          ComponentDB* componentDB,
                          Actor* new_actor);
-#endif 
+
+float RtoD(float radians);
+float DtoR(float degrees);

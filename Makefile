@@ -3,7 +3,7 @@ CXX = clang++
 CC = clang
 CXXFLAGS = -O3 -std=c++17 -Wall -Wextra -Wno-deprecated-declarations
 CFLAGS = -O3 -std=c11 -Wall -Wextra -Wno-unused-parameter
-CPPFLAGS = -I./glm -I./SDL2 -I./SDL_image -I./SDL_mixer -I./SDL2_ttf -I./lua -I.
+CPPFLAGS = -I./glm -I./SDL2 -I./SDL_image -I./SDL_mixer -I./SDL2_ttf -I./lua -I./box2d -I.
 LDLIBS = -lSDL2 -lSDL2_image -lSDL2_mixer -lSDL2_ttf -ldl -lm
 
 # Source files
@@ -13,8 +13,12 @@ SOURCE_FILES = main.cpp game_engine.cpp game_utils.cpp
 LUA_SOURCE_FILES = $(filter-out lua/lua.c lua/luac.c, $(wildcard lua/*.c))
 LUA_OBJECT_FILES = $(LUA_SOURCE_FILES:.c=.o)
 
+# Build bundled Box2D runtime (sources live in nested folders)
+BOX2D_SOURCE_FILES = $(wildcard box2d/common/*.cpp box2d/collision/*.cpp box2d/dynamics/*.cpp box2d/rope/*.cpp)
+BOX2D_OBJECT_FILES = $(patsubst %.cpp,%.o,$(BOX2D_SOURCE_FILES))
+
 # Object files (automatically generated from source files)
-OBJECT_FILES = main.o game_engine.o game_utils.o $(LUA_OBJECT_FILES)
+OBJECT_FILES = main.o game_engine.o game_utils.o $(LUA_OBJECT_FILES) $(BOX2D_OBJECT_FILES)
 
 # Executable name
 EXECUTABLE = game_engine_linux
@@ -41,6 +45,10 @@ game_utils.o: game_utils.cpp
 # Compile bundled Lua C sources
 lua/%.o: lua/%.c
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c $< -o $@
+
+# Compile bundled Box2D C++ sources
+box2d/%.o: box2d/%.cpp
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $< -o $@
 
 # Compile json_parser.cpp to json_parser.o
 json_parser.o: json_paraser.cpp

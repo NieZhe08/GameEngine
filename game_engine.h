@@ -43,6 +43,11 @@ public:
     std::shared_ptr<AudioManager> audioManager;
     std::shared_ptr<ImageManager> imageManager;
     std::shared_ptr<CameraManager> cameraManager;
+    
+
+    // Physic Engine
+    //PhysicsManager* physicsManager = nullptr;
+    //bool createPhysicsFlag = false;
 
     // Constructor and public methods
     GameEngine();

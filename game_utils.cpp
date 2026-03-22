@@ -213,3 +213,11 @@ void readAndaddComponent(const rapidjson::Value& component_data,
         new_actor->components.insert_or_assign(component_name, instance);
     }
 }
+
+float RtoD(float radians){
+    return radians * 180.0f / b2_pi;
+}
+
+float DtoR(float degrees){
+    return degrees * b2_pi / 180.0f;
+}

@@ -85,6 +85,22 @@ struct B2_API b2Vec2
 		x *= a; y *= a;
 	}
 
+	// Helpers used by LuaBridge bindings in this engine.
+	b2Vec2 operator_add(const b2Vec2& other) const
+	{
+		return b2Vec2(x + other.x, y + other.y);
+	}
+
+	b2Vec2 operator_sub(const b2Vec2& other) const
+	{
+		return b2Vec2(x - other.x, y - other.y);
+	}
+
+	b2Vec2 operator_mul(float multiplier) const
+	{
+		return b2Vec2(x * multiplier, y * multiplier);
+	}
+
 	/// Get the length of this vector (the norm).
 	float Length() const
 	{
@@ -123,21 +139,6 @@ struct B2_API b2Vec2
 	b2Vec2 Skew() const
 	{
 		return b2Vec2(-y, x);
-	}
-
-	b2Vec2 operator_add(const b2Vec2& v) const
-	{
-		return b2Vec2(x + v.x, y + v.y);
-	}
-
-	b2Vec2 operator_sub(const b2Vec2& v) const
-	{
-		return b2Vec2(x - v.x, y - v.y);
-	}
-
-	b2Vec2 operator_mul(float a) const
-	{
-		return b2Vec2(x * a, y * a);
 	}
 
 	float x, y;

@@ -8,6 +8,7 @@
 
 #include "rapidjson/document.h"
 #include "game_utils.h" // for Actor and lua includes
+#include "rigidBody.h"
 #include <lua/lua.hpp>
 #include <LuaBridge/LuaBridge.h>
 
@@ -19,8 +20,8 @@
 class ComponentDB {
     
 public:
-    explicit ComponentDB(lua_State* L)
-        : L(L) {}
+    explicit ComponentDB(lua_State* L, b2World* world)
+        : L(L) , world(world){}
 
     // 使用 Lua metatable 在 Lua 中建立继承关系：
     // setmetatable(instance_table, { __index = parent_table })
@@ -43,6 +44,19 @@ public:
     luabridge::LuaRef CreateInstance(const std::string& typeName,
                                      const std::string& key,
                                      Actor* owner) {
+        // Built-in C++ component: create userdata directly instead of Lua table.
+        if (typeName == "Rigidbody") {
+            Rigidbody* rb = new Rigidbody(world);
+            rb->key = key;
+            rb->type = typeName;
+            rb->actor = owner;
+            rb->enabled = true;
+
+            luabridge::LuaRef instance(L, rb);
+            //ownedRigidbodies.insert(rb);
+            return instance;
+        }
+
         luabridge::LuaRef base = getOrLoadBase(typeName);
         lua_State* state = base.state();
 
@@ -109,6 +123,7 @@ public:
 
 private:
     lua_State* L;
+    b2World* world;
     // 缓存组件类型的基础 Lua 表：typeName -> base table
     int addComponentCounter = 0;
     std::unordered_map<std::string, luabridge::LuaRef> baseCache;
@@ -118,6 +133,14 @@ private:
         auto it = baseCache.find(typeName);
         if (it != baseCache.end()) {
             return it->second;
+        }
+
+        // Built-in C++ component type.
+        if (typeName == "Rigidbody") {
+            Rigidbody* rb = new Rigidbody(world);
+            luabridge::LuaRef base (L, rb);
+            baseCache.emplace(typeName, base);
+            return base;
         }
 
         // 检查脚本是否存在
