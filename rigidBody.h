@@ -112,13 +112,13 @@ public:
 
     void SetRotation(float degrees_clockwise){
         if (body) {
-            body->SetTransform(body->GetPosition(), DtoR(360-degrees_clockwise));
+            body->SetTransform(body->GetPosition(), DtoR(degrees_clockwise));
         }
     }
 
     void SetAngularVelocity(float degrees_clockwise){
         if (body) {
-            body->SetAngularVelocity(DtoR(360-degrees_clockwise));
+            body->SetAngularVelocity(DtoR(degrees_clockwise));
         }
     }
 
