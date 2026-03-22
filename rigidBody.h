@@ -60,15 +60,15 @@ public:
         if (!body) return;
 
         b2Shape* shape = nullptr;
-        if (collider_type == "box") {
-            b2PolygonShape* box_shape = new b2PolygonShape();
-            box_shape->SetAsBox(width / 2.0f, height / 2.0f);
-            shape = box_shape;
-        } else if (collider_type == "circle") {
+        if (collider_type == "circle") {
             b2CircleShape* circle_shape = new b2CircleShape();
             circle_shape->m_radius = radius;
             shape = circle_shape;
-        }
+        }else { // collider_type == "box" and also default
+            b2PolygonShape* box_shape = new b2PolygonShape();
+            box_shape->SetAsBox(width / 2.0f, height / 2.0f);
+            shape = box_shape;
+        } 
 
         if (shape) {
             b2FixtureDef fixtureDef;
