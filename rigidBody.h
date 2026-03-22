@@ -76,9 +76,10 @@ public:
             fixtureDef.density = density;
             if (!has_collider && !has_trigger) {
                 fixtureDef.isSensor = true;
+            } else {
+                fixtureDef.friction = friction;
+                fixtureDef.restitution = bounciness;
             }
-            //fixtureDef.friction = friction;
-            //fixtureDef.restitution = bounciness;
             body->CreateFixture(&fixtureDef);
         }
     }
