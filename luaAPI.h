@@ -416,3 +416,16 @@ public:
             .endClass();
     }
 };
+
+class CollisionAPI {
+public:
+    void RegisterLuaAPI(lua_State* L) {
+        luabridge::getGlobalNamespace(L)
+            .beginClass<Collision>("Collision")
+            .addData("other", &Collision::other)
+            .addData("point", &Collision::point)
+            .addData("relative_velocity", &Collision::relative_velocity)
+            .addData("normal", &Collision::normal)
+            .endClass();
+    }
+};

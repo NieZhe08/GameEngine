@@ -64,7 +64,7 @@ public:
             b2CircleShape* circle_shape = new b2CircleShape();
             circle_shape->m_radius = radius;
             shape = circle_shape;
-        }else { // collider_type == "box" and also default
+        } else { // collider_type == "box" and also default
             b2PolygonShape* box_shape = new b2PolygonShape();
             box_shape->SetAsBox(width / 2.0f, height / 2.0f);
             shape = box_shape;
@@ -80,7 +80,10 @@ public:
                 fixtureDef.friction = friction;
                 fixtureDef.restitution = bounciness;
             }
-            body->CreateFixture(&fixtureDef);
+            b2Fixture* fixture = body->CreateFixture(&fixtureDef);
+            if (fixture) {
+                fixture->GetUserData().pointer = reinterpret_cast<uintptr_t>(actor);
+            }
         }
     }
 

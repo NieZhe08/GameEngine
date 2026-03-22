@@ -20,6 +20,14 @@
 
 class ActorManager;
 class ComponentDB;
+class Actor;
+
+struct Collision {
+    Actor* other = nullptr;
+    b2Vec2 point = b2Vec2(0.0f, 0.0f);
+    b2Vec2 relative_velocity = b2Vec2(0.0f, 0.0f);
+    b2Vec2 normal = b2Vec2(0.0f, 0.0f);
+};
 
 class Actor : public std::enable_shared_from_this<Actor> {
 public:
@@ -70,6 +78,8 @@ public:
 
     // 处理 OnLateUpdate 
     void ProcessOnLateUpdate();
+
+    void ProcessCollisionLifecycle(const char* lifecycle_name, const Collision& collision);
 
     void RemainWhenSceneChange();
 

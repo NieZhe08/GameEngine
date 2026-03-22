@@ -142,6 +142,25 @@ void Actor::ProcessOnLateUpdate() {
     }
 }
 
+void Actor::ProcessCollisionLifecycle(const char* lifecycle_name, const Collision& collision) {
+    if (pending_destroy || !lifecycle_name) return;
+
+    for (auto& [key, instance] : components) {
+        if (pending_destroy) break;
+        if (started_components.find(key) == started_components.end()) continue;
+        if (instance["enabled"].cast<bool>() == false) continue;
+
+        luabridge::LuaRef lifecycle_fn = instance[lifecycle_name];
+        if (!lifecycle_fn.isFunction()) continue;
+
+        try {
+            lifecycle_fn(instance, collision);
+        } catch (luabridge::LuaException const& e) {
+            ReportError(this->name, e);
+        }
+    }
+}
+
 void Actor::RemainWhenSceneChange() {
     destroyOnSceneChange = false;
 }
