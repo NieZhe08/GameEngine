@@ -12,12 +12,12 @@ public:
         return reinterpret_cast<Actor*>(ptr);
     }
 
-    static b2Vec2 ComputeRelativeVelocity(const b2Fixture* self_fixture, const b2Fixture* other_fixture) {
-        if (!self_fixture || !other_fixture) {
+    static b2Vec2 ComputeRelativeVelocity(const b2Fixture* fixture_A, const b2Fixture* fixture_B) {
+        if (!fixture_A || !fixture_B) {
             return b2Vec2(0.0f, 0.0f);
         }
-        const b2Body* self_body = self_fixture->GetBody();
-        const b2Body* other_body = other_fixture->GetBody();
+        const b2Body* self_body = fixture_A->GetBody();
+        const b2Body* other_body = fixture_B->GetBody();
         if (!self_body || !other_body) {
             return b2Vec2(0.0f, 0.0f);
         }
@@ -40,13 +40,14 @@ public:
         const b2Vec2 invalid_vector(-999.0f, -999.0f);
         const b2Vec2 point = is_begin_contact ? world_manifold.points[0] : invalid_vector;
         const b2Vec2 normal = is_begin_contact ? world_manifold.normal : invalid_vector;
+        const b2Vec2 relative_velocity = ComputeRelativeVelocity(fixtureA, fixtureB);
 
         if (actorA) {
             Collision collision_for_a;
             collision_for_a.other = actorB;
             collision_for_a.point = point;
             collision_for_a.normal = normal;
-            collision_for_a.relative_velocity = ComputeRelativeVelocity(fixtureA, fixtureB);
+            collision_for_a.relative_velocity = relative_velocity;
             actorA->ProcessCollisionLifecycle(lifecycle_name, collision_for_a);
         }
 
@@ -55,7 +56,7 @@ public:
             collision_for_b.other = actorA;
             collision_for_b.point = point;
             collision_for_b.normal = normal;
-            collision_for_b.relative_velocity = ComputeRelativeVelocity(fixtureB, fixtureA);
+            collision_for_b.relative_velocity = relative_velocity;
             actorB->ProcessCollisionLifecycle(lifecycle_name, collision_for_b);
         }
     }
