@@ -53,7 +53,7 @@ public:
         if (!body) {
             return rotation;
         }
-        return RtoD(body->GetAngle());
+        return RtoD((body->GetAngle() ) ); // Screen-space convention: angle is 0 when facing up (0, -1), and increases clockwise.
     }
 
     void _setShapeAndFixture(){
@@ -74,6 +74,9 @@ public:
             b2FixtureDef fixtureDef;
             fixtureDef.shape = shape;
             fixtureDef.density = density;
+            if (!has_collider && !has_trigger) {
+                fixtureDef.isSensor = true;
+            }
             //fixtureDef.friction = friction;
             //fixtureDef.restitution = bounciness;
             body->CreateFixture(&fixtureDef);
@@ -140,7 +143,7 @@ public:
 
     void SetRotation(float degrees_clockwise){
         if (body) {
-            body->SetTransform(body->GetPosition(), DtoR(-degrees_clockwise));
+            body->SetTransform(body->GetPosition(), DtoR(degrees_clockwise));
         }
     }
 
@@ -186,7 +189,7 @@ public:
 
     float GetAngularVelocity(){
         if (body) {
-            return -RtoD(body->GetAngularVelocity());
+            return RtoD(body->GetAngularVelocity());
         }
         return 0.0f;
     }
@@ -211,7 +214,7 @@ public:
         if (!body) return b2Vec2(1.0f, 0.0f);
         float angle = (body->GetAngle());
         // Right is +90 degrees clockwise from up in screen-space.
-        b2Vec2 result = b2Vec2(glm::cos(angle), -glm::sin(angle));
+        b2Vec2 result = b2Vec2(glm::cos(angle), glm::sin(angle));
         result.Normalize();
         return result;
     }

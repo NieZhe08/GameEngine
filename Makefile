@@ -20,6 +20,9 @@ BOX2D_OBJECT_FILES = $(patsubst %.cpp,%.o,$(BOX2D_SOURCE_FILES))
 # Object files (automatically generated from source files)
 OBJECT_FILES = main.o game_engine.o game_utils.o $(LUA_OBJECT_FILES) $(BOX2D_OBJECT_FILES)
 
+# Objects removed by `make clean` (keep Box2D .o and all lua/*.o to avoid rebuilding them every time)
+CLEAN_OBJECT_FILES = $(filter-out $(BOX2D_OBJECT_FILES) $(wildcard lua/*.o),$(OBJECT_FILES))
+
 # Executable name
 EXECUTABLE = game_engine_linux
 
@@ -60,7 +63,7 @@ scene_db.o: scene_db.cpp
 
 # Clean build artifacts
 clean:
-	rm -f $(OBJECT_FILES) $(EXECUTABLE)
+	rm -f $(CLEAN_OBJECT_FILES) $(EXECUTABLE)
 
 # Rebuild from scratch
 rebuild: clean all
