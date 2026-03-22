@@ -21,7 +21,7 @@ public:
         if (!self_body || !other_body) {
             return b2Vec2(0.0f, 0.0f);
         }
-        return other_body->GetLinearVelocity() - self_body->GetLinearVelocity();
+        return -other_body->GetLinearVelocity() + self_body->GetLinearVelocity();
     }
 
     void Dispatch(b2Contact* contact, const char* lifecycle_name, bool is_begin_contact) {
