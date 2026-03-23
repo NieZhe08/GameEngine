@@ -45,6 +45,9 @@ GameEngine::~GameEngine() {
     imageManager.reset();
     cameraManager.reset();
 
+    // Clear static LuaRef holders before closing Lua state.
+    EventBus::ClearAll();
+
     // NOTE: lua_close currently aborts with munmap_chunk(): invalid pointer
     // in this codebase during close_state. Keep process-exit reclamation.
     if (L) lua_close(L);
@@ -107,6 +110,7 @@ void GameEngine::initializeGame(bool isInitialLoad) {
         PhysicsAPI().RegisterLuaAPI(L);
         CollisionAPI().RegisterLuaAPI(L);
         RayCastingAPI().RegisterLuaAPI(L);
+        EventLuaAPI().RegisterLuaAPI(L);
     } 
 
     // load scene module
@@ -169,6 +173,9 @@ void GameEngine::gameLoop() {
 
         // clean up the input manager after update() using the states.
         input.LateUpdate();
+
+        // Apply Event.Subscribe / Event.Unsubscribe requested this frame.
+        EventBus::FlushPending();
 
         // advance physics engine by one step
         PhysicsManager::Instance().Step();

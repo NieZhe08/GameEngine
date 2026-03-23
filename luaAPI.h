@@ -14,6 +14,7 @@
 #include "box2d/box2d.h"
 #include "rigidBody.h"
 #include "raycast.h"
+#include "EventBus.h"
 
 // Debug API 
 class Debug {
@@ -333,6 +334,18 @@ public:
                     if (!actorManager || !actor) return;
                     actor->RemainWhenSceneChange();
                 }))
+            .endNamespace();
+    }
+};
+
+class EventLuaAPI {
+public:
+    void RegisterLuaAPI(lua_State* L) {
+        luabridge::getGlobalNamespace(L)
+            .beginNamespace("Event")
+                .addFunction("Publish", &EventBus::Publish)
+                .addFunction("Subscribe", &EventBus::Subscribe)
+                .addFunction("Unsubscribe", &EventBus::Unsubscribe)
             .endNamespace();
     }
 };
