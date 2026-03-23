@@ -127,9 +127,23 @@ void Actor::ProcessOnUpdate() {
 void Actor::ProcessOnLateUpdate() {
     if (pending_destroy) return;
 
+    std::unordered_set<std::string> keys_to_erase; // Collect keys to erase after iteration to avoid modifying map during iteration.
     for (auto& [key, instance] : components) {
         if (pending_destroy) break;
         if (started_components.find(key) == started_components.end()) continue;
+        
+        if (instance["do_destroy"].cast<bool>() == true) {
+            luabridge::LuaRef onDestroy = instance["OnDestroy"];
+            if (onDestroy.isFunction()) {
+                try {
+                    onDestroy(instance);
+                    keys_to_erase.insert(key);
+                } catch (luabridge::LuaException const& e) {
+                    ReportError(this->name, e);
+                }
+            }
+        }
+
         if (instance["enabled"].cast<bool>() == false) continue;
 
         luabridge::LuaRef onLateUpdate = instance["OnLateUpdate"];
@@ -140,17 +154,10 @@ void Actor::ProcessOnLateUpdate() {
                 ReportError(this->name, e);
             }
         }
-
-        if (instance["do_destroy"].cast<bool>() == true) {
-            luabridge::LuaRef onDestroy = instance["OnDestroy"];
-            if (onDestroy.isFunction()) {
-                try {
-                    onDestroy(instance);
-                } catch (luabridge::LuaException const& e) {
-                    ReportError(this->name, e);
-                }
-            }
-        }
+    }
+    // Erase components marked for destruction
+    for (const auto& key : keys_to_erase) {
+        components.erase(key);
     }
 }
 
@@ -163,6 +170,7 @@ void Actor::ProcessOnDestroy() {
             if (onDestroy.isFunction()) {
                 try {
                     onDestroy(instance);
+                    // don't bother erasing components here, we will clear all at the end of Actor's life, and erasing during iteration may cause issues. Just call OnDestroy for all enabled components.
                 } catch (luabridge::LuaException const& e) {
                     ReportError(this->name, e);
                 }
