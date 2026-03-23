@@ -106,6 +106,7 @@ void GameEngine::initializeGame(bool isInitialLoad) {
         RigidbodyAPI().RegisterLuaAPI(L);
         PhysicsAPI().RegisterLuaAPI(L);
         CollisionAPI().RegisterLuaAPI(L);
+        RayCastingAPI().RegisterLuaAPI(L);
     } 
 
     // load scene module

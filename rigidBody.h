@@ -4,7 +4,7 @@
 #include "box2d/box2d.h"
 #include "lua/lua.hpp"
 #include "LuaBridge/LuaBridge.h"
-#include "PhysicManager.h"
+//#include "PhysicManager.h"
 #include "game_utils.h"
 #include "glm/glm.hpp"
 
@@ -44,6 +44,9 @@ public:
     float trigger_height = 1.0f;
     float trigger_radius = 0.5f;
 
+    static constexpr uint16 kColliderCategory = 0x0001;
+    static constexpr uint16 kTriggerCategory = 0x0002;
+    static constexpr uint16 kNotDefinedCategory = 0x0004;
 
     // ====== runtime ======
     b2Body* body = nullptr; // set in RigidBodySystem when creating the body in the physics world, used for runtime queries and updates.
@@ -64,11 +67,6 @@ public:
 
     void _setShapeAndFixture(){
         if (!body) return;
-
-        static constexpr uint16 kColliderCategory = 0x0001;
-        static constexpr uint16 kTriggerCategory = 0x0002;
-        static constexpr uint16 kNotDefinedCategory = 0x0004;
-
         b2Shape* collider_shape = nullptr;
         b2Shape* trigger_shape = nullptr;
         if (!has_collider && !has_trigger){

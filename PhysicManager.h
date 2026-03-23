@@ -2,15 +2,10 @@
 #pragma once
 #include "box2d/box2d.h"
 #include "game_utils.h"
+#include "rigidBody.h"
 
 class PhysicsContactListener : public b2ContactListener {
 public:
-    static Actor* ActorFromFixture(b2Fixture* fixture) {
-        if (!fixture) return nullptr;
-        const uintptr_t ptr = fixture->GetUserData().pointer;
-        if (ptr == 0) return nullptr;
-        return reinterpret_cast<Actor*>(ptr);
-    }
 
     static b2Vec2 ComputeRelativeVelocity(const b2Fixture* fixture_A, const b2Fixture* fixture_B) {
         if (!fixture_A || !fixture_B) {
@@ -70,10 +65,10 @@ public:
         b2Filter filterA = fixtureA->GetFilterData();
         b2Filter filterB = fixtureB->GetFilterData();
 
-        const bool a_is_collider = (filterA.categoryBits == 0x0001);
-        const bool b_is_collider = (filterB.categoryBits == 0x0001);
-        const bool a_is_trigger = (filterA.categoryBits == 0x0002);
-        const bool b_is_trigger = (filterB.categoryBits == 0x0002);
+        const bool a_is_collider = (filterA.categoryBits == Rigidbody::kColliderCategory);
+        const bool b_is_collider = (filterB.categoryBits == Rigidbody::kColliderCategory);
+        const bool a_is_trigger = (filterA.categoryBits == Rigidbody::kTriggerCategory);
+        const bool b_is_trigger = (filterB.categoryBits == Rigidbody::kTriggerCategory);
 
         if (a_is_collider && b_is_collider) {
             Dispatch(contact, "OnCollisionEnter", true);
@@ -95,10 +90,10 @@ public:
         b2Filter filterA = fixtureA->GetFilterData();
         b2Filter filterB = fixtureB->GetFilterData();
 
-        const bool a_is_collider = (filterA.categoryBits == 0x0001);
-        const bool b_is_collider = (filterB.categoryBits == 0x0001);
-        const bool a_is_trigger = (filterA.categoryBits == 0x0002);
-        const bool b_is_trigger = (filterB.categoryBits == 0x0002);
+        const bool a_is_collider = (filterA.categoryBits == Rigidbody::kColliderCategory);
+        const bool b_is_collider = (filterB.categoryBits == Rigidbody::kColliderCategory);
+        const bool a_is_trigger = (filterA.categoryBits == Rigidbody::kTriggerCategory);
+        const bool b_is_trigger = (filterB.categoryBits == Rigidbody::kTriggerCategory);
 
         if (a_is_collider && b_is_collider) {
             Dispatch(contact, "OnCollisionExit", false);

@@ -13,6 +13,7 @@
 #include "cameraManager.h"
 #include "box2d/box2d.h"
 #include "rigidBody.h"
+#include "raycast.h"
 
 // Debug API 
 class Debug {
@@ -418,8 +419,14 @@ class PhysicsAPI {
 public:
     void RegisterLuaAPI(lua_State* L) {
         luabridge::getGlobalNamespace(L)
-            .beginClass<PhysicsManager>("PhysicsManager")
-            .endClass();
+            .beginNamespace("Physics")
+            .addFunction("Raycast", std::function<luabridge::LuaRef(const b2Vec2&, const b2Vec2&, float)>([L](const b2Vec2& pos, const b2Vec2& dir, float dist) -> luabridge::LuaRef {
+                return RayCastManager::Raycast(pos, dir, dist, L);
+            }))
+            .addFunction("RaycastAll", std::function<luabridge::LuaRef(const b2Vec2&, const b2Vec2&, float)>([L](const b2Vec2& pos, const b2Vec2& dir, float dist) -> luabridge::LuaRef {
+                return RayCastManager::RaycastAll(pos, dir, dist, L);
+             }))
+            .endNamespace();
     }
 };
 
@@ -432,6 +439,19 @@ public:
             .addData("point", &Collision::point)
             .addData("relative_velocity", &Collision::relative_velocity)
             .addData("normal", &Collision::normal)
+            .endClass();
+    }
+};
+
+class RayCastingAPI {
+public:
+    void RegisterLuaAPI(lua_State* L) {
+        luabridge::getGlobalNamespace(L)
+            .beginClass<HitResult>("HitResult")
+            .addData("actor", &HitResult::actor)
+            .addData("point", &HitResult::point)
+            .addData("normal", &HitResult::normal)
+            .addData("is_trigger", &HitResult::is_trigger)
             .endClass();
     }
 };

@@ -240,3 +240,10 @@ float RtoD(float radians){
 float DtoR(float degrees){
     return (degrees) * (b2_pi / 180.0f);
 }
+
+Actor* ActorFromFixture(b2Fixture* fixture) {
+    if (!fixture) return nullptr;
+    const uintptr_t ptr = fixture->GetUserData().pointer;
+    if (ptr == 0) return nullptr;
+    return reinterpret_cast<Actor*>(ptr);
+}

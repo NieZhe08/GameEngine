@@ -108,3 +108,5 @@ void readAndaddComponent(const rapidjson::Value& component_data,
 
 float RtoD(float radians);
 float DtoR(float degrees);
+
+Actor* ActorFromFixture(b2Fixture* fixture);
