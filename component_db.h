@@ -51,6 +51,7 @@ public:
             rb->type = typeName;
             rb->actor = owner;
             rb->enabled = true;
+            rb->do_destroy = false;
 
             luabridge::LuaRef instance(L, rb);
             //ownedRigidbodies.insert(rb);
@@ -72,6 +73,7 @@ public:
             instance["actor"] = owner;
         }
         instance["enabled"] = true; // Test #6 要求的初始 enabled = true
+        instance["do_destroy"] = false;
 
         return instance;
     }

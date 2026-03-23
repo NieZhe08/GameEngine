@@ -362,6 +362,7 @@ public:
         luabridge::getGlobalNamespace(L)
             .beginClass<Rigidbody>("Rigidbody")
             .addData("enabled", &Rigidbody::enabled)
+            .addData("do_destroy", &Rigidbody::do_destroy)
             .addData("key", &Rigidbody::key)
             .addData("type", &Rigidbody::type)
             .addData("actor", &Rigidbody::actor)

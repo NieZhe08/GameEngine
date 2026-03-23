@@ -82,6 +82,7 @@ luabridge::LuaRef Actor::AddComponent(std::string type) {
 }
 
 void Actor::RemoveComponent(luabridge::LuaRef component) {
+    component["do_destroy"] = true;
     component["enabled"] = false;
 }
 
@@ -139,6 +140,33 @@ void Actor::ProcessOnLateUpdate() {
                 ReportError(this->name, e);
             }
         }
+
+        if (instance["do_destroy"].cast<bool>() == true) {
+            luabridge::LuaRef onDestroy = instance["OnDestroy"];
+            if (onDestroy.isFunction()) {
+                try {
+                    onDestroy(instance);
+                } catch (luabridge::LuaException const& e) {
+                    ReportError(this->name, e);
+                }
+            }
+        }
+    }
+}
+
+// call when the actor is destroyed
+// so no matter what component all destroyed
+void Actor::ProcessOnDestroy() {
+    for (auto& [key, instance] : components) {
+        if (instance["enabled"].cast<bool>() == false) continue;
+            luabridge::LuaRef onDestroy = instance["OnDestroy"];
+            if (onDestroy.isFunction()) {
+                try {
+                    onDestroy(instance);
+                } catch (luabridge::LuaException const& e) {
+                    ReportError(this->name, e);
+                }
+            }
     }
 }
 

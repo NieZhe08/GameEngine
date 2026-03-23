@@ -14,6 +14,7 @@ class Rigidbody {
 public:
     // component common methods
     bool enabled = true; // Whether the component is active. Inactive components should not perform their behavior, but their data should still be queryable and modifiable.
+    bool do_destroy = false;
     std::string key = "";
     std::string type = "Rigidbody";
     Actor* actor = nullptr; // set when the component is added to an actor, should not be set manually in .scene files.
@@ -55,6 +56,9 @@ public:
     Rigidbody(b2World* world) : world(world) {}
 
     b2Vec2 GetPosition(){// use b2Body->GetPosition();
+        if (!body) {
+            return b2Vec2(x, y);
+        }
         return body->GetPosition();
     }
 
@@ -189,6 +193,11 @@ public:
     }
 
     void SetPosition(b2Vec2 vec){
+        if (!body) {
+            x = vec.x;
+            y = vec.y;
+            return;
+        }
         if (body) {
             body->SetTransform(vec, body->GetAngle());
         }
