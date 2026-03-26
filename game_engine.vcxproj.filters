@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Box2D">
+      <UniqueIdentifier>{25e38d04-ac3a-468f-8f44-72335a1d1793}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="game_engine.cpp">
@@ -20,6 +23,240 @@
     </ClCompile>
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="game_utils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="lua\lapi.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="lua\lauxlib.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="lua\lbaselib.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="lua\lcode.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="lua\lcorolib.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="lua\lctype.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="lua\ldblib.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="lua\ldebug.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="lua\ldo.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="lua\ldump.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="lua\lfunc.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="lua\lgc.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="lua\linit.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="lua\liolib.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="lua\llex.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="lua\lmathlib.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="lua\lmem.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="lua\loadlib.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="lua\lobject.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="lua\lopcodes.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="lua\loslib.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="lua\lparser.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="lua\lstate.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="lua\lstring.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="lua\lstrlib.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="lua\ltable.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="lua\ltablib.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="lua\ltm.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="lua\lundump.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="lua\lutf8lib.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="lua\lvm.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="lua\lzio.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="box2d\rope\b2_rope.cpp">
+      <Filter>Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="box2d\collision\b2_broad_phase.cpp">
+      <Filter>Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="box2d\collision\b2_chain_shape.cpp">
+      <Filter>Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="box2d\collision\b2_circle_shape.cpp">
+      <Filter>Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="box2d\collision\b2_collide_circle.cpp">
+      <Filter>Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="box2d\collision\b2_collide_edge.cpp">
+      <Filter>Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="box2d\collision\b2_collide_polygon.cpp">
+      <Filter>Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="box2d\collision\b2_collision.cpp">
+      <Filter>Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="box2d\collision\b2_distance.cpp">
+      <Filter>Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="box2d\collision\b2_dynamic_tree.cpp">
+      <Filter>Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="box2d\collision\b2_edge_shape.cpp">
+      <Filter>Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="box2d\collision\b2_polygon_shape.cpp">
+      <Filter>Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="box2d\collision\b2_time_of_impact.cpp">
+      <Filter>Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="box2d\common\b2_block_allocator.cpp">
+      <Filter>Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="box2d\common\b2_draw.cpp">
+      <Filter>Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="box2d\common\b2_math.cpp">
+      <Filter>Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="box2d\common\b2_settings.cpp">
+      <Filter>Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="box2d\common\b2_stack_allocator.cpp">
+      <Filter>Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="box2d\common\b2_timer.cpp">
+      <Filter>Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="box2d\dynamics\b2_body.cpp">
+      <Filter>Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="box2d\dynamics\b2_chain_circle_contact.cpp">
+      <Filter>Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="box2d\dynamics\b2_chain_polygon_contact.cpp">
+      <Filter>Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="box2d\dynamics\b2_circle_contact.cpp">
+      <Filter>Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="box2d\dynamics\b2_contact.cpp">
+      <Filter>Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="box2d\dynamics\b2_contact_manager.cpp">
+      <Filter>Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="box2d\dynamics\b2_contact_solver.cpp">
+      <Filter>Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="box2d\dynamics\b2_distance_joint.cpp">
+      <Filter>Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="box2d\dynamics\b2_edge_circle_contact.cpp">
+      <Filter>Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="box2d\dynamics\b2_edge_polygon_contact.cpp">
+      <Filter>Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="box2d\dynamics\b2_fixture.cpp">
+      <Filter>Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="box2d\dynamics\b2_friction_joint.cpp">
+      <Filter>Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="box2d\dynamics\b2_gear_joint.cpp">
+      <Filter>Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="box2d\dynamics\b2_island.cpp">
+      <Filter>Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="box2d\dynamics\b2_joint.cpp">
+      <Filter>Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="box2d\dynamics\b2_motor_joint.cpp">
+      <Filter>Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="box2d\dynamics\b2_mouse_joint.cpp">
+      <Filter>Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="box2d\dynamics\b2_polygon_circle_contact.cpp">
+      <Filter>Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="box2d\dynamics\b2_polygon_contact.cpp">
+      <Filter>Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="box2d\dynamics\b2_prismatic_joint.cpp">
+      <Filter>Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="box2d\dynamics\b2_pulley_joint.cpp">
+      <Filter>Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="box2d\dynamics\b2_revolute_joint.cpp">
+      <Filter>Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="box2d\dynamics\b2_weld_joint.cpp">
+      <Filter>Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="box2d\dynamics\b2_wheel_joint.cpp">
+      <Filter>Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="box2d\dynamics\b2_world.cpp">
+      <Filter>Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="box2d\dynamics\b2_world_callbacks.cpp">
+      <Filter>Box2D</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -41,10 +278,185 @@
     <ClInclude Include="template_db.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ActorManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AudioHelper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AudioManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="audio_db.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cameraManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="component_db.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="game_engine.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Helper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="image_db.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="input_manager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="luaAPI.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LuaBridge\Array.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LuaBridge\List.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LuaBridge\LuaBridge.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LuaBridge\Map.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LuaBridge\Optional.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LuaBridge\RefCountedObject.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LuaBridge\RefCountedPtr.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LuaBridge\UnorderedMap.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LuaBridge\Vector.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="lua\lapi.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="lua\lauxlib.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="lua\lcode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="lua\lctype.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="lua\ldebug.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="lua\ldo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="lua\lfunc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="lua\lgc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="lua\ljumptab.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="lua\llex.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="lua\llimits.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="lua\lmem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="lua\lobject.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="lua\lopcodes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="lua\lopnames.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="lua\lparser.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="lua\lprefix.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="lua\lstate.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="lua\lstring.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="lua\ltable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="lua\ltm.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="lua\lua.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="lua\lua.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="lua\luaconf.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="lua\lualib.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="lua\lundump.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="lua\lvm.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="lua\lzio.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="text_db.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="box2d\dynamics\b2_chain_circle_contact.h">
+      <Filter>Box2D</Filter>
+    </ClInclude>
+    <ClInclude Include="box2d\dynamics\b2_chain_polygon_contact.h">
+      <Filter>Box2D</Filter>
+    </ClInclude>
+    <ClInclude Include="box2d\dynamics\b2_circle_contact.h">
+      <Filter>Box2D</Filter>
+    </ClInclude>
+    <ClInclude Include="box2d\dynamics\b2_contact_solver.h">
+      <Filter>Box2D</Filter>
+    </ClInclude>
+    <ClInclude Include="box2d\dynamics\b2_edge_circle_contact.h">
+      <Filter>Box2D</Filter>
+    </ClInclude>
+    <ClInclude Include="box2d\dynamics\b2_edge_polygon_contact.h">
+      <Filter>Box2D</Filter>
+    </ClInclude>
+    <ClInclude Include="box2d\dynamics\b2_island.h">
+      <Filter>Box2D</Filter>
+    </ClInclude>
+    <ClInclude Include="box2d\dynamics\b2_polygon_circle_contact.h">
+      <Filter>Box2D</Filter>
+    </ClInclude>
+    <ClInclude Include="box2d\dynamics\b2_polygon_contact.h">
+      <Filter>Box2D</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="game_engine.slnx" />
     <None Include="Makefile" />
     <None Include="README.md" />
+    <None Include="lua\Makefile" />
   </ItemGroup>
 </Project>
