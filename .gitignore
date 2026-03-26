@@ -1,12 +1,12 @@
 game_engine_linux
 game_engine_osx
 *.o
-*.txt
+SDL_*
+*CMake*
 *Zone.Identifier
 callgrind.out*
 
 build
-**/resources
 **/frames
 render_logger.txt
 user_input.txt

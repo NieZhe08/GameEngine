@@ -481,11 +481,15 @@ public:
             .addData("end_color_g", &ParticleSystem::end_color_g)
             .addData("end_color_b", &ParticleSystem::end_color_b)
             .addData("end_color_a", &ParticleSystem::end_color_a)
+            .addData("enable_burst", &ParticleSystem::enable_burst)
 
             .addFunction("OnStart", &ParticleSystem::OnStart)
             .addFunction("OnUpdate", &ParticleSystem::OnUpdate)
             .addFunction("OnLateUpdate", &ParticleSystem::OnLateUpdate)
             .addFunction("OnDestroy", &ParticleSystem::OnDestroy)
+            .addFunction("Stop", &ParticleSystem::Stop)
+            .addFunction("Play", &ParticleSystem::Play)
+            .addFunction("Burst", &ParticleSystem::Burst)
             .addFunction("SetImageManager", std::function<void(ParticleSystem*)>([imageManager](ParticleSystem* ps) {
                 if (!ps) return;
                 ps->setImageManager(imageManager);

@@ -83,6 +83,9 @@ public:
     int sorting_order = 9999;
     int duration_frames = 300;
 
+    bool enable_burst = true;
+    bool now_burst = false;
+
     int allocateParticleSlot() {
         if (!free_list.empty()) {
             int index = free_list.front();
@@ -195,9 +198,14 @@ public:
     }
 
     void OnUpdate(){
+        if (!enabled) {
+            return;
+        }
+
         const bool should_burst = (local_frame_number % frames_between_bursts == 0);
-        if (should_burst) {
+        if (now_burst || (should_burst && enable_burst)) {
             generateNewParticles();
+            now_burst = false;
         }
 
         for (int i = 0; i < static_cast<int>(is_active.size()); i++) {
@@ -216,15 +224,15 @@ public:
             b2Vec2 velocity(particle_vx[i], particle_vy[i]);
             float angular_velocity = particle_angular_velocity[i];
 
-            // 2) Apply gravity to velocity.
+            // Apply gravity to velocity.
             velocity.x += gravity_scale_x;
             velocity.y += gravity_scale_y;
 
-            // 3) Apply drag and angular drag.
+            // Apply drag and angular drag.
             velocity *= drag_factor;
             angular_velocity *= angular_drag_factor;
 
-            // 4) Apply velocities to position and rotation.
+            // Apply velocities to position and rotation.
             particle_x[i] += velocity.x;
             particle_y[i] += velocity.y;
             particle_rotation[i] += angular_velocity;
@@ -234,7 +242,7 @@ public:
             particle_angular_velocity[i] = angular_velocity;
 
             // 5) Process color/scale over lifetime.
-            const float lifetime_progress = std::clamp(static_cast<float>(life_frames) / static_cast<float>(duration_frames), 0.0f, 1.0f);
+            const float lifetime_progress = static_cast<float>(life_frames) / duration_frames;
             const float scale = (end_scale < 0.0f)
                 ? particle_start_scale[i]
                 : glm::mix(particle_start_scale[i], end_scale, lifetime_progress);
@@ -269,6 +277,18 @@ public:
             );
         }
         local_frame_number++;
+    }
+
+    void Stop(){
+        enable_burst = false;
+    }
+
+    void Play(){
+        enable_burst = true;
+    }
+
+    void Burst(){
+        now_burst = true;
     }
 
     void OnLateUpdate() {
