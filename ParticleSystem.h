@@ -33,6 +33,7 @@ public:
     std::vector<bool> is_active;
     std::vector<int> start_frame;
     std::queue<int> free_list;
+    std::queue<int> pending_delete;
     std::vector<b2Body*> particle_bodies;
     std::vector<float> particle_x;
     std::vector<float> particle_y;
@@ -76,7 +77,7 @@ public:
     float x = 0.0f;
     float y = 0.0f;
     int local_frame_number = 0;
-    int frame_between_burst = 1;
+    int frames_between_bursts = 1;
     int burst_quantity = 1;
 
     int sorting_order = 9999;
@@ -124,7 +125,7 @@ public:
 
     void OnStart() {
         //validates all the value...
-        if (frame_between_burst < 1) frame_between_burst = 1;
+        if (frames_between_bursts < 1) frames_between_bursts = 1;
         if (burst_quantity < 1) burst_quantity = 1;
         if (duration_frames < 1) duration_frames = 1;
         if (drag_factor < 0.0f) drag_factor = 0.0f;
@@ -194,9 +195,7 @@ public:
     }
 
     void OnUpdate(){
-        if (local_frame_number % frame_between_burst == 0) {
-            generateNewParticles();
-        }
+        const bool should_burst = (local_frame_number % frames_between_bursts == 0);
 
         for (int i = 0; i < static_cast<int>(is_active.size()); i++) {
             // 1) Skip inactive particles.
@@ -207,8 +206,8 @@ public:
             const int life_frames = local_frame_number - start_frame[i];
             if (life_frames >= duration_frames) {
                 is_active[i] = false;
-                destroyParticleBody(i);
                 free_list.push(i);
+                pending_delete.push(i);
                 continue;
             }
 
@@ -268,12 +267,30 @@ public:
             );
         }
 
+        if (should_burst) {
+            generateNewParticles();
+        }
+
         local_frame_number++;
+    }
+
+    void OnLateUpdate() {
+        while (!pending_delete.empty()) {
+            const int index = pending_delete.front();
+            pending_delete.pop();
+
+            destroyParticleBody(index);
+            free_list.push(index);
+        }
     }
 
     void OnDestroy() {
         while (!free_list.empty()) {
             free_list.pop();
+        }
+
+        while (!pending_delete.empty()) {
+            pending_delete.pop();
         }
 
         for (int i = 0; i < static_cast<int>(particle_bodies.size()); i++) {

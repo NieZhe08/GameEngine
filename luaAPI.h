@@ -466,7 +466,7 @@ public:
             .addData("rotation_speed_max", &ParticleSystem::rotation_speed_max)
             .addData("x", &ParticleSystem::x)
             .addData("y", &ParticleSystem::y)
-            .addData("frame_between_burst", &ParticleSystem::frame_between_burst)
+            .addData("frames_between_bursts", &ParticleSystem::frames_between_bursts)
             .addData("burst_quantity", &ParticleSystem::burst_quantity)
             .addData("sorting_order", &ParticleSystem::sorting_order)
             .addData("duration_frames", &ParticleSystem::duration_frames)
@@ -484,6 +484,7 @@ public:
 
             .addFunction("OnStart", &ParticleSystem::OnStart)
             .addFunction("OnUpdate", &ParticleSystem::OnUpdate)
+            .addFunction("OnLateUpdate", &ParticleSystem::OnLateUpdate)
             .addFunction("OnDestroy", &ParticleSystem::OnDestroy)
             .addFunction("SetImageManager", std::function<void(ParticleSystem*)>([imageManager](ParticleSystem* ps) {
                 if (!ps) return;
