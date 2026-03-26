@@ -189,13 +189,16 @@ public:
             particle_angular_velocity[index] = start_rotation_speed;
             particle_start_scale[index] = start_scale;
 
-            destroyParticleBody(index);
+            //destroyParticleBody(index);
             particle_bodies[index] = nullptr;
         }
     }
 
     void OnUpdate(){
         const bool should_burst = (local_frame_number % frames_between_bursts == 0);
+        if (should_burst) {
+            generateNewParticles();
+        }
 
         for (int i = 0; i < static_cast<int>(is_active.size()); i++) {
             // 1) Skip inactive particles.
@@ -206,7 +209,6 @@ public:
             const int life_frames = local_frame_number - start_frame[i];
             if (life_frames >= duration_frames) {
                 is_active[i] = false;
-                free_list.push(i);
                 pending_delete.push(i);
                 continue;
             }
@@ -266,11 +268,6 @@ public:
                 sorting_order
             );
         }
-
-        if (should_burst) {
-            generateNewParticles();
-        }
-
         local_frame_number++;
     }
 
@@ -294,7 +291,9 @@ public:
         }
 
         for (int i = 0; i < static_cast<int>(particle_bodies.size()); i++) {
-            destroyParticleBody(i);
+            if (particle_bodies[i]) {
+                destroyParticleBody(i);
+            }
         }
 
         delete emit_angle_distribution;
