@@ -9,6 +9,7 @@
 #include "rapidjson/document.h"
 #include "game_utils.h" // for Actor and lua includes
 #include "rigidBody.h"
+#include "ParticleSystem.h"
 #include <lua/lua.hpp>
 #include <LuaBridge/LuaBridge.h>
 
@@ -20,8 +21,8 @@
 class ComponentDB {
     
 public:
-    explicit ComponentDB(lua_State* L, b2World* world)
-        : L(L) , world(world){}
+    explicit ComponentDB(lua_State* L, b2World* world, ImageManager* imageManager = nullptr)
+        : L(L), world(world), imageManager(imageManager) {}
 
     // 使用 Lua metatable 在 Lua 中建立继承关系：
     // setmetatable(instance_table, { __index = parent_table })
@@ -55,6 +56,19 @@ public:
 
             luabridge::LuaRef instance(L, rb);
             //ownedRigidbodies.insert(rb);
+            return instance;
+        }
+
+        if (typeName == "ParticleSystem") {
+            ParticleSystem* ps = new ParticleSystem();
+            ps->key = key;
+            ps->type = typeName;
+            ps->actor = owner;
+            ps->enabled = true;
+            ps->do_destroy = false;
+            ps->setImageManager(imageManager);
+
+            luabridge::LuaRef instance(L, ps);
             return instance;
         }
 
@@ -126,6 +140,7 @@ public:
 private:
     lua_State* L;
     b2World* world;
+    ImageManager* imageManager;
     // 缓存组件类型的基础 Lua 表：typeName -> base table
     int addComponentCounter = 0;
     std::unordered_map<std::string, luabridge::LuaRef> baseCache;

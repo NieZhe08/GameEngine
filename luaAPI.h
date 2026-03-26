@@ -13,6 +13,7 @@
 #include "cameraManager.h"
 #include "box2d/box2d.h"
 #include "rigidBody.h"
+#include "ParticleSystem.h"
 #include "raycast.h"
 #include "EventBus.h"
 
@@ -425,6 +426,69 @@ public:
             .addFunction("GetUpDirection", &Rigidbody::GetUpDirection)
             .addFunction("GetRightDirection", &Rigidbody::GetRightDirection)
 
+            .endClass();
+    }
+};
+
+class ParticleSystemAPI {
+    ImageManager* m_imageManager = nullptr;
+
+public:
+    explicit ParticleSystemAPI(ImageManager* imageManager)
+        : m_imageManager(imageManager) {}
+
+    void RegisterLuaAPI(lua_State* L) {
+        ImageManager* imageManager = m_imageManager;
+        luabridge::getGlobalNamespace(L)
+            .beginClass<ParticleSystem>("ParticleSystem")
+            .addData("enabled", &ParticleSystem::enabled)
+            .addData("do_destroy", &ParticleSystem::do_destroy)
+            .addData("key", &ParticleSystem::key)
+            .addData("type", &ParticleSystem::type)
+            .addData("actor", &ParticleSystem::actor)
+
+            .addData("emit_angle_min", &ParticleSystem::emit_angle_min)
+            .addData("emit_angle_max", &ParticleSystem::emit_angle_max)
+            .addData("emit_radius_min", &ParticleSystem::emit_radius_min)
+            .addData("emit_radius_max", &ParticleSystem::emit_radius_max)
+            .addData("rotation_min", &ParticleSystem::rotation_min)
+            .addData("rotation_max", &ParticleSystem::rotation_max)
+            .addData("start_scale_min", &ParticleSystem::start_scale_min)
+            .addData("start_scale_max", &ParticleSystem::start_scale_max)
+            .addData("start_color_r", &ParticleSystem::start_color_r)
+            .addData("start_color_g", &ParticleSystem::start_color_g)
+            .addData("start_color_b", &ParticleSystem::start_color_b)
+            .addData("start_color_a", &ParticleSystem::start_color_a)
+            .addData("image", &ParticleSystem::image)
+            .addData("start_speed_min", &ParticleSystem::start_speed_min)
+            .addData("start_speed_max", &ParticleSystem::start_speed_max)
+            .addData("rotation_speed_min", &ParticleSystem::rotation_speed_min)
+            .addData("rotation_speed_max", &ParticleSystem::rotation_speed_max)
+            .addData("x", &ParticleSystem::x)
+            .addData("y", &ParticleSystem::y)
+            .addData("frame_between_burst", &ParticleSystem::frame_between_burst)
+            .addData("burst_quantity", &ParticleSystem::burst_quantity)
+            .addData("sorting_order", &ParticleSystem::sorting_order)
+            .addData("duration_frames", &ParticleSystem::duration_frames)
+            .addData("gravity_scale_x", &ParticleSystem::gravity_scale_x)
+            .addData("gravity_scale_y", &ParticleSystem::gravity_scale_y)
+            .addData("drag_factor", &ParticleSystem::drag_factor)
+            .addData("angular_drag_factor", &ParticleSystem::angular_drag_factor)
+            .addData("linear_damping", &ParticleSystem::linear_damping)
+            .addData("angular_damping", &ParticleSystem::angular_damping)
+            .addData("end_scale", &ParticleSystem::end_scale)
+            .addData("end_color_r", &ParticleSystem::end_color_r)
+            .addData("end_color_g", &ParticleSystem::end_color_g)
+            .addData("end_color_b", &ParticleSystem::end_color_b)
+            .addData("end_color_a", &ParticleSystem::end_color_a)
+
+            .addFunction("OnStart", &ParticleSystem::OnStart)
+            .addFunction("OnUpdate", &ParticleSystem::OnUpdate)
+            .addFunction("OnDestroy", &ParticleSystem::OnDestroy)
+            .addFunction("SetImageManager", std::function<void(ParticleSystem*)>([imageManager](ParticleSystem* ps) {
+                if (!ps) return;
+                ps->setImageManager(imageManager);
+            }))
             .endClass();
     }
 };

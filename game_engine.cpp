@@ -85,7 +85,6 @@ void GameEngine::initializeGame(bool isInitialLoad) {
         luaL_openlibs(L);
         // 3. initialize managers:
         world = PhysicsManager::Instance().GetOrCreateWorld();
-        componentDB = std::make_shared<ComponentDB>(L, world);
         actorManager = std::make_shared<ActorManager>(L); // 创建 Actor 管理器实例，并传入 Lua 状态
         textManager = std::make_shared<TextManager>(ren); // 创建 Text 管理器实例，传入 SDL_Renderer 用于文本渲染
         input.Init(); // Initialize input states
@@ -93,6 +92,7 @@ void GameEngine::initializeGame(bool isInitialLoad) {
         audioManager->Init(); // Initialize audio subsystem
         imageManager = std::make_shared<ImageManager>(ren); // 创建 Image 管理器实例，传入 SDL_Renderer 用于图像加载和渲染
         cameraManager = std::make_shared<CameraManager>();
+        componentDB = std::make_shared<ComponentDB>(L, world, imageManager.get());
         //PhysicsManager* physics = &PhysicsManager::Instance();
 
         // 注册 Lua API（Debug / Application / Actor）
@@ -107,6 +107,7 @@ void GameEngine::initializeGame(bool isInitialLoad) {
         SceneAPI(actorManager, &next_scene_name, &current_scene_name).RegisterLuaAPI(L);
         Vector2API().RegisterLuaAPI(L);
         RigidbodyAPI().RegisterLuaAPI(L);
+        ParticleSystemAPI(imageManager.get()).RegisterLuaAPI(L);
         PhysicsAPI().RegisterLuaAPI(L);
         CollisionAPI().RegisterLuaAPI(L);
         RayCastingAPI().RegisterLuaAPI(L);

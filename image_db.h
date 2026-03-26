@@ -50,6 +50,39 @@ private:
     glm::vec2 camera_position = glm::vec2(0.0f, 0.0f);
     float camera_zoom_factor = 1.0f;
 
+    SDL_Texture* createDefaultParticleTexture(const std::string& cache_key) {
+        auto found = image_cache.find(cache_key);
+        if (found != image_cache.end()) {
+            return found->second;
+        }
+
+        SDL_Surface* surface = SDL_CreateRGBSurfaceWithFormat(
+            0,
+            8,
+            8,
+            32,
+            SDL_PIXELFORMAT_RGBA8888
+        );
+        if (!surface) {
+            std::cout << "error: failed to create default particle surface: " << SDL_GetError() << "\n";
+            return nullptr;
+        }
+
+        Uint32 white_color = SDL_MapRGBA(surface->format, 255, 255, 255, 255);
+        SDL_FillRect(surface, nullptr, white_color);
+
+        SDL_Texture* texture = SDL_CreateTextureFromSurface(ren, surface);
+        SDL_FreeSurface(surface);
+
+        if (!texture) {
+            std::cout << "error: failed to create default particle texture: " << SDL_GetError() << "\n";
+            return nullptr;
+        }
+
+        image_cache[cache_key] = texture;
+        return texture;
+    }
+
     void renderImageRequest(const ImageDrawRequest& request, bool scene_space, int render_width, int render_height) {
         SDL_Texture* tex = loadImage(request.image_name);
         if (!tex) {
@@ -162,6 +195,10 @@ public:
     }
 
     SDL_Texture* loadImage(const std::string& path) {
+        if (path.empty()) {
+            return createDefaultParticleTexture(path);
+        }
+
         if (image_cache.find(path) != image_cache.end()) {
             return image_cache[path];
         }
