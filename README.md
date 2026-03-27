@@ -8,3 +8,4 @@
 
 [] as the movement is continous and the speed is even be able to set in game.config, pay attention to how camera zoom change the movement scale on original grid.  
 abcdefgh
+try test?
