@@ -109,7 +109,7 @@ void GameEngine::initializeGame(bool isInitialLoad) {
         TextAPI(textManager).RegisterLuaAPI(L);
         AudioAPI().RegisterLuaAPI(L); // 统一格式
         ImageAPI(imageManager).RegisterLuaAPI(L);
-        CameraAPI(cameraManager).RegisterLuaAPI(L);
+        CameraAPI(cameraManager, imageManager).RegisterLuaAPI(L);
         SceneAPI(actorManager, &next_scene_name, &current_scene_name).RegisterLuaAPI(L);
         Vector2API().RegisterLuaAPI(L);
         RigidbodyAPI().RegisterLuaAPI(L);

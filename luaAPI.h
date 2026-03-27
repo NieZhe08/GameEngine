@@ -276,19 +276,35 @@ public:
 
 class CameraAPI {
     std::shared_ptr<CameraManager> m_cameraManager;
+    std::shared_ptr<ImageManager> m_imageManager;
 
 public:
-    explicit CameraAPI(const std::shared_ptr<CameraManager>& cameraManager): m_cameraManager(cameraManager) {}
+    CameraAPI(const std::shared_ptr<CameraManager>& cameraManager,
+              const std::shared_ptr<ImageManager>& imageManager)
+        : m_cameraManager(cameraManager), m_imageManager(imageManager) {}
 
     void RegisterLuaAPI(lua_State* L) {
         auto cameraManager = m_cameraManager;
+        auto imageManager = m_imageManager;
         luabridge::getGlobalNamespace(L)
             .beginNamespace("Camera")
-                .addFunction("SetPosition", std::function<void(float, float)>([cameraManager](float x, float y) {
+                .addFunction("SetPosition", std::function<void(float, float)>([cameraManager, imageManager](float x, float y) {
                     cameraManager->setPosition(x, y);
+                    if (imageManager) {
+                        imageManager->setCameraState(
+                            glm::vec2(cameraManager->getPositionX(), cameraManager->getPositionY()),
+                            cameraManager->getZoom()
+                        );
+                    }
                 }))
-                .addFunction("SetZoom", std::function<void(float)>([cameraManager](float zoom_factor) {
+                .addFunction("SetZoom", std::function<void(float)>([cameraManager, imageManager](float zoom_factor) {
                     cameraManager->setZoom(zoom_factor);
+                    if (imageManager) {
+                        imageManager->setCameraState(
+                            glm::vec2(cameraManager->getPositionX(), cameraManager->getPositionY()),
+                            cameraManager->getZoom()
+                        );
+                    }
                 }))
                 .addFunction("GetPositionX", std::function<float()>([cameraManager]() {
                     return cameraManager->getPositionX();
