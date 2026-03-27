@@ -1,20 +1,12 @@
 {
-	"actors": [
-		{
-			"name": "ParticleController",
-			"components": {
-				"ParticleController": {
-					"type": "ParticleController"
-				}
-			}
-		},
-		{
-			"name": "CameraController",
-			"components": {
-				"1": {
-					"type": "CameraController"
-				}
-			}
-		}
-	]
+    "actors": [
+        {
+            "name": "ParticleController",
+            "components": {
+                "ParticleController": {
+                    "type": "ParticleController"
+                }
+            }
+        }
+    ]
 }
