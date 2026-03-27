@@ -6,13 +6,13 @@
 #include <chrono>
 
 int main(int argc, char* argv[]) {
-    std::cout<< "Starting game..." << std::endl;
+    //std::cout<< "Starting game..." << std::endl;
     // using chorono to measure runtime
-    auto start = std::chrono::high_resolution_clock::now();
+    //auto start = std::chrono::high_resolution_clock::now();
     GameEngine game;
     game.gameLoop();
-    auto end = std::chrono::high_resolution_clock::now();
-    std::cout<< "Exiting game..." << std::endl;
-    std::cout<<"Run time: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << " ms" << std::endl;
+    //auto end = std::chrono::high_resolution_clock::now();
+    //std::cout<< "Exiting game..." << std::endl;
+    //std::cout<<"Run time: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << " ms" << std::endl;
     return 0;
 }
