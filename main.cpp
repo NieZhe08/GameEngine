@@ -7,7 +7,6 @@
 
 int main(int argc, char* argv[]) {
     //std::cout<< "Starting game..." << std::endl;
-    // using chorono to measure runtime
     //auto start = std::chrono::high_resolution_clock::now();
     GameEngine game;
     game.gameLoop();
