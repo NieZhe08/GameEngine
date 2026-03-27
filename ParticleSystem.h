@@ -9,8 +9,37 @@
 #include "image_db.h"
 #include <queue>
 #include <algorithm>
+#include <cstdint>
 
 class Actor;
+
+class MyRandomEngine {
+    // upon sample is called, only create a game engine when maximum != minimum, otherwise return the minimum value.
+public:
+    float max = 0.0f;
+    float min = 0.0f;
+    int seed = 0;
+    RandomEngine* engine = nullptr;
+
+    MyRandomEngine(float min, float max, int seed) : max(max), min(min), seed(seed) {}
+
+    ~MyRandomEngine() {
+        if (engine) {
+            delete engine;
+            engine = nullptr;
+        }
+    }
+
+    float Sample() {
+        if (max == min) {
+            return min;
+        }
+        if (!engine) {
+            engine = new RandomEngine(min, max, seed);
+        }
+        return engine->Sample();
+    }
+};
 
 class ParticleSystem {
 public:
@@ -20,16 +49,16 @@ public:
     std::string type = "ParticleSystem";
     Actor* actor = nullptr;
 
-    RandomEngine* emit_angle_distribution = nullptr; // in degrees, 0 means facing up (0, -1), and increases clockwise.
-    RandomEngine* emit_radius_distribution = nullptr;
-    RandomEngine* rotation_distribution = nullptr; // in degrees, 0 means facing up (0, -1), and increases clockwise.
-    RandomEngine* scale_distribution = nullptr;
-    RandomEngine* speed_distribution = nullptr;
-    RandomEngine* rotation_speed_distribution = nullptr; // in degrees per second, positive means clockwise
+    MyRandomEngine* emit_angle_distribution = nullptr; // in degrees, 0 means facing up (0, -1), and increases clockwise.
+    MyRandomEngine* emit_radius_distribution = nullptr;
+    MyRandomEngine* rotation_distribution = nullptr; // in degrees, 0 means facing up (0, -1), and increases clockwise.
+    MyRandomEngine* scale_distribution = nullptr;
+    MyRandomEngine* speed_distribution = nullptr;
+    MyRandomEngine* rotation_speed_distribution = nullptr; // in degrees per second, positive means clockwise
     ImageManager* image_manager = nullptr;
 
     // data
-    std::vector<bool> is_active;
+    std::vector<uint8_t> is_active;
     std::vector<int> start_frame;
     std::queue<int> free_list;
     std::vector<float> particle_x;
@@ -79,6 +108,8 @@ public:
 
     int sorting_order = 9999;
     int duration_frames = 300;
+    int screen_width = 1920;
+    int screen_height = 1080;
 
     bool enable_burst = true;
     bool now_burst = false;
@@ -90,7 +121,7 @@ public:
             return index;
         }
 
-        is_active.push_back(false);
+        is_active.push_back(0);
         start_frame.push_back(0);
         particle_x.push_back(0.0f);
         particle_y.push_back(0.0f);
@@ -105,6 +136,11 @@ public:
 
     void setImageManager(ImageManager* manager) {
         image_manager = manager;
+    }
+
+    void setScreenSize(int width, int height) {
+        screen_width = (width > 0) ? width : 1920;
+        screen_height = (height > 0) ? height : 1080;
     }
 
     void OnStart() {
@@ -125,13 +161,28 @@ public:
         if (end_color_b != -1 && (end_color_b > 255 || end_color_b < 0)) end_color_b = 255;
         if (end_color_a != -1 && (end_color_a > 255 || end_color_a < 0)) end_color_a = 255;
 
+        // Reserve enough slots to avoid runtime reallocation spikes.
+        const int bursts_alive = (duration_frames + frames_between_bursts - 1) / frames_between_bursts;
+        const int estimated_max_alive = std::max(1, bursts_alive * burst_quantity);
+        const size_t reserve_count = static_cast<size_t>(estimated_max_alive);
+
+        is_active.reserve(reserve_count);
+        start_frame.reserve(reserve_count);
+        particle_x.reserve(reserve_count);
+        particle_y.reserve(reserve_count);
+        particle_vx.reserve(reserve_count);
+        particle_vy.reserve(reserve_count);
+        particle_rotation.reserve(reserve_count);
+        particle_angular_velocity.reserve(reserve_count);
+        particle_start_scale.reserve(reserve_count);
+
         // Initialize the random engine with as specific range and seed.
-        emit_angle_distribution = new RandomEngine(emit_angle_min, emit_angle_max, 298); // Replace with the correct seed value from the assignment spec.
-        emit_radius_distribution = new RandomEngine(emit_radius_min, emit_radius_max, 404); // Replace with the correct seed value from the assignment spec.
-        rotation_distribution = new RandomEngine(rotation_min, rotation_max, 440); //
-        scale_distribution = new RandomEngine(start_scale_min, start_scale_max, 494); //
-        speed_distribution = new RandomEngine(start_speed_min, start_speed_max, 498); //
-        rotation_speed_distribution = new RandomEngine(rotation_speed_min, rotation_speed_max, 305); //
+        emit_angle_distribution = new MyRandomEngine(emit_angle_min, emit_angle_max, 298); // Replace with the correct seed value from the assignment spec.
+        emit_radius_distribution = new MyRandomEngine(emit_radius_min, emit_radius_max, 404); // Replace with the correct seed value from the assignment spec.
+        rotation_distribution = new MyRandomEngine(rotation_min, rotation_max, 440); //
+        scale_distribution = new MyRandomEngine(start_scale_min, start_scale_max, 494); //
+        speed_distribution = new MyRandomEngine(start_speed_min, start_speed_max, 498); //
+        rotation_speed_distribution = new MyRandomEngine(rotation_speed_min, rotation_speed_max, 305); //
 
         if (image_manager) {
             // Empty image key maps to ImageManager's built-in default particle texture.
@@ -163,7 +214,7 @@ public:
             const float start_vy = sin_angle * speed;
 
             const int index = allocateParticleSlot();
-            is_active[index] = true;
+            is_active[index] = 1;
             start_frame[index] = local_frame_number;
             particle_x[index] = spawn_x;
             particle_y[index] = spawn_y;
@@ -188,13 +239,13 @@ public:
 
         for (int i = 0; i < static_cast<int>(is_active.size()); i++) {
             // 1) Skip inactive particles.
-            if (!is_active[i]) {
+            if (is_active[i] == 0) {
                 continue;
             }
 
             const int life_frames = local_frame_number - start_frame[i];
             if (life_frames >= duration_frames) {
-                is_active[i] = false;
+                is_active[i] = 0;
                 free_list.push(i);
                 continue;
             }
@@ -220,6 +271,11 @@ public:
             particle_vx[i] = velocity_x;
             particle_vy[i] = velocity_y;
             particle_angular_velocity[i] = angular_velocity;
+
+            //if (particle_x[i] < 0.0f || particle_x[i] > static_cast<float>(screen_width) ||
+            //    particle_y[i] < 0.0f || particle_y[i] > static_cast<float>(screen_height)) {
+            //    continue;
+            //}
 
             // 5) Process color/scale over lifetime.
             const float lifetime_progress = static_cast<float>(life_frames) / duration_frames;

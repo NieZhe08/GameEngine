@@ -21,8 +21,12 @@
 class ComponentDB {
     
 public:
-    explicit ComponentDB(lua_State* L, b2World* world, ImageManager* imageManager = nullptr)
-        : L(L), world(world), imageManager(imageManager) {}
+    explicit ComponentDB(lua_State* L,
+                         b2World* world,
+                         ImageManager* imageManager = nullptr,
+                         int screenWidth = 1920,
+                         int screenHeight = 1080)
+        : L(L), world(world), imageManager(imageManager), screenWidth(screenWidth), screenHeight(screenHeight) {}
 
     // 使用 Lua metatable 在 Lua 中建立继承关系：
     // setmetatable(instance_table, { __index = parent_table })
@@ -67,6 +71,7 @@ public:
             ps->enabled = true;
             ps->do_destroy = false;
             ps->setImageManager(imageManager);
+            ps->setScreenSize(screenWidth, screenHeight);
 
             luabridge::LuaRef instance(L, ps);
             return instance;
@@ -141,6 +146,8 @@ private:
     lua_State* L;
     b2World* world;
     ImageManager* imageManager;
+    int screenWidth;
+    int screenHeight;
     // 缓存组件类型的基础 Lua 表：typeName -> base table
     int addComponentCounter = 0;
     std::unordered_map<std::string, luabridge::LuaRef> baseCache;

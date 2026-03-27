@@ -50,6 +50,52 @@ private:
     glm::vec2 camera_position = glm::vec2(0.0f, 0.0f);
     float camera_zoom_factor = 1.0f;
 
+    bool intersectsScreenRect(int x, int y, int w, int h, int screen_w, int screen_h) const {
+        return !(x + w <= 0 || y + h <= 0 || x >= screen_w || y >= screen_h);
+    }
+
+    bool shouldQueueSceneDraw(const ImageDrawRequest& request) {
+        SDL_Texture* tex = loadImage(request.image_name);
+        if (!tex) {
+            return false;
+        }
+
+        float tex_width = 0.0f;
+        float tex_height = 0.0f;
+        Helper::SDL_QueryTexture(tex, &tex_width, &tex_height);
+
+        const int dst_width = static_cast<int>(tex_width * glm::abs(request.scale_x));
+        const int dst_height = static_cast<int>(tex_height * glm::abs(request.scale_y));
+        if (dst_width <= 0 || dst_height <= 0) {
+            return false;
+        }
+
+        int render_width = 0;
+        int render_height = 0;
+        SDL_GetRendererOutputSize(ren, &render_width, &render_height);
+        if (render_width <= 0 || render_height <= 0) {
+            return true;
+        }
+
+        const int pivot_x = static_cast<int>(request.pivot_x * static_cast<float>(dst_width));
+        const int pivot_y = static_cast<int>(request.pivot_y * static_cast<float>(dst_height));
+        const int pixels_per_meter = 100;
+
+        const glm::vec2 final_rendering_position = glm::vec2(request.x, request.y) - camera_position;
+        const int dst_x = static_cast<int>(
+            final_rendering_position.x * static_cast<float>(pixels_per_meter)
+            + static_cast<float>(render_width) * 0.5f * (1.0f / camera_zoom_factor)
+            - static_cast<float>(pivot_x)
+        );
+        const int dst_y = static_cast<int>(
+            final_rendering_position.y * static_cast<float>(pixels_per_meter)
+            + static_cast<float>(render_height) * 0.5f * (1.0f / camera_zoom_factor)
+            - static_cast<float>(pivot_y)
+        );
+
+        return intersectsScreenRect(dst_x, dst_y, dst_width, dst_height, render_width, render_height);
+    }
+
     SDL_Texture* createDefaultParticleTexture(const std::string& cache_key) {
         auto found = image_cache.find(cache_key);
         if (found != image_cache.end()) {
@@ -234,7 +280,11 @@ public:
     }
 
     void pushDrawEx(const std::string &image_name, float x, float y, int rotation_degrees, float scale_x, float scale_y, float pivot_x, float pivot_y, int r, int g, int b, int a, int sorting_order){
-        this->image_draw_queue.push_back({request_counter++, image_name, x, y, rotation_degrees, scale_x, scale_y, pivot_x, pivot_y, r, g, b, a, sorting_order});
+        ImageDrawRequest request = {request_counter++, image_name, x, y, rotation_degrees, scale_x, scale_y, pivot_x, pivot_y, r, g, b, a, sorting_order};
+        if (!shouldQueueSceneDraw(request)) {
+            return;
+        }
+        this->image_draw_queue.push_back(request);
     }
 
     void pushDraw(const std::string &image_name, float x, float y){

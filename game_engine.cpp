@@ -92,7 +92,13 @@ void GameEngine::initializeGame(bool isInitialLoad) {
         audioManager->Init(); // Initialize audio subsystem
         imageManager = std::make_shared<ImageManager>(ren); // 创建 Image 管理器实例，传入 SDL_Renderer 用于图像加载和渲染
         cameraManager = std::make_shared<CameraManager>();
-        componentDB = std::make_shared<ComponentDB>(L, world, imageManager.get());
+        componentDB = std::make_shared<ComponentDB>(
+            L,
+            world,
+            imageManager.get(),
+            window_size.x,
+            window_size.y
+        );
         //PhysicsManager* physics = &PhysicsManager::Instance();
 
         // 注册 Lua API（Debug / Application / Actor）
