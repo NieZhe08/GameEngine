@@ -1,3 +1,4 @@
 {
-    "cmake.sourceDirectory": "/home/niezhe/game_engine_niezhe/glm"
+    "cmake.sourceDirectory": "/home/niezhe/game_engine_niezhe/glm",
+    "C_Cpp.default.compileCommands": "${workspaceFolder}/compile_commands.json"
 }

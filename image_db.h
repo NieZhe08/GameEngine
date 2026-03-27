@@ -50,8 +50,8 @@ private:
     glm::vec2 camera_position = glm::vec2(0.0f, 0.0f);
     float camera_zoom_factor = 1.0f;
 
-    bool intersectsScreenRect(int x, int y, int w, int h, int screen_w, int screen_h) const {
-        return !(x + w <= 0 || y + h <= 0 || x >= screen_w || y >= screen_h);
+    bool intersectsScreenRect(float x, float y, float w, float h, float screen_w, float screen_h) const {
+        return !(x + w <= 0.0f || y + h <= 0.0f || x >= screen_w || y >= screen_h);
     }
 
     bool shouldQueueSceneDraw(const ImageDrawRequest& request) {
@@ -64,9 +64,9 @@ private:
         float tex_height = 0.0f;
         Helper::SDL_QueryTexture(tex, &tex_width, &tex_height);
 
-        const int dst_width = static_cast<int>(tex_width * glm::abs(request.scale_x));
-        const int dst_height = static_cast<int>(tex_height * glm::abs(request.scale_y));
-        if (dst_width <= 0 || dst_height <= 0) {
+        const float dst_width = tex_width * glm::abs(request.scale_x);
+        const float dst_height = tex_height * glm::abs(request.scale_y);
+        if (dst_width <= 0.0f || dst_height <= 0.0f) {
             return false;
         }
 
@@ -77,23 +77,19 @@ private:
             return true;
         }
 
-        const int pivot_x = static_cast<int>(request.pivot_x * static_cast<float>(dst_width));
-        const int pivot_y = static_cast<int>(request.pivot_y * static_cast<float>(dst_height));
-        const int pixels_per_meter = 100;
+        const float pivot_x = request.pivot_x * dst_width;
+        const float pivot_y = request.pivot_y * dst_height;
+        const float pixels_per_meter = 100.0f;
 
         const glm::vec2 final_rendering_position = glm::vec2(request.x, request.y) - camera_position;
-        const int dst_x = static_cast<int>(
-            final_rendering_position.x * static_cast<float>(pixels_per_meter)
+        const float dst_x = final_rendering_position.x * pixels_per_meter
             + static_cast<float>(render_width) * 0.5f * (1.0f / camera_zoom_factor)
-            - static_cast<float>(pivot_x)
-        );
-        const int dst_y = static_cast<int>(
-            final_rendering_position.y * static_cast<float>(pixels_per_meter)
+            - pivot_x;
+        const float dst_y = final_rendering_position.y * pixels_per_meter
             + static_cast<float>(render_height) * 0.5f * (1.0f / camera_zoom_factor)
-            - static_cast<float>(pivot_y)
-        );
+            - pivot_y;
 
-        return intersectsScreenRect(dst_x, dst_y, dst_width, dst_height, render_width, render_height);
+        return intersectsScreenRect(dst_x, dst_y, dst_width, dst_height, static_cast<float>(render_width), static_cast<float>(render_height));
     }
 
     SDL_Texture* createDefaultParticleTexture(const std::string& cache_key) {
@@ -150,44 +146,32 @@ private:
         float x_scale = glm::abs(request.scale_x);
         float y_scale = glm::abs(request.scale_y);
 
-        int dst_width = static_cast<int>(tex_width * x_scale);
-        int dst_height = static_cast<int>(tex_height * y_scale);
+        float dst_width = tex_width * x_scale;
+        float dst_height = tex_height * y_scale;
 
-        int pivot_x = static_cast<int>(request.pivot_x * static_cast<float>(dst_width));
-        int pivot_y = static_cast<int>(request.pivot_y * static_cast<float>(dst_height));
+        float pivot_x = request.pivot_x * dst_width;
+        float pivot_y = request.pivot_y * dst_height;
 
-        int dst_x = 0;
-        int dst_y = 0;
+        float dst_x = 0.0f;
+        float dst_y = 0.0f;
 
         if (scene_space) {
-            const int pixels_per_meter = 100;
+            const float pixels_per_meter = 100.0f;
             glm::vec2 final_rendering_position = glm::vec2(request.x, request.y) - camera_position;
 
-            dst_x = static_cast<int>(
-                final_rendering_position.x * static_cast<float>(pixels_per_meter)
+            dst_x = final_rendering_position.x * pixels_per_meter
                 + static_cast<float>(render_width) * 0.5f * (1.0f / camera_zoom_factor)
-                - static_cast<float>(pivot_x)
-            );
-            dst_y = static_cast<int>(
-                final_rendering_position.y * static_cast<float>(pixels_per_meter)
+                - pivot_x;
+            dst_y = final_rendering_position.y * pixels_per_meter
                 + static_cast<float>(render_height) * 0.5f * (1.0f / camera_zoom_factor)
-                - static_cast<float>(pivot_y)
-            );
+                - pivot_y;
         } else {
-            dst_x = static_cast<int>(request.x) - pivot_x;
-            dst_y = static_cast<int>(request.y) - pivot_y;
+            dst_x = request.x - pivot_x;
+            dst_y = request.y - pivot_y;
         }
 
-        SDL_FRect tex_rect = {
-            static_cast<float>(dst_x),
-            static_cast<float>(dst_y),
-            static_cast<float>(dst_width),
-            static_cast<float>(dst_height)
-        };
-        SDL_FPoint pivot_point = {
-            static_cast<float>(pivot_x),
-            static_cast<float>(pivot_y)
-        };
+        SDL_FRect tex_rect = { dst_x, dst_y, dst_width, dst_height };
+        SDL_FPoint pivot_point = { pivot_x, pivot_y };
 
         SDL_SetTextureColorMod(tex, request.r, request.g, request.b);
         SDL_SetTextureAlphaMod(tex, request.a);
