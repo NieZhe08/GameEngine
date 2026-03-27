@@ -1,0 +1,35 @@
+{
+    "name": "Particles",
+    "components": {
+        "5": {
+            "type": "ParticleSystem",
+            "start_scale_min" : 0.0,
+            "start_scale_max": 0.25,
+            "end_scale": 1.0,
+            "emit_radius_max": 0.0,
+            "emit_radius_min": 0.0,
+            "start_speed_min": 0.03,
+            "start_speed_max": 0.035,
+            "image": "smoke",
+            "frames_between_bursts": 1,
+            "duration_frames": 200,
+            "burst_quantity": 50,
+            "start_color_r": 255,
+            "end_color_r": 255,
+            "start_color_g": 0,
+            "end_color_g": 255,
+            "start_color_b": 0,
+            "end_color_b": 255,
+            "start_color_a": 255,
+            "end_color_a": 0,
+            "rotation_min": 45,
+            "rotation_max": 45,
+            "sorting_order": -999,
+            "rotation_speed_max": 1,
+            "rotation_speed_min": -1,
+            "angular_drag_factor": 0.98,
+            "drag_factor": 0.98,
+            "x": 0
+        }
+    }
+}

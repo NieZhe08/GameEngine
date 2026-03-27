@@ -1,19 +1,15 @@
 ParticleController = {
-	ps = nil,
-
+	
 	OnStart = function(self)
-		local particle_actor = Actor.Instantiate("particle_actor")
-		self.ps = particle_actor:GetComponent("ParticleSystem")
-		self.ps:Stop()
-	end,
+		math.randomseed(498)
 
-	OnUpdate = function(self)
-		if Input.GetKeyDown("space") then
-
-			Debug.Log("Frame " .. Application.GetFrame() .. ": Burst!")
-			self.ps:Burst()
-
+		for i = 0,25 do
+			local big_system = Actor.Instantiate("big_particle_system_actor")
+			local ps = big_system:GetComponent("ParticleSystem")
+			ps.x = i * 3
+			ps.start_color_r = math.random(0, 255)
+			ps.start_color_g = math.random(0, 255)
+			ps.start_color_b = math.random(0, 255)
 		end
 	end
 }
-

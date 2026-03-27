@@ -5,6 +5,7 @@ SDL_*
 *CMake*
 *Zone.Identifier
 callgrind.out*
+*resource/*
 
 build
 **/frames

@@ -7,7 +7,6 @@
 #include "SDL2/SDL.h"
 #include "SDL_image/SDL_image.h"
 #include "image_db.h"
-#include "PhysicManager.h"
 #include <queue>
 #include <algorithm>
 
@@ -33,8 +32,6 @@ public:
     std::vector<bool> is_active;
     std::vector<int> start_frame;
     std::queue<int> free_list;
-    std::queue<int> pending_delete;
-    std::vector<b2Body*> particle_bodies;
     std::vector<float> particle_x;
     std::vector<float> particle_y;
     std::vector<float> particle_vx;
@@ -95,7 +92,6 @@ public:
 
         is_active.push_back(false);
         start_frame.push_back(0);
-        particle_bodies.push_back(nullptr);
         particle_x.push_back(0.0f);
         particle_y.push_back(0.0f);
         particle_vx.push_back(0.0f);
@@ -104,21 +100,6 @@ public:
         particle_angular_velocity.push_back(0.0f);
         particle_start_scale.push_back(1.0f);
         return static_cast<int>(is_active.size() - 1);
-    }
-
-    void destroyParticleBody(int index) {
-        if (index < 0 || index >= static_cast<int>(particle_bodies.size())) {
-            return;
-        }
-        b2Body* body = particle_bodies[index];
-        if (!body) {
-            return;
-        }
-        b2World* world = body->GetWorld();
-        if (world) {
-            world->DestroyBody(body);
-        }
-        particle_bodies[index] = nullptr;
     }
 
 
@@ -191,9 +172,6 @@ public:
             particle_rotation[index] = start_rotation;
             particle_angular_velocity[index] = start_rotation_speed;
             particle_start_scale[index] = start_scale;
-
-            //destroyParticleBody(index);
-            particle_bodies[index] = nullptr;
         }
     }
 
@@ -217,28 +195,30 @@ public:
             const int life_frames = local_frame_number - start_frame[i];
             if (life_frames >= duration_frames) {
                 is_active[i] = false;
-                pending_delete.push(i);
+                free_list.push(i);
                 continue;
             }
 
-            b2Vec2 velocity(particle_vx[i], particle_vy[i]);
+            float velocity_x = particle_vx[i];
+            float velocity_y = particle_vy[i];
             float angular_velocity = particle_angular_velocity[i];
 
             // Apply gravity to velocity.
-            velocity.x += gravity_scale_x;
-            velocity.y += gravity_scale_y;
+            velocity_x += gravity_scale_x;
+            velocity_y += gravity_scale_y;
 
             // Apply drag and angular drag.
-            velocity *= drag_factor;
+            velocity_x *= drag_factor;
+            velocity_y *= drag_factor;
             angular_velocity *= angular_drag_factor;
 
             // Apply velocities to position and rotation.
-            particle_x[i] += velocity.x;
-            particle_y[i] += velocity.y;
+            particle_x[i] += velocity_x;
+            particle_y[i] += velocity_y;
             particle_rotation[i] += angular_velocity;
 
-            particle_vx[i] = velocity.x;
-            particle_vy[i] = velocity.y;
+            particle_vx[i] = velocity_x;
+            particle_vy[i] = velocity_y;
             particle_angular_velocity[i] = angular_velocity;
 
             // 5) Process color/scale over lifetime.
@@ -292,28 +272,12 @@ public:
     }
 
     void OnLateUpdate() {
-        while (!pending_delete.empty()) {
-            const int index = pending_delete.front();
-            pending_delete.pop();
-
-            destroyParticleBody(index);
-            free_list.push(index);
-        }
+        // No deferred Box2D cleanup is needed.
     }
 
     void OnDestroy() {
         while (!free_list.empty()) {
             free_list.pop();
-        }
-
-        while (!pending_delete.empty()) {
-            pending_delete.pop();
-        }
-
-        for (int i = 0; i < static_cast<int>(particle_bodies.size()); i++) {
-            if (particle_bodies[i]) {
-                destroyParticleBody(i);
-            }
         }
 
         delete emit_angle_distribution;
