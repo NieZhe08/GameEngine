@@ -1,20 +1,17 @@
 {
-	"actors": [
-		{
-			"name": "ParticleController",
-			"components": {
-				"ParticleController": {
-					"type": "ParticleController"
-				}
-			}
-		},
-		{
-			"name": "CameraController",
-			"components": {
-				"1": {
-					"type": "CameraController"
-				}
-			}
-		}
-	]
+    "actors": [
+        {
+            "name": "Particles",
+            "components": {
+                "basic_particles": {
+                    "type": "ParticleSystem",
+                    "frames_between_bursts": 10,
+                    "emit_radius_max": 1.5,
+                    "start_scale_min": 4.0,
+                    "start_scale_max": 4.0,
+                    "gravity_scale_y": 0.001
+                }
+            }
+        }
+    ]
 }

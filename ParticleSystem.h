@@ -56,6 +56,7 @@ public:
     MyRandomEngine* speed_distribution = nullptr;
     MyRandomEngine* rotation_speed_distribution = nullptr; // in degrees per second, positive means clockwise
     ImageManager* image_manager = nullptr;
+    ImageDrawQueue draw_bucket;
 
     // data
     std::vector<uint8_t> is_active;
@@ -230,6 +231,7 @@ public:
         if (!enabled) {
             return;
         }
+        draw_bucket.clear();
 
         const bool should_burst = (local_frame_number % frames_between_bursts == 0);
         if (now_burst || (should_burst && enable_burst)) {
@@ -296,7 +298,8 @@ public:
                 ? start_color_a
                 : static_cast<int>(glm::mix(static_cast<float>(start_color_a), static_cast<float>(end_color_a), lifetime_progress));
 
-            image_manager->pushDrawEx(
+            image_manager->pushDrawExToBucket(
+                draw_bucket,
                 image,
                 particle_x[i],
                 particle_y[i],
@@ -311,6 +314,9 @@ public:
                 a,
                 sorting_order
             );
+        }
+        if (!draw_bucket.empty()) {
+            image_manager->submitSceneBucket(&draw_bucket);
         }
         local_frame_number++;
     }

@@ -72,6 +72,10 @@ struct ImageDrawQueue {
         return submit_order.size();
     }
 
+    bool empty() const {
+        return submit_order.empty();
+    }
+
     void clear() {
         submit_order.clear();
         image_name.clear();
@@ -90,6 +94,12 @@ struct ImageDrawQueue {
     }
 };
 
+struct ParticleBucketEntry {
+    ImageDrawQueue* bucket = nullptr;
+    int sorting_order = 0;
+    std::uint64_t first_submit_order = 0;
+};
+
 class ImageManager{
 private:
     SDL_Renderer* ren;
@@ -98,6 +108,8 @@ private:
     ImageDrawQueue ui_image_draw_queue;
     std::queue<PixelDrawRequest> pixel_draw_queue;
     std::uint64_t request_counter = 0;
+    std::vector<ParticleBucketEntry> particle_bucket_queue;
+    bool particle_bucket_queue_dirty = false;
     glm::vec2 camera_position = glm::vec2(0.0f, 0.0f);
     float camera_zoom_factor = 1.0f;
 
@@ -249,6 +261,29 @@ private:
         SDL_SetTextureAlphaMod(tex, 255);
     }
 
+    void sortParticleBucketQueueIfNeeded() {
+        if (!particle_bucket_queue_dirty) return;
+        std::stable_sort(particle_bucket_queue.begin(), particle_bucket_queue.end(),
+            [](const ParticleBucketEntry& a, const ParticleBucketEntry& b) {
+                if (a.sorting_order != b.sorting_order)
+                    return a.sorting_order < b.sorting_order;
+                return a.first_submit_order < b.first_submit_order;
+            });
+        particle_bucket_queue_dirty = false;
+    }
+
+    void renderParticleBucket(ImageDrawQueue& bucket, int render_width, int render_height) {
+        std::vector<size_t> indices(bucket.size());
+        for (size_t i = 0; i < indices.size(); i++) indices[i] = i;
+        std::stable_sort(indices.begin(), indices.end(), [&bucket](size_t lhs, size_t rhs) {
+            return bucket.submit_order[lhs] < bucket.submit_order[rhs];
+        });
+        for (size_t idx : indices) {
+            renderImageRequest(bucket, idx, true, render_width, render_height);
+        }
+        bucket.clear();
+    }
+
     void renderQueuedImages(ImageDrawQueue& queue, bool scene_space) {
         std::vector<size_t> sorted_indices(queue.size());
         for (size_t i = 0; i < sorted_indices.size(); i++) {
@@ -268,13 +303,27 @@ private:
         if (scene_space) {
             SDL_GetRendererOutputSize(ren, &render_width, &render_height);
             SDL_RenderSetScale(ren, camera_zoom_factor, camera_zoom_factor);
+            sortParticleBucketQueueIfNeeded();
         }
 
+        size_t bucket_idx = 0;
         for (size_t index : sorted_indices) {
+            if (scene_space) {
+                while (bucket_idx < particle_bucket_queue.size() &&
+                       particle_bucket_queue[bucket_idx].sorting_order <= queue.sorting_order[index]) {
+                    renderParticleBucket(*particle_bucket_queue[bucket_idx].bucket, render_width, render_height);
+                    bucket_idx++;
+                }
+            }
             renderImageRequest(queue, index, scene_space, render_width, render_height);
         }
 
         if (scene_space) {
+            while (bucket_idx < particle_bucket_queue.size()) {
+                renderParticleBucket(*particle_bucket_queue[bucket_idx].bucket, render_width, render_height);
+                bucket_idx++;
+            }
+            particle_bucket_queue.clear();
             SDL_RenderSetScale(ren, 1.0f, 1.0f);
         }
 
@@ -335,6 +384,24 @@ public:
             return;
         }
         this->image_draw_queue.push(request_counter++, image_name, x, y, rotation_degrees, scale_x, scale_y, pivot_x, pivot_y, r, g, b, a, sorting_order);
+    }
+
+    void pushDrawExToBucket(ImageDrawQueue& bucket,
+                            const std::string &image_name, float x, float y,
+                            int rotation_degrees, float scale_x, float scale_y,
+                            float pivot_x, float pivot_y,
+                            int r, int g, int b, int a, int sorting_order) {
+        if (!shouldQueueSceneDraw(image_name, x, y, scale_x, scale_y, pivot_x, pivot_y)) {
+            return;
+        }
+        bucket.push(request_counter++, image_name, x, y, rotation_degrees,
+                     scale_x, scale_y, pivot_x, pivot_y, r, g, b, a, sorting_order);
+    }
+
+    void submitSceneBucket(ImageDrawQueue* bucket) {
+        if (!bucket || bucket->size() == 0) return;
+        particle_bucket_queue.push_back({bucket, bucket->sorting_order[0], bucket->submit_order[0]});
+        particle_bucket_queue_dirty = true;
     }
 
     void pushDraw(const std::string &image_name, float x, float y){
