@@ -10,6 +10,7 @@
 #include <queue>
 #include <algorithm>
 #include <cstdint>
+#include <cmath>
 
 class Actor;
 
@@ -57,6 +58,10 @@ public:
     MyRandomEngine* rotation_speed_distribution = nullptr; // in degrees per second, positive means clockwise
     ImageManager* image_manager = nullptr;
     ImageDrawQueue draw_bucket;
+    SDL_Texture* cached_particle_texture = nullptr;
+    float cached_particle_texture_width = 0.0f;
+    float cached_particle_texture_height = 0.0f;
+    float coarse_cull_radius = 0.0f;
 
     // data
     std::vector<uint8_t> is_active;
@@ -114,6 +119,36 @@ public:
 
     bool enable_burst = true;
     bool now_burst = false;
+
+    float estimateMaxParticleTravelDistance() const {
+        const float gravity_step = glm::length(glm::vec2(gravity_scale_x, gravity_scale_y));
+        const float drag_multiplier = glm::max(1.0f, drag_factor);
+        float step_speed = std::max(std::abs(start_speed_min), std::abs(start_speed_max));
+        float total_distance = 0.0f;
+
+        for (int frame = 0; frame < duration_frames; frame++) {
+            step_speed = (step_speed + gravity_step) * drag_multiplier;
+            total_distance += step_speed;
+        }
+
+        return total_distance;
+    }
+
+    float computeCoarseCullRadius() const {
+        const float max_emit_radius = std::max(std::abs(emit_radius_min), std::abs(emit_radius_max));
+        float max_scale = std::max(std::abs(start_scale_min), std::abs(start_scale_max));
+        if (end_scale >= 0.0f) {
+            max_scale = std::max(max_scale, std::abs(end_scale));
+        }
+
+        float sprite_radius = 0.0f;
+        if (cached_particle_texture_width > 0.0f && cached_particle_texture_height > 0.0f) {
+            const float pixels_per_meter = 100.0f;
+            sprite_radius = 0.5f * glm::length(glm::vec2(cached_particle_texture_width, cached_particle_texture_height)) * max_scale / pixels_per_meter;
+        }
+
+        return max_emit_radius + estimateMaxParticleTravelDistance() + sprite_radius;
+    }
 
     int allocateParticleSlot() {
         if (!free_list.empty()) {
@@ -176,6 +211,7 @@ public:
         particle_rotation.reserve(reserve_count);
         particle_angular_velocity.reserve(reserve_count);
         particle_start_scale.reserve(reserve_count);
+        draw_bucket.reserve(reserve_count);
 
         // Initialize the random engine with as specific range and seed.
         emit_angle_distribution = new MyRandomEngine(emit_angle_min, emit_angle_max, 298); // Replace with the correct seed value from the assignment spec.
@@ -186,9 +222,10 @@ public:
         rotation_speed_distribution = new MyRandomEngine(rotation_speed_min, rotation_speed_max, 305); //
 
         if (image_manager) {
-            // Empty image key maps to ImageManager's built-in default particle texture.
-            image_manager->loadImage(image);
+            image_manager->getImageInfo(image, cached_particle_texture, cached_particle_texture_width, cached_particle_texture_height);
         }
+
+        coarse_cull_radius = computeCoarseCullRadius();
 
     }
 
@@ -239,6 +276,15 @@ public:
             now_burst = false;
         }
 
+        if (image_manager && !cached_particle_texture) {
+            image_manager->getImageInfo(image, cached_particle_texture, cached_particle_texture_width, cached_particle_texture_height);
+            coarse_cull_radius = computeCoarseCullRadius();
+        }
+
+        const bool can_submit_draws = image_manager
+            && cached_particle_texture
+            && image_manager->isSceneCircleVisible(x, y, coarse_cull_radius);
+
         for (int i = 0; i < static_cast<int>(is_active.size()); i++) {
             // 1) Skip inactive particles.
             if (is_active[i] == 0) {
@@ -274,6 +320,10 @@ public:
             particle_vy[i] = velocity_y;
             particle_angular_velocity[i] = angular_velocity;
 
+            if (!can_submit_draws) {
+                continue;
+            }
+
             //if (particle_x[i] < 0.0f || particle_x[i] > static_cast<float>(screen_width) ||
             //    particle_y[i] < 0.0f || particle_y[i] > static_cast<float>(screen_height)) {
             //    continue;
@@ -300,7 +350,9 @@ public:
 
             image_manager->pushDrawExToBucket(
                 draw_bucket,
-                image,
+                cached_particle_texture,
+                cached_particle_texture_width,
+                cached_particle_texture_height,
                 particle_x[i],
                 particle_y[i],
                 static_cast<int>(particle_rotation[i]),
@@ -354,6 +406,10 @@ public:
         speed_distribution = nullptr;
         delete rotation_speed_distribution;
         rotation_speed_distribution = nullptr;
+        cached_particle_texture = nullptr;
+        cached_particle_texture_width = 0.0f;
+        cached_particle_texture_height = 0.0f;
+        coarse_cull_radius = 0.0f;
     }
 
 };

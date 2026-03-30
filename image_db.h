@@ -22,6 +22,12 @@ struct PixelDrawRequest{
     int x, y, r, g, b, a;
 };
 
+struct CachedTexture {
+    SDL_Texture* texture = nullptr;
+    float width = 0.0f;
+    float height = 0.0f;
+};
+
 struct ImageDrawQueue {
     std::vector<std::uint64_t> submit_order;
     std::vector<std::string> image_name;
@@ -37,6 +43,9 @@ struct ImageDrawQueue {
     std::vector<int> b;
     std::vector<int> a;
     std::vector<int> sorting_order;
+    SDL_Texture* shared_texture = nullptr;
+    float shared_texture_width = 0.0f;
+    float shared_texture_height = 0.0f;
 
     void push(std::uint64_t new_submit_order,
               const std::string& new_image_name,
@@ -53,7 +62,7 @@ struct ImageDrawQueue {
               int new_a,
               int new_sorting_order) {
         submit_order.push_back(new_submit_order);
-        image_name.push_back(new_image_name);
+                image_name.push_back(new_image_name);
         x.push_back(new_x);
         y.push_back(new_y);
         rotation_degrees.push_back(new_rotation_degrees);
@@ -74,6 +83,29 @@ struct ImageDrawQueue {
 
     bool empty() const {
         return submit_order.empty();
+    }
+
+    void reserve(size_t count) {
+        submit_order.reserve(count);
+        image_name.reserve(count);
+        x.reserve(count);
+        y.reserve(count);
+        rotation_degrees.reserve(count);
+        scale_x.reserve(count);
+        scale_y.reserve(count);
+        pivot_x.reserve(count);
+        pivot_y.reserve(count);
+        r.reserve(count);
+        g.reserve(count);
+        b.reserve(count);
+        a.reserve(count);
+        sorting_order.reserve(count);
+    }
+
+    void setSharedTexture(SDL_Texture* texture, float width, float height) {
+        shared_texture = texture;
+        shared_texture_width = width;
+        shared_texture_height = height;
     }
 
     void clear() {
@@ -103,7 +135,7 @@ struct ParticleBucketEntry {
 class ImageManager{
 private:
     SDL_Renderer* ren;
-    std::unordered_map<std::string, SDL_Texture*> image_cache;
+    std::unordered_map<std::string, CachedTexture> image_cache;
     ImageDrawQueue image_draw_queue;
     ImageDrawQueue ui_image_draw_queue;
     std::queue<PixelDrawRequest> pixel_draw_queue;
@@ -117,24 +149,27 @@ private:
         return !(x + w <= 0.0f || y + h <= 0.0f || x >= screen_w || y >= screen_h);
     }
 
-    bool shouldQueueSceneDraw(const std::string& image_name,
+    const CachedTexture* findCachedTexture(const std::string& path) const {
+        auto found = image_cache.find(path);
+        if (found == image_cache.end()) {
+            return nullptr;
+        }
+        return &found->second;
+    }
+
+    bool shouldQueueSceneDraw(const CachedTexture& texture,
                               float x,
                               float y,
                               float scale_x,
                               float scale_y,
                               float pivot_x,
                               float pivot_y) {
-        SDL_Texture* tex = loadImage(image_name);
-        if (!tex) {
+        if (!texture.texture) {
             return false;
         }
 
-        float tex_width = 0.0f;
-        float tex_height = 0.0f;
-        Helper::SDL_QueryTexture(tex, &tex_width, &tex_height);
-
-        const float dst_width = tex_width * glm::abs(scale_x);
-        const float dst_height = tex_height * glm::abs(scale_y);
+        const float dst_width = texture.width * glm::abs(scale_x);
+        const float dst_height = texture.height * glm::abs(scale_y);
         if (dst_width <= 0.0f || dst_height <= 0.0f) {
             return false;
         }
@@ -161,10 +196,10 @@ private:
         return intersectsScreenRect(dst_x, dst_y, dst_width, dst_height, static_cast<float>(render_width), static_cast<float>(render_height));
     }
 
-    SDL_Texture* createDefaultParticleTexture(const std::string& cache_key) {
+    const CachedTexture* createDefaultParticleTexture(const std::string& cache_key) {
         auto found = image_cache.find(cache_key);
         if (found != image_cache.end()) {
-            return found->second;
+            return &found->second;
         }
 
         SDL_Surface* surface = SDL_CreateRGBSurfaceWithFormat(
@@ -190,19 +225,68 @@ private:
             return nullptr;
         }
 
-        image_cache[cache_key] = texture;
-        return texture;
+        CachedTexture record;
+        record.texture = texture;
+        record.width = 8.0f;
+        record.height = 8.0f;
+        image_cache[cache_key] = record;
+        return &image_cache[cache_key];
     }
 
-    void renderImageRequest(const ImageDrawQueue& queue, size_t index, bool scene_space, int render_width, int render_height) {
-        SDL_Texture* tex = loadImage(queue.image_name[index]);
+    const CachedTexture* getTextureRecord(const std::string& path) {
+        if (path.empty()) {
+            return createDefaultParticleTexture(path);
+        }
+
+        if (const CachedTexture* cached = findCachedTexture(path)) {
+            return cached;
+        }
+
+        std::string fullpath = path;
+        if (!std::filesystem::exists(path)) {
+            fullpath = "resources/images/" + path + ".png";
+            if (!std::filesystem::exists(fullpath)) {
+                std::cout << "error: missing image " << path;
+                return nullptr;
+            }
+        }
+
+        SDL_Texture* tex = IMG_LoadTexture(ren, fullpath.c_str());
         if (!tex) {
-            return;
+            std::cout << "error: IMG_LoadTexture failed for " << fullpath << ": " << IMG_GetError() << "\n";
+            return nullptr;
         }
 
         float tex_width = 0.0f;
         float tex_height = 0.0f;
         Helper::SDL_QueryTexture(tex, &tex_width, &tex_height);
+
+        CachedTexture record;
+        record.texture = tex;
+        record.width = tex_width;
+        record.height = tex_height;
+        image_cache[path] = record;
+        return &image_cache[path];
+    }
+
+    void renderImageRequest(const ImageDrawQueue& queue, size_t index, bool scene_space, int render_width, int render_height) {
+        SDL_Texture* tex = queue.shared_texture;
+        float tex_width = queue.shared_texture_width;
+        float tex_height = queue.shared_texture_height;
+
+        if (!tex) {
+            const CachedTexture* record = getTextureRecord(queue.image_name[index]);
+            if (!record) {
+                return;
+            }
+            tex = record->texture;
+            tex_width = record->width;
+            tex_height = record->height;
+        }
+
+        if (!tex) {
+            return;
+        }
 
         int flip_mode = SDL_FLIP_NONE;
         if (queue.scale_x[index] < 0.0f) {
@@ -273,12 +357,7 @@ private:
     }
 
     void renderParticleBucket(ImageDrawQueue& bucket, int render_width, int render_height) {
-        std::vector<size_t> indices(bucket.size());
-        for (size_t i = 0; i < indices.size(); i++) indices[i] = i;
-        std::stable_sort(indices.begin(), indices.end(), [&bucket](size_t lhs, size_t rhs) {
-            return bucket.submit_order[lhs] < bucket.submit_order[rhs];
-        });
-        for (size_t idx : indices) {
+        for (size_t idx = 0; idx < bucket.size(); idx++) {
             renderImageRequest(bucket, idx, true, render_width, render_height);
         }
         bucket.clear();
@@ -341,28 +420,49 @@ public:
     }
 
     SDL_Texture* loadImage(const std::string& path) {
-        if (path.empty()) {
-            return createDefaultParticleTexture(path);
+        const CachedTexture* record = getTextureRecord(path);
+        return record ? record->texture : nullptr;
+    }
+
+    bool getImageInfo(const std::string& path, SDL_Texture*& texture, float& width, float& height) {
+        const CachedTexture* record = getTextureRecord(path);
+        if (!record) {
+            texture = nullptr;
+            width = 0.0f;
+            height = 0.0f;
+            return false;
         }
 
-        if (image_cache.find(path) != image_cache.end()) {
-            return image_cache[path];
+        texture = record->texture;
+        width = record->width;
+        height = record->height;
+        return true;
+    }
+
+    bool isSceneCircleVisible(float center_x, float center_y, float radius_meters) {
+        int render_width = 0;
+        int render_height = 0;
+        SDL_GetRendererOutputSize(ren, &render_width, &render_height);
+        if (render_width <= 0 || render_height <= 0) {
+            return true;
         }
-        std::string fullpath = path;
-        if (!std::filesystem::exists(path)) {
-            fullpath = "resources/images/" + path + ".png";
-            if (!std::filesystem::exists(fullpath)) {
-                std::cout << "error: missing image " << path ;
-                return nullptr;
-            }
-        }
-        SDL_Texture* tex = IMG_LoadTexture(ren, fullpath.c_str());
-        if (!tex) {
-            std::cout << "error: IMG_LoadTexture failed for " << fullpath << ": " << IMG_GetError() << "\n";
-            return nullptr;
-        }
-        image_cache[path] = tex;
-        return tex;
+
+        const float pixels_per_meter = 100.0f;
+        const glm::vec2 final_rendering_position = glm::vec2(center_x, center_y) - camera_position;
+        const float center_screen_x = final_rendering_position.x * pixels_per_meter
+            + static_cast<float>(render_width) * 0.5f * (1.0f / camera_zoom_factor);
+        const float center_screen_y = final_rendering_position.y * pixels_per_meter
+            + static_cast<float>(render_height) * 0.5f * (1.0f / camera_zoom_factor);
+        const float radius_pixels = glm::max(0.0f, radius_meters * pixels_per_meter);
+
+        return intersectsScreenRect(
+            center_screen_x - radius_pixels,
+            center_screen_y - radius_pixels,
+            radius_pixels * 2.0f,
+            radius_pixels * 2.0f,
+            static_cast<float>(render_width),
+            static_cast<float>(render_height)
+        );
     }
 
     void setCameraState(const glm::vec2& camera, float zoom_factor) {
@@ -371,6 +471,10 @@ public:
     }
 
     void pushDrawUIEx(const std::string &image_name, float x, float y, int r, int g, int b, int a, int sorting_order){
+        const CachedTexture* record = getTextureRecord(image_name);
+        if (!record) {
+            return;
+        }
         // UI coordinates are top-left anchored, so use a (0,0) pivot.
         this->ui_image_draw_queue.push(request_counter++, image_name, x, y, 0, 1.0f, 1.0f, 0.0f, 0.0f, r, g, b, a, sorting_order);
     }
@@ -380,21 +484,24 @@ public:
     }
 
     void pushDrawEx(const std::string &image_name, float x, float y, int rotation_degrees, float scale_x, float scale_y, float pivot_x, float pivot_y, int r, int g, int b, int a, int sorting_order){
-        if (!shouldQueueSceneDraw(image_name, x, y, scale_x, scale_y, pivot_x, pivot_y)) {
+        const CachedTexture* record = getTextureRecord(image_name);
+        if (!record || !shouldQueueSceneDraw(*record, x, y, scale_x, scale_y, pivot_x, pivot_y)) {
             return;
         }
         this->image_draw_queue.push(request_counter++, image_name, x, y, rotation_degrees, scale_x, scale_y, pivot_x, pivot_y, r, g, b, a, sorting_order);
     }
 
     void pushDrawExToBucket(ImageDrawQueue& bucket,
-                            const std::string &image_name, float x, float y,
+                            SDL_Texture* texture, float texture_width, float texture_height,
+                            float x, float y,
                             int rotation_degrees, float scale_x, float scale_y,
                             float pivot_x, float pivot_y,
                             int r, int g, int b, int a, int sorting_order) {
-        if (!shouldQueueSceneDraw(image_name, x, y, scale_x, scale_y, pivot_x, pivot_y)) {
+        if (!texture || texture_width <= 0.0f || texture_height <= 0.0f) {
             return;
         }
-        bucket.push(request_counter++, image_name, x, y, rotation_degrees,
+        bucket.setSharedTexture(texture, texture_width, texture_height);
+        bucket.push(request_counter++, "", x, y, rotation_degrees,
                      scale_x, scale_y, pivot_x, pivot_y, r, g, b, a, sorting_order);
     }
 
