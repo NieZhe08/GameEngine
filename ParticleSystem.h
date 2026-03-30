@@ -123,7 +123,7 @@ public:
     float estimateMaxParticleTravelDistance() const {
         const float gravity_step = glm::length(glm::vec2(gravity_scale_x, gravity_scale_y));
         const float drag_multiplier = glm::max(1.0f, drag_factor);
-        float step_speed = std::max(std::abs(start_speed_min), std::abs(start_speed_max));
+        float step_speed = glm::max(glm::abs(start_speed_min), glm::abs(start_speed_max));
         float total_distance = 0.0f;
 
         for (int frame = 0; frame < duration_frames; frame++) {
@@ -135,10 +135,10 @@ public:
     }
 
     float computeCoarseCullRadius() const {
-        const float max_emit_radius = std::max(std::abs(emit_radius_min), std::abs(emit_radius_max));
-        float max_scale = std::max(std::abs(start_scale_min), std::abs(start_scale_max));
+        const float max_emit_radius = glm::max(glm::abs(emit_radius_min), glm::abs(emit_radius_max));
+        float max_scale = glm::max(glm::abs(start_scale_min), glm::abs(start_scale_max));
         if (end_scale >= 0.0f) {
-            max_scale = std::max(max_scale, std::abs(end_scale));
+            max_scale = glm::max(max_scale, glm::abs(end_scale));
         }
 
         float sprite_radius = 0.0f;
