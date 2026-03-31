@@ -78,25 +78,6 @@ public:
 
     // 每帧结束时调用此函数
     void UpdateDestruction() {
-        //actors_to_call_onstart.erase(
-        //    std::remove_if(actors_to_call_onstart.begin(), actors_to_call_onstart.end(),
-        //        [](const std::shared_ptr<Actor>& actor) {
-        //            return actor && actor->pending_destroy;
-        //        }
-        //    ),
-        //    actors_to_call_onstart.end()
-        //);
-
-        //pending_new_actors.erase(
-        //    std::remove_if(pending_new_actors.begin(), pending_new_actors.end(),
-        //        [](const std::shared_ptr<Actor>& actor) {
-        //            return !actor || actor->pending_destroy;
-        //        }
-        //    ),
-        //    pending_new_actors.end()
-        //);
-
-        // 使用 Erase-Remove 惯用法
         all_actors.erase(
             std::remove_if(all_actors.begin(), all_actors.end(),
                 [](const std::shared_ptr<Actor>& actor) {
@@ -115,24 +96,6 @@ public:
 
     // 场景切换时的清理逻辑（复用同样的思路）
     void ClearSceneActors() {
-        //actors_to_call_onstart.erase(
-        //    std::remove_if(actors_to_call_onstart.begin(), actors_to_call_onstart.end(),
-        //        [](const std::shared_ptr<Actor>& actor) {
-        //            return actor && actor->destroyOnSceneChange;
-        //        }
-        //    ),
-        //    actors_to_call_onstart.end()
-        //);
-
-        //pending_new_actors.erase(
-        //    std::remove_if(pending_new_actors.begin(), pending_new_actors.end(),
-        //        [](const std::shared_ptr<Actor>& actor) {
-        //            return actor && actor->destroyOnSceneChange;
-        //        }
-        //    ),
-        //    pending_new_actors.end()
-        //);
-
         all_actors.erase(
             std::remove_if(all_actors.begin(), all_actors.end(),
                 [](const std::shared_ptr<Actor>& actor) {

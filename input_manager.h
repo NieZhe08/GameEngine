@@ -207,7 +207,7 @@ inline bool Input::GetKeyUp(const std::string& keycode) {
 inline SDL_Scancode Input::KeycodeFromString(const std::string& keycode) {
 	if (keycode.empty()) return SDL_SCANCODE_UNKNOWN;
 	std::string normalized = keycode;
-	// CSV 里有部分键名前后带空格，这里先做修剪再做大小写归一化。
+	// Normalize whitespace and case before the lookup.
 	while (!normalized.empty() && std::isspace(static_cast<unsigned char>(normalized.front()))) {
 		normalized.erase(normalized.begin());
 	}

@@ -58,23 +58,19 @@ public:
 // Application API
 class ApplicationAPI {
 public:
-    // 立刻退出程序（供 Lua 调用）
     static void Quit() {
         std::exit(0);
     }
 
-    // 睡眠指定毫秒数
     static void Sleep(int milliseconds) {
         if (milliseconds <= 0) return;
         std::this_thread::sleep_for(std::chrono::milliseconds(milliseconds));
     }
 
-    // 获取当前帧号（由 Helper 维护）
     static int GetFrame() {
         return Helper::GetFrameNumber();
     }
 
-    // 打开指定 URL
     static void OpenURL(const std::string& url) {
         if (url.empty()) return;
 
@@ -123,7 +119,6 @@ public:
                 .addFunction("AddComponent", &Actor::AddComponent)
                 .addFunction("RemoveComponent", &Actor::RemoveComponent)
             .endClass()
-            // 使用命名空间 Actor 暴露全局查找函数：Lua 写法为 Actor.Find / Actor.FindAll
             .beginNamespace("Actor")
                 .addFunction("Find", std::function<luabridge::LuaRef(const std::string&)>([actorManager](const std::string& name) -> luabridge::LuaRef { return actorManager->Find(name); }))
                 .addFunction("FindAll", std::function<luabridge::LuaRef(const std::string&)>([actorManager](const std::string& name) -> luabridge::LuaRef { return actorManager->FindAll(name); }))

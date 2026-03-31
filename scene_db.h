@@ -21,20 +21,17 @@ public:
     std::string sceneName;
     std::shared_ptr<ActorManager> actorManager;
     glm::ivec2 mapSize;
-    //ImageDB* imageDB;
     std::vector<TemplateDB> template_cache;
     lua_State* L;                // 共享的全局 Lua 状态
     std::shared_ptr<ComponentDB> componentDB;    // 组件类型数据库
 
     SceneDB (std::string sceneName,
-             //ImageDB* _imageDB,
              lua_State* L,
                          const std::shared_ptr<ComponentDB>& componentDB,
                          const std::shared_ptr<ActorManager>& actorManager)
         : sceneName(sceneName),
           actorManager(actorManager),
           mapSize(0, 0),
-          //imageDB(_imageDB),
           L(L),
           componentDB(componentDB) {
         if (!std::filesystem::exists("resources/scenes/" + sceneName + ".scene")){
