@@ -36,6 +36,18 @@ osx_build_derived_data
 **.gif
 **.GIF
 
+!readme_pics/
+!readme_pics/*.png
+!readme_pics/*.PNG
+!readme_pics/*.jpeg
+!readme_pics/*.JPEG
+!readme_pics/*.jpg
+!readme_pics/*.JPG
+!readme_pics/*.bmp
+!readme_pics/*.BMP
+!readme_pics/*.gif
+!readme_pics/*.GIF
+
 **.wav
 **.mp3
 **.ogg
