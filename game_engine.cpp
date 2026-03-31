@@ -71,6 +71,7 @@ void GameEngine::initializeGame(bool isInitialLoad) {
     if (isInitialLoad){
         next_scene_name = parser.getInitialScene();
 
+        //SDL
         window_size = parser.getResolution();
         clear_color = parser.getClearColor();
         SDL_Init(SDL_INIT_VIDEO);
@@ -78,15 +79,18 @@ void GameEngine::initializeGame(bool isInitialLoad) {
         win = helper.SDL_CreateWindow("", 100, 100, window_size.x, window_size.y, SDL_WINDOW_SHOWN);
         ren = Helper::SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
     
+        // LUA initialize
+        // 1. 初始化全局 Lua（整个引擎共用一个 lua_State）
         L = luaL_newstate();
         luaL_openlibs(L);
+        // 3. initialize managers:
         world = PhysicsManager::Instance().GetOrCreateWorld();
-        actorManager = std::make_shared<ActorManager>(L);
-        textManager = std::make_shared<TextManager>(ren);
-        input.Init();
+        actorManager = std::make_shared<ActorManager>(L); // 创建 Actor 管理器实例，并传入 Lua 状态
+        textManager = std::make_shared<TextManager>(ren); // 创建 Text 管理器实例，传入 SDL_Renderer 用于文本渲染
+        input.Init(); // Initialize input states
         audioManager = std::make_shared<AudioManager>();
-        audioManager->Init();
-        imageManager = std::make_shared<ImageManager>(ren);
+        audioManager->Init(); // Initialize audio subsystem
+        imageManager = std::make_shared<ImageManager>(ren); // 创建 Image 管理器实例，传入 SDL_Renderer 用于图像加载和渲染
         cameraManager = std::make_shared<CameraManager>();
         componentDB = std::make_shared<ComponentDB>(
             L,
@@ -95,13 +99,15 @@ void GameEngine::initializeGame(bool isInitialLoad) {
             window_size.x,
             window_size.y
         );
+        //PhysicsManager* physics = &PhysicsManager::Instance();
 
+        // 注册 Lua API（Debug / Application / Actor）
         Debug().RegisterLuaAPI(L);
         ApplicationAPI().RegisterLuaAPI(L);
         ActorAPI(actorManager, componentDB).RegisterLuaAPI(L);
-        InputAPI().RegisterLuaAPI(L);
+        InputAPI().RegisterLuaAPI(L); // 统一格式
         TextAPI(textManager).RegisterLuaAPI(L);
-        AudioAPI().RegisterLuaAPI(L);
+        AudioAPI().RegisterLuaAPI(L); // 统一格式
         ImageAPI(imageManager).RegisterLuaAPI(L);
         CameraAPI(cameraManager, imageManager).RegisterLuaAPI(L);
         SceneAPI(actorManager, &next_scene_name, &current_scene_name).RegisterLuaAPI(L);
@@ -136,14 +142,20 @@ void GameEngine::processPendingSceneLoad() {
 }
 
 void GameEngine::update(){
+    // An Update function that actually only handles the ACTOR MANAGER's update
+
+    // 通用的 Lua 组件驱动：先 OnStart，再 OnUpdate，再 OnLateUpdate
     if (!actorManager) return;
 
+    // 1) 先处理所有待启动的组件 OnStart（每个组件只会执行一次）
     actorManager->ProcessOnStartAllActor();
 
     actorManager->ProcessOnUpdateAllActor();
 
+    // 4) 再对每个组件调用 OnLateUpdate（如果存在）
     actorManager->ProcessOnLateUpdateAllActor();
 
+    // 5) 在一帧所有生命周期函数执行完之后，处理延迟销毁
     actorManager->UpdateDestruction();
 }
 
@@ -154,19 +166,26 @@ void GameEngine::gameLoop() {
                     // (clean input state)
                     // (render a frame)
     while (!input.GetQuit()) {
+        // Scene.Load is deferred: apply the newest request at next-frame start.
         processPendingSceneLoad();
 
+        // 事件处理（只依赖 Helper::SDL_PollEvent 和 Input 管理键盘 / 退出）
         while (Helper::SDL_PollEvent(&event)) {
             input.ProcessEvent(event);
         }
+        //（OnStart / OnUpdate / OnLateUpdate）
         update();
 
+        // clean up the input manager after update() using the states.
         input.LateUpdate();
 
+        // Apply Event.Subscribe / Event.Unsubscribe requested this frame.
         EventBus::FlushPending();
 
+        // advance physics engine by one step
         PhysicsManager::Instance().Step();
 
+        // render the frame base on the render requirements in text and image render stacks.
         frameRender(false);
     }
 
