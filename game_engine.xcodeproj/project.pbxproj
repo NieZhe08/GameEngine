@@ -379,6 +379,13 @@
 					"$(PROJECT_DIR)/SDL_ttf",
 					"$(PROJECT_DIR)/SDL_image",
 				);
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/SDL_ttf/osx",
+					"$(PROJECT_DIR)/SDL_image/osx",
+					"$(PROJECT_DIR)/SDL_mixer/osx",
+					"$(PROJECT_DIR)/SDL2/osx",
+				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/game_engine/SDL_image/lib",
@@ -409,6 +416,13 @@
 					"$(PROJECT_DIR)/SDL_mixer",
 					"$(PROJECT_DIR)/SDL_ttf",
 					"$(PROJECT_DIR)/SDL_image",
+				);
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/SDL_ttf/osx",
+					"$(PROJECT_DIR)/SDL_image/osx",
+					"$(PROJECT_DIR)/SDL_mixer/osx",
+					"$(PROJECT_DIR)/SDL2/osx",
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
